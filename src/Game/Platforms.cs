@@ -16,13 +16,19 @@ namespace Game
     class Platforms
     {
         private Queue<PlatformRow> QueueOfPlatformRowObjects = new Queue<PlatformRow>();
-        private PlatformRow LastAddedRowValueHolder;
+        private PlatformRow LastAddedRow;
         private const int NUMBER_OF_LANES=5;
+
+        private int ChanceToCreatePlatform = 4; 
+        private const int MaxValueOfChanceToCreatePlatform = 10;
+
+        private int MinPlatformsToBeCreated = 2;
+        private int MaxPlatformsToBeCreated = 4;
 
         public void GenerateNextRow(PlatformRow rowToBeAddedtoQueue)
         {
             QueueOfPlatformRowObjects.Enqueue(rowToBeAddedtoQueue);
-            LastAddedRowValueHolder = rowToBeAddedtoQueue;
+            LastAddedRow = rowToBeAddedtoQueue;
         }
 
         public void RemoveLastRow()
@@ -38,22 +44,51 @@ namespace Game
             }
         }
 
+        private bool[] CalculateRouteForNewRow()
+        {
+            bool[] ValuesForNewRow = new bool[LastAddedRow.row_length];
+            Random randomNumberObject = new Random();
+            int randomNumber;
+            int platformsCreated = 0;
+            int platformsToBeCreated;
+
+            if (LastAddedRow.IsEmpty())
+            {
+                for (int i = 0; i < LastAddedRow.row_length; i++)
+                {
+                        ValuesForNewRow[i] = true;
+                }
+            }
+            else
+            {
+                platformsToBeCreated = randomNumberObject.Next(MinPlatformsToBeCreated, MaxPlatformsToBeCreated + 1);
+
+                while (platformsCreated < platformsToBeCreated)
+                {
+                    for (int i = 0; i < LastAddedRow.row_length; i++)
+                    {
+                        if (!ValuesForNewRow[i])
+                        {
+                            randomNumber = randomNumberObject.Next(MaxValueOfChanceToCreatePlatform);
+                            if (randomNumber > ChanceToCreatePlatform)
+                            {
+                                ValuesForNewRow[i] = true;
+                                platformsCreated++;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return ValuesForNewRow;
+        }
+
+
         public void UpdatePlatforms()
         {
             RemoveLastRow();
+            GenerateNextRow(new PlatformRow(CalculateRouteForNewRow()));
         }
-
-
-        private PlatformRow CalculateRouteForNewRow()
-        {
-            bool []ValuesForNewRow=new bool[LastAddedRowValueHolder.row_length];
-
-            //return new PlatformRow(
-        }
-
-
-
-
 
     }
 }
