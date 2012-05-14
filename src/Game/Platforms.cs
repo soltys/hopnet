@@ -17,7 +17,7 @@ namespace Game
     {
         private Queue<PlatformRow> QueueOfPlatformRowObjects = new Queue<PlatformRow>();
         private PlatformRow LastAddedRow;
-        private const int NUMBER_OF_LANES=5;
+        private const int NumberOfLanes=5;
 
         private int ChanceToCreatePlatform = 4; 
         private const int MaxValueOfChanceToCreatePlatform = 10;
@@ -25,10 +25,9 @@ namespace Game
         private int MinPlatformsToBeCreated = 2;
         private int MaxPlatformsToBeCreated = 4;
 
-        public void GenerateNextRow(PlatformRow rowToBeAddedtoQueue)
+        public void GenerateNextRow()
         {
-            QueueOfPlatformRowObjects.Enqueue(rowToBeAddedtoQueue);
-            LastAddedRow = rowToBeAddedtoQueue;
+            QueueOfPlatformRowObjects.Enqueue(new PlatformRow(new bool[]{true,true,true,true,true}));
         }
 
         public void RemoveLastRow()
@@ -38,15 +37,15 @@ namespace Game
 
         public Platforms()
         {
-            for (int i = 0; i < NUMBER_OF_LANES; i++)
+            for (int i = 0; i < NumberOfLanes; i++)
             {
-                GenerateNextRow(new PlatformRow(new bool[]{true,true,true,true,true}));
+                GenerateNextRow();
             }
         }
 
         private bool[] CalculateRouteForNewRow()
         {
-            bool[] ValuesForNewRow = new bool[LastAddedRow.row_length];
+            bool[] ValuesForNewRow = new bool[PlatformRow.RowLength];
             Random randomNumberObject = new Random();
             int randomNumber;
             int platformsCreated = 0;
@@ -54,7 +53,7 @@ namespace Game
 
             if (LastAddedRow.IsEmpty())
             {
-                for (int i = 0; i < LastAddedRow.row_length; i++)
+                for (int i = 0; i < PlatformRow.RowLength; i++)
                 {
                         ValuesForNewRow[i] = true;
                 }
@@ -65,7 +64,7 @@ namespace Game
 
                 while (platformsCreated < platformsToBeCreated)
                 {
-                    for (int i = 0; i < LastAddedRow.row_length; i++)
+                    for (int i = 0; i < PlatformRow.RowLength; i++)
                     {
                         if (!ValuesForNewRow[i])
                         {
@@ -84,10 +83,10 @@ namespace Game
         }
 
 
-        public void UpdatePlatforms()
+        public void UpdatePlatforms() 
         {
             RemoveLastRow();
-            GenerateNextRow(new PlatformRow(CalculateRouteForNewRow()));
+            GenerateNextRow();
         }
 
     }

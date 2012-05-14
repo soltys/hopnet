@@ -18,7 +18,7 @@ namespace Game
     {
         public PlatformRow(bool[] platformSettings)
         {
-            if (platformSettings.Length != ROW_LENGTH)
+            if (platformSettings.Length != RowLength)
             {
                 throw new ArgumentException();
             }
@@ -28,7 +28,7 @@ namespace Game
 
         public PlatformRow()
         {
-            for (int i = 0; i < ROW_LENGTH; i++)
+            for (int i = 0; i < RowLength; i++)
             {
                 this.platformSettings[i] = true;
             }
@@ -36,15 +36,8 @@ namespace Game
 
 
 
-        private const int ROW_LENGTH = 5;
-        public int row_length
-        {
-            get
-            {
-            return ROW_LENGTH;
-            }
-        }
-        private readonly bool[] platformSettings = new bool[ROW_LENGTH];
+        public const int RowLength = 5;
+        private readonly bool[] platformSettings = new bool[RowLength];
         public bool this[int i]
         {
             get { return platformSettings[i]; }
@@ -52,7 +45,7 @@ namespace Game
 
         public bool IsEmpty()
         {
-            for (int i = 0; i < ROW_LENGTH; i++)
+            for (int i = 0; i < RowLength; i++)
             {
                 if (platformSettings[i]) { return false; }
             }

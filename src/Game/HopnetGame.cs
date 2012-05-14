@@ -77,12 +77,7 @@ namespace Game
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
             if (Keyboard.GetState().IsKeyDown(Keys.P)) { this.Exit(); }
-            if (Keyboard.GetState().IsKeyDown(Keys.W)) {  }
-            if (Keyboard.GetState().IsKeyDown(Keys.S)) {  }
-            if (Keyboard.GetState().IsKeyDown(Keys.A)) {  }
-            if (Keyboard.GetState().IsKeyDown(Keys.D)) {  }
 
 
 
