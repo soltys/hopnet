@@ -37,6 +37,13 @@ namespace Game
 
 
         private const int ROW_LENGTH = 5;
+        public int row_length
+        {
+            get
+            {
+            return ROW_LENGTH;
+            }
+        }
         private readonly bool[] platformSettings = new bool[ROW_LENGTH];
         public bool this[int i]
         {
