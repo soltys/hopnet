@@ -6,7 +6,7 @@ using System.Text;
 namespace Game
 {
     [Serializable]
-    public class Score
+    public class Score : IComparable<Score>
     {
         public string Name { get; set; }
         public DateTime Time { get; set; }
@@ -19,6 +19,18 @@ namespace Game
             Name = name;
             Points = points;
             Time = DateTime.Now.Date;
+        }
+        public int CompareTo(Score other)
+        {
+            if (other == null)
+            {
+                return 1;
+            }
+            if (this.Points == other.Points)
+            {
+                return this.Name.CompareTo(other.Name);
+            }
+            return this.Points.CompareTo(other.Points);
         }
     }
 }
