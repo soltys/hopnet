@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Collections;
+//using System.Collections;
 
 namespace Game
 {
-    class HighScores
+    class HighScores : IEnumerable<Score>
     {
         private List<Score> scores;
         private const int maxCapacity = 10;
@@ -49,5 +51,16 @@ namespace Game
         {
             scores.Clear();
         }
+
+        public IEnumerator<Score> GetEnumerator()
+        {
+            return scores.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return (scores as IEnumerable).GetEnumerator();
+        }
+
     }
 }
