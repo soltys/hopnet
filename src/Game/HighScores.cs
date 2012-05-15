@@ -10,7 +10,7 @@ using System.Xml.Serialization;
 
 namespace Game
 {
-    class HighScores : IEnumerable<Score>
+    internal class HighScores : IEnumerable<Score>
     {
         private List<Score> scores;
         private const int maxCapacity = 10;
