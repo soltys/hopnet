@@ -24,6 +24,7 @@ namespace Game
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
+
         public HopnetGame()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -52,6 +53,10 @@ namespace Game
             logger.Trace("Load Content starts");
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
+
+
+
+
             logger.Trace("Load Content ends");
             // TODO: use this.Content to load your game content here
         }
@@ -72,12 +77,11 @@ namespace Game
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                this.Exit();
+            if (Keyboard.GetState().IsKeyDown(Keys.P)) { this.Exit(); }
+
+
 
             // TODO: Add your update logic here
-
             base.Update(gameTime);
         }
 
