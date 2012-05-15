@@ -20,12 +20,17 @@ namespace Game
         }
         public void Add(Score score)
         {
+            if (score == null)
+            {
+                throw new ArgumentNullException();
+            }
+            if (score.Points < 0)
+            {
+                throw new ArgumentException();
+            }
+
             try
             {
-                if (score.Points < 0)
-                {
-                    throw new ArgumentException();
-                }
                 if (scores.Count == maxCapacity)
                 {
                     if (scores.Min().Points < score.Points)
@@ -58,16 +63,15 @@ namespace Game
         {
             try
             {
-                IsolatedStorageFile isoStorage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null);
-                if (isoStorage.FileExists("highscores.xml"))
+                var storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null);
+                if (storage.FileExists("highscores.xml"))
                 {
-                    XmlSerializer xSerializer = new XmlSerializer(typeof(List<Score>));
-                    using (IsolatedStorageFileStream oStream = new IsolatedStorageFileStream("highscores.xml", FileMode.Open, isoStorage))
+                    var serializer = new XmlSerializer(typeof(List<Score>));
+                    using (var stream = new IsolatedStorageFileStream("highscores.xml", FileMode.Open, storage))
                     {
-
-                        using (XmlReader xReader = XmlReader.Create(oStream))
+                        using (var reader = XmlReader.Create(stream))
                         {
-                            List<Score> tmpScores = new List<Score>((List<Score>)xSerializer.Deserialize(xReader));
+                            var tmpScores = new List<Score>((List<Score>)serializer.Deserialize(reader));
                             if (tmpScores.Count > maxCapacity)
                             {
                                 throw new InvalidDataException();
@@ -105,15 +109,14 @@ namespace Game
         {
             try
             {
-                IsolatedStorageFile isoStore = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null);
-                XmlSerializer xSerializer = new XmlSerializer(typeof(List<Score>));
+                var storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null);
+                var serializer = new XmlSerializer(typeof(List<Score>));
 
-                using (IsolatedStorageFileStream isoStream = new IsolatedStorageFileStream("highscores.xml", FileMode.Create, isoStore))
+                using (var stream = new IsolatedStorageFileStream("highscores.xml", FileMode.Create, storage))
                 {
-
-                    using (StreamWriter sWriter = new StreamWriter(isoStream))
+                    using (var writer = new StreamWriter(stream))
                     {
-                        xSerializer.Serialize(sWriter, scores);
+                        serializer.Serialize(writer, scores);
                     }
                 }
             }
