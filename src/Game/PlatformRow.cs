@@ -1,16 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-
-
 
 namespace Game
 {
@@ -30,11 +18,9 @@ namespace Game
         {
             for (int i = 0; i < RowLength; i++)
             {
-                this.platformSettings[i] = true;
+                platformSettings[i] = true;
             }
         }
-
-
 
         public const int RowLength = 5;
         private readonly bool[] platformSettings = new bool[RowLength];
@@ -52,7 +38,5 @@ namespace Game
 
             return true;
         }
-
-
     }
 }
