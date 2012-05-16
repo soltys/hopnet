@@ -31,9 +31,25 @@ namespace Game.Test
             var highScores = new HighScores();
             for (int i = 0; i < 20; i++)
             {
-                highScores.Add(new Score(i.ToString(CultureInfo.InvariantCulture), i * 100));
+                highScores.Add(new Score(i.ToString(CultureInfo.InvariantCulture), i));
             }
             Assert.AreEqual(10, highScores.Count());
+        }
+
+        [Test]
+        public void only_highest_scores_are_stored_in_highscores()
+        {
+            var highScores = new HighScores();
+            var randomGenerator = new Random();
+            var generatedNumbers = new List<int>();
+            for (int i = 0; i < 20; i++)
+            {
+                var number = randomGenerator.Next();
+                highScores.Add(new Score(i.ToString(CultureInfo.InvariantCulture), number));
+                generatedNumbers.Add(number);
+            }
+
+            Assert.AreEqual(generatedNumbers.OrderByDescending(x => x).Take(10).Min(), highScores.Min().Points);
         }
     }
 }
