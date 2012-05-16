@@ -67,5 +67,18 @@ namespace Game.Test
             Score score = null;
             Assert.Throws<ArgumentNullException>(() => highScores.Add(score));
         }
+
+        [Test]
+        public void highscore_cleared_highscore_is_empty()
+        {
+            var highScores = new HighScores();
+            for (int i = 0; i < 20; i++)
+            {
+                highScores.Add(new Score(i.ToString(CultureInfo.InvariantCulture), i));
+            }
+            highScores.Clear();
+
+            CollectionAssert.IsEmpty(highScores);
+        }
     }
 }
