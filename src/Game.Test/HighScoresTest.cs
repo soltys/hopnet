@@ -51,5 +51,21 @@ namespace Game.Test
 
             Assert.AreEqual(generatedNumbers.OrderByDescending(x => x).Take(10).Min(), highScores.Min().Points);
         }
+
+        [Test]
+        public void when_score_added_is_lower_than_zero_throws_argument_exception()
+        {
+            var highScores = new HighScores();
+            var score = new Score("hopnet", -1);
+            Assert.Throws<ArgumentException>(() => highScores.Add(score));
+        }
+
+        [Test]
+        public void when_score_added_is_null_then_highscore_throws_argument_exception()
+        {
+            var highScores = new HighScores();
+            Score score = null;
+            Assert.Throws<ArgumentNullException>(() => highScores.Add(score));
+        }
     }
 }
