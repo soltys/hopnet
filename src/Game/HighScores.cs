@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
-using System.Security;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -14,9 +13,11 @@ namespace Game
     {
         private List<Score> scores;
         private const int maxCapacity = 10;
+        private readonly IsolatedStorageFile storage;
         public HighScores()
         {
             scores = new List<Score>(maxCapacity);
+            storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null);
         }
         public void Add(Score score)
         {
@@ -29,31 +30,18 @@ namespace Game
                 throw new ArgumentException();
             }
 
-            try
+            if (scores.Count == maxCapacity)
             {
-                if (scores.Count == maxCapacity)
+                if (scores.Min().Points < score.Points)
                 {
-                    if (scores.Min().Points < score.Points)
-                    {
-                        scores.Remove(scores.Min());
-                    }
-                    else
-                    {
-                        return;
-                    }
+                    scores.Remove(scores.Min());
                 }
-                scores.Add(score);
+                else
+                {
+                    return;
+                }
             }
-            catch (NullReferenceException)
-            {
-                //TODO: Handlig it
-                throw;
-            }
-            catch (ArgumentException)
-            {
-                //TODO: Handlig it
-                throw;
-            }
+            scores.Add(score);
         }
         public void Clear()
         {
@@ -61,74 +49,33 @@ namespace Game
         }
         public void Load()
         {
-            try
+            if (storage.FileExists("highscores.xml"))
             {
-                var storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null);
-                if (storage.FileExists("highscores.xml"))
+                var serializer = new XmlSerializer(typeof(List<Score>));
+                using (var stream = new IsolatedStorageFileStream("highscores.xml", FileMode.Open, storage))
                 {
-                    var serializer = new XmlSerializer(typeof(List<Score>));
-                    using (var stream = new IsolatedStorageFileStream("highscores.xml", FileMode.Open, storage))
+                    using (var reader = XmlReader.Create(stream))
                     {
-                        using (var reader = XmlReader.Create(stream))
+                        var tmpScores = new List<Score>((List<Score>)serializer.Deserialize(reader));
+                        if (tmpScores.Count > maxCapacity)
                         {
-                            var tmpScores = new List<Score>((List<Score>)serializer.Deserialize(reader));
-                            if (tmpScores.Count > maxCapacity)
-                            {
-                                throw new InvalidDataException();
-                            }
-                            else
-                            {
-                                scores = new List<Score>(tmpScores);
-                            }
+                            throw new InvalidDataException("Amount of scores in file is greater than maxCapacity");
                         }
+                        scores = new List<Score>(tmpScores);
                     }
                 }
-            }
-            catch (IsolatedStorageException)
-            {
-                //TODO: Handlig it
-                throw;
-            }
-            catch (IOException)
-            {
-                //TODO: Handlig it
-                throw;
-            }
-            catch (InvalidOperationException)
-            {
-                //TODO: Handlig it
-                throw;
-            }
-            catch (SecurityException)
-            {
-                //TODO: Handlig it
-                throw;
             }
         }
+
         public void Save()
         {
-            try
+            var serializer = new XmlSerializer(typeof(List<Score>));
+            using (var stream = new IsolatedStorageFileStream("highscores.xml", FileMode.Create, storage))
             {
-                var storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null);
-                var serializer = new XmlSerializer(typeof(List<Score>));
-
-                using (var stream = new IsolatedStorageFileStream("highscores.xml", FileMode.Create, storage))
+                using (var writer = new StreamWriter(stream))
                 {
-                    using (var writer = new StreamWriter(stream))
-                    {
-                        serializer.Serialize(writer, scores);
-                    }
+                    serializer.Serialize(writer, scores);
                 }
-            }
-            catch (IsolatedStorageException)
-            {
-                //TODO: Handlig it
-                throw;
-            }
-            catch (IOException)
-            {
-                //TODO: Handlig it
-                throw;
             }
         }
         public void SortDescending()
@@ -142,7 +89,7 @@ namespace Game
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return (scores as IEnumerable).GetEnumerator();
+            return scores.GetEnumerator();
         }
 
     }
