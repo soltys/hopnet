@@ -30,7 +30,7 @@ namespace Game
             playerSkeleton = new Skeleton();
         }
 
-        public void SetSkeleton(ref Skeleton PlayerSkeleton)
+        public void SetSkeleton(Skeleton PlayerSkeleton)
         {
             this.playerSkeleton = PlayerSkeleton;
         }
