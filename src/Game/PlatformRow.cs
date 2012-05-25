@@ -16,7 +16,6 @@ namespace Game
             this.platformSettings = platformSettings;
         }
 
-
         public PlatformRow()
         {
             for (int i = 0; i < RowLength; i++)
@@ -24,7 +23,6 @@ namespace Game
                 platformSettings[i] = true;
             }
         }
-
 
         public bool this[int i]
         {
@@ -59,9 +57,5 @@ namespace Game
             if (counter == PlatformRow.RowLength) { return true; }
             else { return false; }
         }
-
-
-
-
     }
 }

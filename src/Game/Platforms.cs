@@ -21,7 +21,6 @@ namespace Game
         private const int minNonEmptyRowNumber = 5;
         private const int maxNonEmptyRowNumber = 6;
 
-
         private void GenerateNextRow()
         {
             platformRows.AddFirst(lastRow);
