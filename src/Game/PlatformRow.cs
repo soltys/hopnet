@@ -38,13 +38,30 @@ namespace Game
         {
             for (int i = 0; i < RowLength; i++)
             {
-                if (platformSettings[i]) 
+                if (platformSettings[i]==true) 
                 { 
                     return false; 
                 }
             }
-
             return true;
         }
+
+        public bool IsFull()
+        {
+            int counter = 0;
+            for (int i = 0; i < RowLength; i++)
+            {
+                if (platformSettings[i] == true)
+                {
+                    counter++;
+                }
+            }
+            if (counter == PlatformRow.RowLength) { return true; }
+            else { return false; }
+        }
+
+
+
+
     }
 }
