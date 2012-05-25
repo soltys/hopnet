@@ -45,18 +45,6 @@ namespace Game
         }
 
 
-        public bool IsFull()
-        {
-            int counter = 0;
-            for (int i = 0; i < RowLength; i++)
-            {
-                if (platformSettings[i] == true)
-                {
-                    counter++;
-                }
-            }
-            if (counter == PlatformRow.RowLength) { return true; }
-            else { return false; }
-        }
+
     }
 }
