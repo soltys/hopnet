@@ -48,6 +48,50 @@ namespace Game
             GenerateNextRow();
         }
         
-       
+        private void CalculatePlatformsForNewRow()
+        {
+            var valuesForNewRow = new bool[PlatformRow.RowLength];
+            var randomGenerator = new Random();
+            int platformsCreated = 0;
+
+
+            if (lastRow.IsEmpty())
+            {
+                for (int i = 0; i < PlatformRow.RowLength; i++)
+                {
+                    valuesForNewRow[i] = true;
+                }
+            }
+            else
+            {
+
+                if ((rowNumberGeneratedSinceLastEmptyRow >= rowNumberSinceLastEmptyRow) & !lastRow.IsFull())
+                {
+                    rowNumberGeneratedSinceLastEmptyRow = 0;
+                    rowNumberSinceLastEmptyRow = randomGenerator.Next(minNonEmptyRowNumber, maxNonEmptyRowNumber + 1);
+                }
+                else
+                {
+                    int platformsToBeCreated = randomGenerator.Next(minPlatformNumber, maxPlatformNumber + 1);
+
+                    while (platformsCreated < platformsToBeCreated)
+                    {
+                        for (int i = 0; i < PlatformRow.RowLength; i++)
+                        {
+                            if (!valuesForNewRow[i])
+                            {
+                                if (randomGenerator.Next(maxCreatePlatformChance) > createPlatformChance)
+                                {
+                                    valuesForNewRow[i] = true;
+                                    platformsCreated++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            rowNumberGeneratedSinceLastEmptyRow++;
+            lastRow = new PlatformRow(valuesForNewRow);
+        }
     }
 }
