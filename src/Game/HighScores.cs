@@ -14,7 +14,8 @@ namespace Game
         private List<Score> scores;
         private const int maxCapacity = 10;
         private readonly IsolatedStorageFile storage;
-        private string highScoreFileName = "highscores.xml";
+        private const string highScoreFileName = "highscores.xml";
+
         public HighScores()
         {
             scores = new List<Score>(maxCapacity);
