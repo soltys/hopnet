@@ -36,7 +36,7 @@ namespace Game
         {
             for (int i = 0; i < RowLength; i++)
             {
-                if (platformSettings[i]==true) 
+                if (platformSettings[i]) 
                 { 
                     return false; 
                 }
@@ -50,7 +50,7 @@ namespace Game
             int counter = 0;
             for (int i = 0; i < RowLength; i++)
             {
-                if (platformSettings[i] == true)
+                if (platformSettings[i])
                 {
                     counter++;
                 }
