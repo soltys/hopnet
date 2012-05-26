@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-
-
 namespace Game
 {
-    class Platforms
+    class Platforms:IEnumerable<PlatformRow>
     {
         private readonly LinkedList<PlatformRow> platformRows = new LinkedList<PlatformRow>();
         private const int lanesNumber = 5;
@@ -62,7 +61,6 @@ namespace Game
             }
             else
             {
-
                 if ((rowNumberGeneratedSinceLastEmptyRow >= rowNumberSinceLastEmptyRow) & !lastRow.IsFull)
                 {
                     rowNumberGeneratedSinceLastEmptyRow = 0;
@@ -90,6 +88,16 @@ namespace Game
             }
             rowNumberGeneratedSinceLastEmptyRow++;
             lastRow = new PlatformRow(valuesForNewRow);
+        }
+
+        public IEnumerator<PlatformRow> GetEnumerator()
+        {
+            return platformRows.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
