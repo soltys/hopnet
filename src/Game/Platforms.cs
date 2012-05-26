@@ -53,7 +53,7 @@ namespace Game
             var valuesForNewRow = new bool[PlatformRow.RowLength];
             var randomGenerator = new Random();
 
-            if (lastRow.IsEmpty())
+            if (lastRow.IsEmpty)
             {
                 for (int i = 0; i < PlatformRow.RowLength; i++)
                 {
@@ -63,7 +63,7 @@ namespace Game
             else
             {
 
-                if ((rowNumberGeneratedSinceLastEmptyRow >= rowNumberSinceLastEmptyRow) & !lastRow.IsFull())
+                if ((rowNumberGeneratedSinceLastEmptyRow >= rowNumberSinceLastEmptyRow) & !lastRow.IsFull)
                 {
                     rowNumberGeneratedSinceLastEmptyRow = 0;
                     rowNumberSinceLastEmptyRow = randomGenerator.Next(minNonEmptyRowNumber, maxNonEmptyRowNumber + 1);

@@ -26,37 +26,46 @@ namespace Game
 
         public bool this[int i]
         {
-            get 
-            { 
-              return platformSettings[i]; 
+            get
+            {
+                return platformSettings[i];
             }
         }
 
-        public bool IsEmpty()
+        public bool IsEmpty
         {
-            for (int i = 0; i < RowLength; i++)
+            get
             {
-                if (platformSettings[i]) 
-                { 
-                    return false; 
-                }
-            }
-            return true;
-        }
-
-
-        public bool IsFull()
-        {
-            int counter = 0;
-            for (int i = 0; i < RowLength; i++)
-            {
-                if (platformSettings[i])
+                for (int i = 0; i < RowLength; i++)
                 {
-                    counter++;
+                    if (platformSettings[i])
+                    {
+                        return false;
+                    }
                 }
+                return true;
             }
-            if (counter == PlatformRow.RowLength) { return true; }
-            else { return false; }
+        }
+
+
+        public bool IsFull
+        {
+            get
+            {
+                int counter = 0;
+                for (int i = 0; i < RowLength; i++)
+                {
+                    if (platformSettings[i])
+                    {
+                        counter++;
+                    }
+                }
+                if (counter == RowLength)
+                {
+                    return true;
+                }
+                return false;
+            }
         }
     }
 }
