@@ -24,7 +24,6 @@ namespace Game
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-
         public HopnetGame()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -78,9 +77,6 @@ namespace Game
         protected override void Update(GameTime gameTime)
         {
             if (Keyboard.GetState().IsKeyDown(Keys.P)) { this.Exit(); }
-
-
-
             // TODO: Add your update logic here
             base.Update(gameTime);
         }
