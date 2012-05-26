@@ -14,12 +14,12 @@ namespace Game
         private const int maxCreatePlatformChance = 10;
 
         private const int minPlatformNumber = 2;
-        private const int maxPlatformNumber = 4;
+        private const int maxPlatformNumber = PlatformRow.RowLength-1;
         private PlatformRow lastRow=new PlatformRow();
         private int rowNumberSinceLastEmptyRow = 5;
         private int rowNumberGeneratedSinceLastEmptyRow = 0;
-        private const int minNonEmptyRowNumber = 5;
-        private const int maxNonEmptyRowNumber = 6;
+        private const int minNonEmptyRowNumber = 8;
+        private const int maxNonEmptyRowNumber = 12;
 
         private void GenerateNextRow()
         {
@@ -52,8 +52,6 @@ namespace Game
         {
             var valuesForNewRow = new bool[PlatformRow.RowLength];
             var randomGenerator = new Random();
-            int platformsCreated = 0;
-
 
             if (lastRow.IsEmpty())
             {
@@ -72,9 +70,9 @@ namespace Game
                 }
                 else
                 {
-                    int platformsToBeCreated = randomGenerator.Next(minPlatformNumber, maxPlatformNumber + 1);
-
-                    while (platformsCreated < platformsToBeCreated)
+                    int platformsCreated = 0;
+                    int requiredPlatformNumber = randomGenerator.Next(minPlatformNumber, maxPlatformNumber + 1);
+                    while (platformsCreated < requiredPlatformNumber-1)
                     {
                         for (int i = 0; i < PlatformRow.RowLength; i++)
                         {
