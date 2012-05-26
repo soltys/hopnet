@@ -8,23 +8,22 @@ namespace Game
     class Platforms
     {
         private readonly LinkedList<PlatformRow> platformRows = new LinkedList<PlatformRow>();
-        private const int numberOfLanes = 5;
+        private const int lanesNumber = 5;
 
-        private const int chanceToCreatePlatform = 4;
-        private const int maxValueOfChanceToCreatePlatform = 10;
+        private const int createPlatformChance = 4;
+        private const int maxCreatePlatformChance = 10;
 
-        private const int minPlatformsToBeCreated = 2;
-        private const int maxPlatformsToBeCreated = 4;
-        private PlatformRow rowToBeAdded;
-        private int numberOfRowsSinceLastEmptyRow = 5;
-        private int numberOfGeneratedRowsSinceLastEmptyRow = 0;
-        private const int minNumberOfNonEmptyRows = 3;
-        private const int maxNumberOfNonEmptyRows = 6;
-
+        private const int minPlatformNumber = 2;
+        private const int maxPlatformNumber = PlatformRow.RowLength-1;
+        private PlatformRow lastRow=new PlatformRow();
+        private int rowNumberSinceLastEmptyRow = 5;
+        private int rowNumberGeneratedSinceLastEmptyRow = 0;
+        private const int minNonEmptyRowNumber = 8;
+        private const int maxNonEmptyRowNumber = 12;
 
         private void GenerateNextRow()
         {
-            platformRows.AddFirst(rowToBeAdded);
+            platformRows.AddFirst(lastRow);
         }
 
         private void RemoveLastRow()
@@ -34,10 +33,12 @@ namespace Game
 
         public Platforms()
         {
-            for (int i = 0; i < numberOfLanes; i++)
+            for (int i = 0; i < lanesNumber; i++)
             {
                 GenerateNextRow();
             }
+            lastRow = platformRows.Last();
+
         }
 
         public void UpdatePlatforms()
@@ -51,34 +52,33 @@ namespace Game
         {
             var valuesForNewRow = new bool[PlatformRow.RowLength];
             var randomGenerator = new Random();
-            int platformsCreated = 0;
-            var lastAddedRow = platformRows.Last();
 
-            if (numberOfGeneratedRowsSinceLastEmptyRow >= numberOfRowsSinceLastEmptyRow)
+            if (lastRow.IsEmpty())
             {
-                numberOfGeneratedRowsSinceLastEmptyRow = 0;
-                numberOfRowsSinceLastEmptyRow = randomGenerator.Next(minNumberOfNonEmptyRows, maxNumberOfNonEmptyRows + 1);
+                for (int i = 0; i < PlatformRow.RowLength; i++)
+                {
+                    valuesForNewRow[i] = true;
+                }
             }
             else
             {
-                if (lastAddedRow.IsEmpty())
+
+                if ((rowNumberGeneratedSinceLastEmptyRow >= rowNumberSinceLastEmptyRow) & !lastRow.IsFull())
                 {
-                    for (int i = 0; i < PlatformRow.RowLength; i++)
-                    {
-                        valuesForNewRow[i] = true;
-                    }
+                    rowNumberGeneratedSinceLastEmptyRow = 0;
+                    rowNumberSinceLastEmptyRow = randomGenerator.Next(minNonEmptyRowNumber, maxNonEmptyRowNumber + 1);
                 }
                 else
                 {
-                    int platformsToBeCreated = randomGenerator.Next(minPlatformsToBeCreated, maxPlatformsToBeCreated + 1);
-
-                    while (platformsCreated < platformsToBeCreated)
+                    int platformsCreated = 0;
+                    int requiredPlatformNumber = randomGenerator.Next(minPlatformNumber, maxPlatformNumber + 1);
+                    while (platformsCreated < requiredPlatformNumber-1)
                     {
                         for (int i = 0; i < PlatformRow.RowLength; i++)
                         {
                             if (!valuesForNewRow[i])
                             {
-                                if (randomGenerator.Next(maxValueOfChanceToCreatePlatform) > chanceToCreatePlatform)
+                                if (randomGenerator.Next(maxCreatePlatformChance) > createPlatformChance)
                                 {
                                     valuesForNewRow[i] = true;
                                     platformsCreated++;
@@ -88,9 +88,8 @@ namespace Game
                     }
                 }
             }
-
-            numberOfGeneratedRowsSinceLastEmptyRow++;
-            rowToBeAdded = new PlatformRow(valuesForNewRow);
+            rowNumberGeneratedSinceLastEmptyRow++;
+            lastRow = new PlatformRow(valuesForNewRow);
         }
     }
 }
