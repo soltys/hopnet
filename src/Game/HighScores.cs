@@ -80,10 +80,7 @@ namespace Game
                 }
             }
         }
-        public void SortDescending()
-        {
-            scores = scores.OrderByDescending(s => s.Points).ThenBy(s => s.Name).ToList<Score>();
-        }
+
         public IEnumerator<Score> GetEnumerator()
         {
             return scores.GetEnumerator();
