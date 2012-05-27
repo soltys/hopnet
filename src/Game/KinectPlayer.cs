@@ -1,6 +1,5 @@
 ﻿using Microsoft.Kinect;
 
-
 namespace Game
 {
     class KinectPlayer
