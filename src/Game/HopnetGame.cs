@@ -30,7 +30,7 @@ namespace Game
         Hero heroModel;
         SpriteFont debugFont;
         Vector3 cameraPosition;
-        bool moveOlnyOnceRight;
+        bool moveOnlyOnceRight;
         bool moveOlnyOnceLeft;
 
         // The aspect ratio determines how to scale 3d to 2d projection.
@@ -38,7 +38,6 @@ namespace Game
 
         // The array that determines in which column the platform must be drawn
         private bool[] RowFromGenerator = { true, true, true, true, true };
-        private float[] columnPositionX = { -8.0f, -4.0f, 0.0f, 4.0f, 8.0f };
 
         //The constants that define range of board
         const float EndOfBoardPositionZ = 13.0f;
@@ -47,8 +46,8 @@ namespace Game
         const float SpeedOfPlatforms = 0.1f;
         int counterForNextRowAppearence = 0;
 
-        bool playerCanJump = false;
-        float safeRangeForJump = 0.5f;
+        bool playerCanJump;
+        private const float safeRangeForJump = 0.5f;
 
         public HopnetGame()
         {
@@ -56,7 +55,6 @@ namespace Game
             Content.RootDirectory = "Content";
         }
 
-        public List<float> ListaFloatow;
 
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
@@ -66,21 +64,21 @@ namespace Game
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
             graphics.PreferredBackBufferHeight = 600;
             graphics.PreferredBackBufferWidth = 1000;
             graphics.IsFullScreen = false;
             graphics.ApplyChanges();
 
             cameraPosition = new Vector3(0.0f, 5.0f, 10.0f);
-            moveOlnyOnceRight = true;
+            moveOnlyOnceRight = true;
             moveOlnyOnceLeft = true;
             platformList = new List<Platform>();
-            ListaFloatow = new List<float>();
-            ObjectArrangementIn3D heroArrangement = new ObjectArrangementIn3D();
-            heroArrangement.Position = new Vector3(0.0f, 0.5f, 9.0f);
-            heroArrangement.Scale = new Vector3(0.5f, 0.5f, 0.5f);
-            heroArrangement.Rotation = new Vector3(0.0f);
+            var heroArrangement = new ObjectArrangementIn3D
+                                      {
+                                          Position = new Vector3(0.0f, 0.5f, 9.0f),
+                                          Scale = new Vector3(0.5f, 0.5f, 0.5f),
+                                          Rotation = new Vector3(0.0f)
+                                      };
             heroModel = new Hero(heroArrangement);
 
             CreatePlatforms(5, -8.0f, 4.0f);
@@ -88,22 +86,18 @@ namespace Game
             base.Initialize();
         }
 
-        void CreatePlatforms(int PlatformCount, float FirstPlatformPosition, float DistanceBetweenPlatforms)
+        void CreatePlatforms(int platformCount, float firstPlatformPosition, float distanceBetweenPlatforms)
         {
 
-            for (int i = 0; i < PlatformCount; i++)
+            for (int i = 0; i < platformCount; i++)
             {
                 if (RowFromGenerator[i] == true)
                 {
                     ObjectArrangementIn3D platformArrangement = new ObjectArrangementIn3D();
-                    platformArrangement.Position = new Vector3(FirstPlatformPosition + (float)i * DistanceBetweenPlatforms, 0.0f, BeginningOfBoardPositionZ);
+                    platformArrangement.Position = new Vector3(firstPlatformPosition + i * distanceBetweenPlatforms, 0.0f, BeginningOfBoardPositionZ);
                     platformArrangement.Scale = new Vector3(0.5f);
                     platformArrangement.Rotation = new Vector3(0.0f);
-                    platformList.Add(new Platform(platformArrangement, this.Content));
-                }
-                else
-                {
-                    continue;
+                    platformList.Add(new Platform(platformArrangement, Content));
                 }
             }
         }
@@ -120,17 +114,17 @@ namespace Game
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             debugFont = Content.Load<SpriteFont>("myFont");
-            heroModel.objectMesh = Content.Load<Model>("Models\\hero");
+            heroModel.Mesh = Content.Load<Model>(@"Models\hero");
 
-            platformModel = Content.Load<Model>("Models\\platforma");
+            platformModel = Content.Load<Model>(@"Models\platforma");
 
-            foreach (Platform platform in platformList)
+            foreach (var platform in platformList)
             {
-                platform.objectMesh = platformModel;
+                platform.Mesh = platformModel;
             }
 
 
-            aspectRatio = (float)graphics.GraphicsDevice.Viewport.Width / (float)graphics.GraphicsDevice.Viewport.Height;
+            aspectRatio = (float)graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height;
 
 
             logger.Trace("Load Content ends");
@@ -177,10 +171,7 @@ namespace Game
                     playerCanJump = true;
                     break;
                 }
-                else
-                {
-                    playerCanJump = false;
-                }
+                playerCanJump = false;
             }
         }
 
@@ -202,10 +193,9 @@ namespace Game
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (Keyboard.GetState().IsKeyDown(Keys.P)) { this.Exit(); }
-            // TODO: Add your update logic here
+            if (Keyboard.GetState().IsKeyDown(Keys.P)) { Exit(); }
 
-            KeyboardState keyState = Keyboard.GetState();
+            var keyState = Keyboard.GetState();
 
             MovePlatforms();
             AddNewPlatforms();
@@ -214,20 +204,20 @@ namespace Game
 
             if (keyState.IsKeyDown(Keys.Right))
             {
-                if (moveOlnyOnceRight && playerCanJump)
+                if (moveOnlyOnceRight && playerCanJump)
                 {
                     if (heroModel.CurrentPlatformPosition < 4)
                     {
                         heroModel.MoveRight();
                     }
-                    moveOlnyOnceRight = false;
+                    moveOnlyOnceRight = false;
                     playerCanJump = false;
                 }
             }
 
             if (keyState.IsKeyUp(Keys.Right))
             {
-                moveOlnyOnceRight = true;
+                moveOnlyOnceRight = true;
             }
 
 
@@ -243,8 +233,6 @@ namespace Game
                     moveOlnyOnceLeft = false;
                     playerCanJump = false;
                 }
-
-
             }
 
             if (keyState.IsKeyUp(Keys.Left))
@@ -263,7 +251,6 @@ namespace Game
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
 
             foreach (var platform in platformList)
             {
