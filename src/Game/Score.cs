@@ -26,11 +26,11 @@ namespace Game
             {
                 return 1;
             }
-            if (this.Points == other.Points)
+            if (Points == other.Points)
             {
-                return this.Name.CompareTo(other.Name);
+                return Name.CompareTo(other.Name);
             }
-            return this.Points.CompareTo(other.Points);
+            return Points.CompareTo(other.Points);
         }
     }
 }

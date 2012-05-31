@@ -4,6 +4,9 @@ namespace Game
 {
     class PlatformRow
     {
+        public const int RowLength = 5;
+        private readonly bool[] platformSettings = new bool[RowLength];
+
         public PlatformRow(bool[] platformSettings)
         {
             if (platformSettings.Length != RowLength)
@@ -13,7 +16,6 @@ namespace Game
             this.platformSettings = platformSettings;
         }
 
-
         public PlatformRow()
         {
             for (int i = 0; i < RowLength; i++)
@@ -22,21 +24,48 @@ namespace Game
             }
         }
 
-        public const int RowLength = 5;
-        private readonly bool[] platformSettings = new bool[RowLength];
         public bool this[int i]
         {
-            get { return platformSettings[i]; }
+            get
+            {
+                return platformSettings[i];
+            }
         }
 
-        public bool IsEmpty()
+        public bool IsEmpty
         {
-            for (int i = 0; i < RowLength; i++)
+            get
             {
-                if (platformSettings[i]) { return false; }
+                for (int i = 0; i < RowLength; i++)
+                {
+                    if (platformSettings[i])
+                    {
+                        return false;
+                    }
+                }
+                return true;
             }
+        }
 
-            return true;
+
+        public bool IsFull
+        {
+            get
+            {
+                int counter = 0;
+                for (int i = 0; i < RowLength; i++)
+                {
+                    if (platformSettings[i])
+                    {
+                        counter++;
+                    }
+                }
+                if (counter == RowLength)
+                {
+                    return true;
+                }
+                return false;
+            }
         }
     }
 }
