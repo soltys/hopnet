@@ -31,13 +31,13 @@ namespace Game
         SpriteFont debugFont;
         Vector3 cameraPosition;
         bool moveOnlyOnceRight;
-        bool moveOlnyOnceLeft;
+        bool moveOnlyOnceLeft;
 
         // The aspect ratio determines how to scale 3d to 2d projection.
         float aspectRatio;
 
         // The array that determines in which column the platform must be drawn
-        private bool[] RowFromGenerator = { true, true, true, true, true };
+        private readonly bool[] rowFromGenerator = { true, true, true, true, true };
 
         //The constants that define range of board
         const float EndOfBoardPositionZ = 13.0f;
@@ -46,7 +46,7 @@ namespace Game
         const float SpeedOfPlatforms = 0.1f;
         int counterForNextRowAppearence = 0;
 
-        bool playerCanJump;
+
         private const float safeRangeForJump = 0.5f;
 
         public HopnetGame()
@@ -71,7 +71,7 @@ namespace Game
 
             cameraPosition = new Vector3(0.0f, 5.0f, 10.0f);
             moveOnlyOnceRight = true;
-            moveOlnyOnceLeft = true;
+            moveOnlyOnceLeft = true;
             platformList = new List<Platform>();
             var heroArrangement = new ObjectArrangementIn3D
                                       {
@@ -91,7 +91,7 @@ namespace Game
 
             for (int i = 0; i < platformCount; i++)
             {
-                if (RowFromGenerator[i] == true)
+                if (rowFromGenerator[i] == true)
                 {
                     ObjectArrangementIn3D platformArrangement = new ObjectArrangementIn3D();
                     platformArrangement.Position = new Vector3(firstPlatformPosition + i * distanceBetweenPlatforms, 0.0f, BeginningOfBoardPositionZ);
@@ -161,18 +161,20 @@ namespace Game
 
 
 
-        private void CheckIfPlayerCanJump()
+        private bool IsPlayerCanJump()
         {
             foreach (Platform platform in platformList)
             {
                 if (platform.ObjectArrangement.Position.Z < heroModel.ObjectArrangement.Position.Z + safeRangeForJump
                     && platform.ObjectArrangement.Position.Z > heroModel.ObjectArrangement.Position.Z - safeRangeForJump)
                 {
-                    playerCanJump = true;
-                    break;
+                    //  playerCanJump = true;
+                    return true;
                 }
-                playerCanJump = false;
+                // playerCanJump = false;
+                return false;
             }
+            return false;
         }
 
         private void AddNewPlatforms()
@@ -200,7 +202,7 @@ namespace Game
             MovePlatforms();
             AddNewPlatforms();
             RemovePlatformsAtEnd();
-            CheckIfPlayerCanJump();
+            bool playerCanJump = IsPlayerCanJump();
 
             if (keyState.IsKeyDown(Keys.Right))
             {
@@ -223,21 +225,21 @@ namespace Game
 
             if (keyState.IsKeyDown(Keys.Left))
             {
-                if (moveOlnyOnceLeft && playerCanJump)
+                if (moveOnlyOnceLeft && playerCanJump)
                 {
                     if (heroModel.CurrentPlatformPosition > 0)
                     {
                         heroModel.MoveLeft();
                     }
 
-                    moveOlnyOnceLeft = false;
+                    moveOnlyOnceLeft = false;
                     playerCanJump = false;
                 }
             }
 
             if (keyState.IsKeyUp(Keys.Left))
             {
-                moveOlnyOnceLeft = true;
+                moveOnlyOnceLeft = true;
             }
 
             base.Update(gameTime);
@@ -261,7 +263,6 @@ namespace Game
             spriteBatch.Begin();
             spriteBatch.DrawString(debugFont, "PlayerPos:" + heroModel.ObjectArrangement.Position.ToString(), new Vector2(0, 100), Color.White);
             spriteBatch.DrawString(debugFont, "CurrentPlatformPos:" + heroModel.CurrentPlatformPosition.ToString(), new Vector2(0, 120), Color.White);
-            spriteBatch.DrawString(debugFont, "playerCanJump:" + playerCanJump.ToString(), new Vector2(0, 140), Color.White);
 
             spriteBatch.End();
 
