@@ -84,6 +84,7 @@
   <ItemGroup>
     <Compile Include="HighScores.cs" />
     <Compile Include="KinectPlayer.cs" />
+    <Compile Include="Objects.cs" />
     <Compile Include="PlatformRow.cs" />
     <Compile Include="Platforms.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
