@@ -32,3 +32,4 @@ obj/
 _ReSharper*/
 [Tt]est[Rr]esult*
 src/unit_test_project.VisualState.xml
+*.cachefile

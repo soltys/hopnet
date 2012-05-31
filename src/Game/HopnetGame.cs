@@ -28,7 +28,7 @@ namespace Game
         Model platformModel;
 
         Hero heroModel;
-        SpriteFont DebugFont;
+        SpriteFont debugFont;
         Vector3 cameraPosition;
         bool moveOlnyOnceRight;
         bool moveOlnyOnceLeft;
@@ -38,7 +38,7 @@ namespace Game
 
         // The array that determines in which column the platform must be drawn
         private bool[] RowFromGenerator = { true, true, true, true, true };
-        private float[] ColumnPositionX = { -8.0f, -4.0f, 0.0f, 4.0f, 8.0f };
+        private float[] columnPositionX = { -8.0f, -4.0f, 0.0f, 4.0f, 8.0f };
 
         //The constants that define range of board
         const float EndOfBoardPositionZ = 13.0f;
@@ -119,7 +119,7 @@ namespace Game
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            DebugFont = Content.Load<SpriteFont>("myFont");
+            debugFont = Content.Load<SpriteFont>("myFont");
             heroModel.objectMesh = Content.Load<Model>("Models\\hero");
 
             platformModel = Content.Load<Model>("Models\\platforma");
@@ -272,9 +272,9 @@ namespace Game
             heroModel.Draw(aspectRatio, cameraPosition);
 
             spriteBatch.Begin();
-            spriteBatch.DrawString(DebugFont, "PlayerPos:" + heroModel.ObjectArrangement.Position.ToString(), new Vector2(0, 100), Color.White);
-            spriteBatch.DrawString(DebugFont, "CurrentPlatformPos:" + heroModel.CurrentPlatformPosition.ToString(), new Vector2(0, 120), Color.White);
-            spriteBatch.DrawString(DebugFont, "playerCanJump:" + playerCanJump.ToString(), new Vector2(0, 140), Color.White);
+            spriteBatch.DrawString(debugFont, "PlayerPos:" + heroModel.ObjectArrangement.Position.ToString(), new Vector2(0, 100), Color.White);
+            spriteBatch.DrawString(debugFont, "CurrentPlatformPos:" + heroModel.CurrentPlatformPosition.ToString(), new Vector2(0, 120), Color.White);
+            spriteBatch.DrawString(debugFont, "playerCanJump:" + playerCanJump.ToString(), new Vector2(0, 140), Color.White);
 
             spriteBatch.End();
 
