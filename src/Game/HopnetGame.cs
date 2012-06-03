@@ -26,7 +26,7 @@ namespace Game
 
         List<Platform> platformList;
         Model platformModel;
-
+        PlatformCollection platformGenerator;
         Hero heroModel;
         SpriteFont debugFont;
         Vector3 cameraPosition;
@@ -37,7 +37,7 @@ namespace Game
         float aspectRatio;
 
         // The array that determines in which column the platform must be drawn
-        private readonly bool[] rowFromGenerator = { true, true, true, true, true };
+        private bool[] rowFromGenerator = new bool[PlatformRow.RowLength];
 
         //The constants that define range of board
         const float EndOfBoardPositionZ = 13.0f;
@@ -73,6 +73,7 @@ namespace Game
             moveOnlyOnceRight = true;
             moveOnlyOnceLeft = true;
             platformList = new List<Platform>();
+            platformGenerator=new PlatformCollection();
             var heroArrangement = new ObjectArrangementIn3D
                                       {
                                           Position = new Vector3(0.0f, 0.5f, 9.0f),
@@ -88,6 +89,8 @@ namespace Game
 
         void CreatePlatforms(int platformCount, float firstPlatformPosition, float distanceBetweenPlatforms)
         {
+            platformGenerator.UpdatePlatforms();
+            rowFromGenerator = platformGenerator.GetLastAddedRowValues;
 
             for (int i = 0; i < platformCount; i++)
             {
@@ -168,19 +171,17 @@ namespace Game
                 if (platform.ObjectArrangement.Position.Z < heroModel.ObjectArrangement.Position.Z + safeRangeForJump
                     && platform.ObjectArrangement.Position.Z > heroModel.ObjectArrangement.Position.Z - safeRangeForJump)
                 {
-                    //  playerCanJump = true;
                     return true;
                 }
-                // playerCanJump = false;
                 return false;
             }
             return false;
         }
 
+
         private void AddNewPlatforms()
         {
             counterForNextRowAppearence++;
-
             if (counterForNextRowAppearence == 60)
             {
                 CreatePlatforms(5, -8.0f, 4.0f);
@@ -193,55 +194,56 @@ namespace Game
         /// checking for collisions, gathering input, and playing audio.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
+        /// 
+
         protected override void Update(GameTime gameTime)
         {
             if (Keyboard.GetState().IsKeyDown(Keys.P)) { Exit(); }
-
             var keyState = Keyboard.GetState();
+                MovePlatforms();
+                AddNewPlatforms();
+                RemovePlatformsAtEnd();
+                #region player controls
+                bool playerCanJump = IsPlayerCanJump();
 
-            MovePlatforms();
-            AddNewPlatforms();
-            RemovePlatformsAtEnd();
-            bool playerCanJump = IsPlayerCanJump();
-
-            if (keyState.IsKeyDown(Keys.Right))
-            {
-                if (moveOnlyOnceRight && playerCanJump)
+                if (keyState.IsKeyDown(Keys.Right))
                 {
-                    if (heroModel.CurrentPlatformPosition < 4)
+                    if (moveOnlyOnceRight && playerCanJump)
                     {
-                        heroModel.MoveRight();
+                        if (heroModel.CurrentPlatformPosition < 4)
+                        {
+                            heroModel.MoveRight();
+                        }
+                        moveOnlyOnceRight = false;
+                        playerCanJump = false;
                     }
-                    moveOnlyOnceRight = false;
-                    playerCanJump = false;
                 }
-            }
 
-            if (keyState.IsKeyUp(Keys.Right))
-            {
-                moveOnlyOnceRight = true;
-            }
-
-
-            if (keyState.IsKeyDown(Keys.Left))
-            {
-                if (moveOnlyOnceLeft && playerCanJump)
+                if (keyState.IsKeyUp(Keys.Right))
                 {
-                    if (heroModel.CurrentPlatformPosition > 0)
-                    {
-                        heroModel.MoveLeft();
-                    }
-
-                    moveOnlyOnceLeft = false;
-                    playerCanJump = false;
+                    moveOnlyOnceRight = true;
                 }
-            }
 
-            if (keyState.IsKeyUp(Keys.Left))
-            {
-                moveOnlyOnceLeft = true;
-            }
 
+                if (keyState.IsKeyDown(Keys.Left))
+                {
+                    if (moveOnlyOnceLeft && playerCanJump)
+                    {
+                        if (heroModel.CurrentPlatformPosition > 0)
+                        {
+                            heroModel.MoveLeft();
+                        }
+
+                        moveOnlyOnceLeft = false;
+                        playerCanJump = false;
+                    }
+                }
+
+                if (keyState.IsKeyUp(Keys.Left))
+                {
+                    moveOnlyOnceLeft = true;
+                }
+                #endregion
             base.Update(gameTime);
         }
 
