@@ -6,6 +6,10 @@ namespace Game
     {
         public const int RowLength = 5;
         private readonly bool[] platformSettings = new bool[RowLength];
+        public bool []platformValues
+        {
+            get { return platformSettings; }
+        }
 
         public PlatformRow(bool[] platformSettings)
         {
@@ -20,7 +24,7 @@ namespace Game
         {
             for (int i = 0; i < RowLength; i++)
             {
-                platformSettings[i] = true;
+                    platformSettings[i] = true;
             }
         }
 
