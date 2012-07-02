@@ -43,7 +43,8 @@ namespace Game
         const float EndOfBoardPositionZ = 13.0f;
         const float BeginningOfBoardPositionZ = -26.0f;
 
-        const float SpeedOfPlatforms = 0.1f;
+        static int factorOfAcceleration = 4;
+        static float SpeedOfPlatforms = 0.1f * factorOfAcceleration;
         int counterForNextRowAppearence = 0;
 
 
@@ -182,7 +183,7 @@ namespace Game
         private void AddNewPlatforms()
         {
             counterForNextRowAppearence++;
-            if (counterForNextRowAppearence == 60)
+            if (counterForNextRowAppearence == 60 / factorOfAcceleration)
             {
                 CreatePlatforms(5, -8.0f, 4.0f);
                 counterForNextRowAppearence = 0;
