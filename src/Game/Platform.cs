@@ -6,11 +6,11 @@ namespace Game
 {
     class Platform : Object
     {
-        public Platform(ObjectArrangementIn3D platformArrangement, ContentManager Content)
+        public Platform(ObjectArrangementIn3D platformArrangement)
             : base()
         {
             base.ArrangeObjectOnScene(platformArrangement);
-            Mesh = Content.Load<Model>("Models\\platforma");
+            //Mesh = Content.Load<Model>("Models\\platforma");
         }
 
         public void MoveInAxisZ(float MoveValue)

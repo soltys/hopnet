@@ -85,6 +85,7 @@
     <Compile Include="Hero.cs" />
     <Compile Include="HighScores.cs" />
     <Compile Include="KinectPlayer.cs" />
+    <Compile Include="MainMenu.cs" />
     <Compile Include="Object.cs" />
     <Compile Include="ObjectArrangementIn3D.cs" />
     <Compile Include="Platform.cs" />
@@ -94,6 +95,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="HopnetGame.cs" />
     <Compile Include="Score.cs" />
+    <Compile Include="Sprite.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />
