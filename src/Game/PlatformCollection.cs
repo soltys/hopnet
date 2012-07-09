@@ -8,17 +8,15 @@ namespace Game
     {
         private readonly LinkedList<PlatformRow> platformRows = new LinkedList<PlatformRow>();
         public const int lanesNumber = 5;
+        
 
-        private const int createPlatformChance = 4;
-        private const int maxCreatePlatformChance = 10;
-
-        private const int minPlatformNumber = 3;
-        private const int maxPlatformNumber = 4;
         private PlatformRow lastRow = new PlatformRow();
-        private int rowNumberSinceLastEmptyRow = 7;
-        private int rowNumberGeneratedSinceLastEmptyRow = 0;
-        private const int minNonEmptyRowNumber = 8;
-        private const int maxNonEmptyRowNumber = 12;
+        private int platformsRequiredToChangeDirection;
+        private int platformsGeneratedAfterDirectionChange = 0;
+        private const int maxPlatformsRequiredToChangeDirection = 2;
+        private const int minPlatformsRequiredToChangeDirection = 0;
+        private int lastInsertedPlatformIndex;
+        private enum Direction : int { Left, Right };
 
         private void GenerateNextRow()
         {
@@ -37,11 +35,20 @@ namespace Game
                 GenerateNextRow();
             }
             lastRow = platformRows.Last();
+            platformsRequiredToChangeDirection = maxPlatformsRequiredToChangeDirection;
+            for (int i = 0; i < PlatformRow.rowLength; i++)
+            {
+                if (lastRow.PlatformValues[i]) 
+                { 
+                    lastInsertedPlatformIndex = i;
+                    break; 
+                }
+            }
         }
 
-        public bool []GetLastAddedRowValues
+        public bool[] GetLastAddedRowValues
         {
-            get { return lastRow.platformValues; }
+            get { return lastRow.PlatformValues; }
         }
 
 
@@ -54,49 +61,50 @@ namespace Game
 
         private void CalculatePlatformsForNewRow()
         {
-            var valuesForNewRow = new bool[PlatformRow.RowLength];
-            var randomGenerator = new Random();
-            if (lastRow.IsEmpty)
-            {
-                for (int i = 0; i < PlatformRow.RowLength; i++)
+            var valuesForNewRow = new bool[PlatformRow.rowLength];
+
+                if (platformsGeneratedAfterDirectionChange >= platformsRequiredToChangeDirection)
                 {
-                    valuesForNewRow[i] = true;
-                }
-            }
-            else
-            {
-                if ((rowNumberGeneratedSinceLastEmptyRow > rowNumberSinceLastEmptyRow) & !lastRow.IsFull)
-                {
-                    rowNumberGeneratedSinceLastEmptyRow = 0;
-                    rowNumberSinceLastEmptyRow = randomGenerator.Next(minNonEmptyRowNumber, maxNonEmptyRowNumber + 1);
+                    var randomGenerator = new Random();
+                    int randomValue;
+
+                    platformsRequiredToChangeDirection = randomGenerator.Next(
+                        minPlatformsRequiredToChangeDirection,
+                        maxPlatformsRequiredToChangeDirection + 1);
+                    platformsGeneratedAfterDirectionChange = 0;
+
+
+                    switch (lastInsertedPlatformIndex)
+                    {
+                        case 0:
+                            randomValue = (int)Direction.Right;
+                            break;
+                        case (PlatformRow.rowLength - 1):
+                            randomValue = (int)Direction.Left;
+                            break;
+                        default:
+                            randomValue = randomGenerator.Next((int)Direction.Left,(int)Direction.Right+1);
+                            break;
+                    }
+
+                    if (randomValue == (int)Direction.Left)
+                    {
+                        valuesForNewRow[lastInsertedPlatformIndex - 1] = true;
+                        lastInsertedPlatformIndex--;
+                    }
+                    else
+                    {
+                        valuesForNewRow[lastInsertedPlatformIndex + 1] = true;
+                        lastInsertedPlatformIndex++;
+                    }
+                    lastRow = new PlatformRow(valuesForNewRow);
                 }
                 else
                 {
-                    int platformsCreated = 0;
-                    int requiredPlatformNumber = randomGenerator.Next(minPlatformNumber, maxPlatformNumber + 1);
-                    bool createMorePlatforms = true;
-                    while (createMorePlatforms)
-                    {
-                        for (int i = 0; i < PlatformRow.RowLength; i++)
-                        {
-                            if (!valuesForNewRow[i] & (platformsCreated < requiredPlatformNumber))
-                            {
-                                if (randomGenerator.Next(maxCreatePlatformChance) > createPlatformChance)
-                                {
-                                    valuesForNewRow[i] = true;
-                                    platformsCreated++;
-                                }
-                            }
-                            else if(platformsCreated >= requiredPlatformNumber)
-                            {
-                                createMorePlatforms=false;
-                            }
-                        }
-                    }
+                    platformsGeneratedAfterDirectionChange++;
                 }
-            }
-            rowNumberGeneratedSinceLastEmptyRow++;
-            lastRow = new PlatformRow(valuesForNewRow);
+
+            
         }
 
         public IEnumerator<PlatformRow> GetEnumerator()

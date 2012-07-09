@@ -23,11 +23,12 @@ namespace Game
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-
+        MainMenu mainMenu;
         List<Platform> platformList;
         Model platformModel;
         PlatformCollection platformGenerator;
-        Hero heroModel;
+        Hero player;
+        Model heroModel;
         SpriteFont debugFont;
         Vector3 cameraPosition;
         bool moveOnlyOnceRight;
@@ -37,15 +38,18 @@ namespace Game
         float aspectRatio;
 
         // The array that determines in which column the platform must be drawn
-        private bool[] rowFromGenerator = new bool[PlatformRow.RowLength];
+        private bool[] rowFromGenerator = new bool[PlatformRow.rowLength];
 
         //The constants that define range of board
         const float EndOfBoardPositionZ = 13.0f;
         const float BeginningOfBoardPositionZ = -26.0f;
 
-        const float SpeedOfPlatforms = 0.1f;
+        const float SpeedOfPlatforms = 1f;
         int counterForNextRowAppearence = 0;
-
+        int timeBeforeNewPlatformAppear = 6;
+        float DistanceBetweenPlatforms = 4.0f;
+        int PlatformCount = 5;
+        float FirstPlatformPosition = -8.0f;
 
         private const float safeRangeForJump = 0.5f;
 
@@ -64,14 +68,18 @@ namespace Game
         /// </summary>
         protected override void Initialize()
         {
-            graphics.PreferredBackBufferHeight = 600;
-            graphics.PreferredBackBufferWidth = 1000;
+            graphics.PreferredBackBufferWidth = 1280;
+            graphics.PreferredBackBufferHeight = 720;
             graphics.IsFullScreen = false;
+            IsMouseVisible = true;
             graphics.ApplyChanges();
+
 
             cameraPosition = new Vector3(0.0f, 5.0f, 10.0f);
             moveOnlyOnceRight = true;
             moveOnlyOnceLeft = true;
+            mainMenu = new MainMenu(graphics);
+
             platformList = new List<Platform>();
             platformGenerator=new PlatformCollection();
             var heroArrangement = new ObjectArrangementIn3D
@@ -80,9 +88,9 @@ namespace Game
                                           Scale = new Vector3(0.5f, 0.5f, 0.5f),
                                           Rotation = new Vector3(0.0f)
                                       };
-            heroModel = new Hero(heroArrangement);
+            player = new Hero(heroArrangement);
 
-            CreatePlatforms(5, -8.0f, 4.0f);
+            CreatePlatforms(PlatformCount, FirstPlatformPosition, DistanceBetweenPlatforms);
 
             base.Initialize();
         }
@@ -100,7 +108,8 @@ namespace Game
                     platformArrangement.Position = new Vector3(firstPlatformPosition + i * distanceBetweenPlatforms, 0.0f, BeginningOfBoardPositionZ);
                     platformArrangement.Scale = new Vector3(0.5f);
                     platformArrangement.Rotation = new Vector3(0.0f);
-                    platformList.Add(new Platform(platformArrangement, Content));
+                    Platform newPlatform = new Platform(platformArrangement);
+                    platformList.Add(newPlatform);
                 }
             }
         }
@@ -117,14 +126,19 @@ namespace Game
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             debugFont = Content.Load<SpriteFont>("myFont");
-            heroModel.Mesh = Content.Load<Model>(@"Models\hero");
+            heroModel = Content.Load<Model>(@"Models\hero");
 
             platformModel = Content.Load<Model>(@"Models\platforma");
+            mainMenu.newGameSprite[0].LoadSprite(Content, @"Sprites\testsprite1");
+            mainMenu.newGameSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
 
-            foreach (var platform in platformList)
-            {
-                platform.Mesh = platformModel;
-            }
+            mainMenu.scoresSprite[0].LoadSprite(Content, @"Sprites\testsprite1");
+            mainMenu.scoresSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
+
+            mainMenu.exitSprite[0].LoadSprite(Content, @"Sprites\testsprite1");
+            mainMenu.exitSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
+
+            mainMenu.backgroundSprite.LoadSprite(Content, @"Sprites\testsprite1");
 
 
             aspectRatio = (float)graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height;
@@ -153,12 +167,9 @@ namespace Game
 
         private void RemovePlatformsAtEnd()
         {
-            for (int i = 0; i < platformList.Count; i++)
+            if (platformList[0].ObjectArrangement.Position.Z > EndOfBoardPositionZ)
             {
-                if (platformList[i].ObjectArrangement.Position.Z > EndOfBoardPositionZ)
-                {
-                    platformList.RemoveAt(i);
-                }
+                platformList.RemoveAt(0);
             }
         }
 
@@ -168,8 +179,8 @@ namespace Game
         {
             foreach (Platform platform in platformList)
             {
-                if (platform.ObjectArrangement.Position.Z < heroModel.ObjectArrangement.Position.Z + safeRangeForJump
-                    && platform.ObjectArrangement.Position.Z > heroModel.ObjectArrangement.Position.Z - safeRangeForJump)
+                if (platform.ObjectArrangement.Position.Z < player.ObjectArrangement.Position.Z + safeRangeForJump
+                    && platform.ObjectArrangement.Position.Z > player.ObjectArrangement.Position.Z - safeRangeForJump)
                 {
                     return true;
                 }
@@ -182,9 +193,9 @@ namespace Game
         private void AddNewPlatforms()
         {
             counterForNextRowAppearence++;
-            if (counterForNextRowAppearence == 60)
+            if (counterForNextRowAppearence == timeBeforeNewPlatformAppear)
             {
-                CreatePlatforms(5, -8.0f, 4.0f);
+                CreatePlatforms(PlatformCount, FirstPlatformPosition, DistanceBetweenPlatforms);
                 counterForNextRowAppearence = 0;
             }
         }
@@ -200,9 +211,12 @@ namespace Game
         {
             if (Keyboard.GetState().IsKeyDown(Keys.P)) { Exit(); }
             var keyState = Keyboard.GetState();
+                
                 MovePlatforms();
                 AddNewPlatforms();
                 RemovePlatformsAtEnd();
+                
+
                 #region player controls
                 bool playerCanJump = IsPlayerCanJump();
 
@@ -210,9 +224,9 @@ namespace Game
                 {
                     if (moveOnlyOnceRight && playerCanJump)
                     {
-                        if (heroModel.CurrentPlatformPosition < 4)
+                        if (player.CurrentPlatformPosition < 4)
                         {
-                            heroModel.MoveRight();
+                            player.MoveRight();
                         }
                         moveOnlyOnceRight = false;
                         playerCanJump = false;
@@ -229,9 +243,9 @@ namespace Game
                 {
                     if (moveOnlyOnceLeft && playerCanJump)
                     {
-                        if (heroModel.CurrentPlatformPosition > 0)
+                        if (player.CurrentPlatformPosition > 0)
                         {
-                            heroModel.MoveLeft();
+                            player.MoveLeft();
                         }
 
                         moveOnlyOnceLeft = false;
@@ -244,6 +258,7 @@ namespace Game
                     moveOnlyOnceLeft = true;
                 }
                 #endregion
+
             base.Update(gameTime);
         }
 
@@ -255,19 +270,22 @@ namespace Game
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-
+            
+            
             foreach (var platform in platformList)
             {
-                platform.Draw(aspectRatio, cameraPosition);
+                platform.Draw(aspectRatio, cameraPosition,platformModel);
             }
-            heroModel.Draw(aspectRatio, cameraPosition);
-
+            player.Draw(aspectRatio, cameraPosition,heroModel);
+            
+            
             spriteBatch.Begin();
-            spriteBatch.DrawString(debugFont, "PlayerPos:" + heroModel.ObjectArrangement.Position.ToString(), new Vector2(0, 100), Color.White);
-            spriteBatch.DrawString(debugFont, "CurrentPlatformPos:" + heroModel.CurrentPlatformPosition.ToString(), new Vector2(0, 120), Color.White);
-
+            spriteBatch.DrawString(debugFont, "platforms in list: " + platformList.Count.ToString(), new Vector2(0, 80), Color.Red);
+            spriteBatch.DrawString(debugFont, "PlayerPos:" + player.ObjectArrangement.Position.ToString(), new Vector2(0, 100), Color.Red);
+            spriteBatch.DrawString(debugFont, "CurrentPlatformPos:" + player.CurrentPlatformPosition.ToString(), new Vector2(0, 120), Color.Red);
             spriteBatch.End();
 
+            mainMenu.Draw(spriteBatch);
             base.Draw(gameTime);
         }
     }

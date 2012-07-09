@@ -4,16 +4,19 @@ namespace Game
 {
     class PlatformRow
     {
-        public const int RowLength = 5;
-        private readonly bool[] platformSettings = new bool[RowLength];
-        public bool []platformValues
+        public const int rowLength = 5;
+        private readonly bool[] platformSettings = new bool[rowLength];
+
+
+        public bool []PlatformValues
         {
             get { return platformSettings; }
         }
 
+
         public PlatformRow(bool[] platformSettings)
         {
-            if (platformSettings.Length != RowLength)
+            if (platformSettings.Length != rowLength)
             {
                 throw new ArgumentException();
             }
@@ -22,10 +25,7 @@ namespace Game
 
         public PlatformRow()
         {
-            for (int i = 0; i < RowLength; i++)
-            {
-                    platformSettings[i] = true;
-            }
+            platformSettings[rowLength / 2] = true;
         }
 
         public bool this[int i]
@@ -40,7 +40,7 @@ namespace Game
         {
             get
             {
-                for (int i = 0; i < RowLength; i++)
+                for (int i = 0; i < rowLength; i++)
                 {
                     if (platformSettings[i])
                     {
@@ -57,14 +57,14 @@ namespace Game
             get
             {
                 int counter = 0;
-                for (int i = 0; i < RowLength; i++)
+                for (int i = 0; i < rowLength; i++)
                 {
                     if (platformSettings[i])
                     {
                         counter++;
                     }
                 }
-                if (counter == RowLength)
+                if (counter == rowLength)
                 {
                     return true;
                 }
