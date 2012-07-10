@@ -46,8 +46,8 @@ namespace Game
 
         static int speedLevelFactor = 1;
         static float SpeedOfPlatforms = 0.1f * speedLevelFactor;
-
         int counterForNextRowAppearence = 0;
+        int timeBeforeNewPlatformAppear = 6;
         float DistanceBetweenPlatforms = 4.0f;
         int PlatformCount = 5;
         float FirstPlatformPosition = -8.0f;
