@@ -6,7 +6,7 @@ namespace Game
 {
     abstract class Object
     {
-        public Model Mesh { get; set; }
+        //public Model Mesh { get; set; }
 
         public ObjectArrangementIn3D ObjectArrangement;
 
@@ -28,19 +28,19 @@ namespace Game
             ObjectArrangement = objectArrangement;
         }
 
-        public void Draw(float aspectRatio, Vector3 cameraPosition)
+        public void Draw(float aspectRatio, Vector3 cameraPosition,Model mesh)
         {
-            transforms = new Matrix[Mesh.Bones.Count];
-            Mesh.CopyAbsoluteBoneTransformsTo(transforms);
+            transforms = new Matrix[mesh.Bones.Count];
+            mesh.CopyAbsoluteBoneTransformsTo(transforms);
 
-            foreach (var mesh in Mesh.Meshes)
+            foreach (var singleMesh in mesh.Meshes)
             {
                 // This is where the mesh orientation is set, as well as our camera and projection.
-                foreach (BasicEffect effect in mesh.Effects)
+                foreach (BasicEffect effect in singleMesh.Effects)
                 {
                     effect.EnableDefaultLighting();
 
-                    effect.World = transforms[mesh.ParentBone.Index] * Matrix.CreateRotationY(ObjectArrangement.Rotation.Y)
+                    effect.World = transforms[singleMesh.ParentBone.Index] * Matrix.CreateRotationY(ObjectArrangement.Rotation.Y)
                         * Matrix.CreateTranslation(ObjectArrangement.Position) * Matrix.CreateScale(ObjectArrangement.Scale);
 
                     effect.View = Matrix.CreateLookAt(cameraPosition, Vector3.Zero, Vector3.Up);
@@ -50,7 +50,7 @@ namespace Game
 
                 }
 
-                mesh.Draw();
+                singleMesh.Draw();
             }
         }
 
