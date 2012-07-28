@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using NLog;
-
+using Microsoft.Kinect;
 namespace Game
 {
     /// <summary>
@@ -17,6 +17,15 @@ namespace Game
     /// </summary>
     public class HopnetGame : Microsoft.Xna.Framework.Game
     {
+
+        KinectSensor kinect;
+        Texture2D colorVideo,depthVideo;
+        Skeleton[] skeletonData;
+        Skeleton skeleton;
+
+        Texture2D jointTexture; 
+
+
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -44,7 +53,7 @@ namespace Game
         const float EndOfBoardPositionZ = 13.0f;
         const float BeginningOfBoardPositionZ = -26.0f;
 
-        static int speedLevelFactor = 1;
+        static int speedLevelFactor = 5;
         static float SpeedOfPlatforms = 0.1f * speedLevelFactor;
 
         int counterForNextRowAppearence = 0;
@@ -76,6 +85,26 @@ namespace Game
             graphics.ApplyChanges();
 
 
+            colorVideo = new Texture2D(graphics.GraphicsDevice,320,240);
+            depthVideo = new Texture2D(graphics.GraphicsDevice, 320, 240) ;
+
+
+            try
+            {
+                kinect = KinectSensor.KinectSensors[0];
+                kinect.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+                kinect.DepthStream.Enable(DepthImageFormat.Resolution320x240Fps30);
+                kinect.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(kinect_AllFramesReady);
+                kinect.SkeletonStream.Enable();
+                kinect.Start();
+                colorVideo = new Texture2D(graphics.GraphicsDevice, kinect.ColorStream.FrameWidth, kinect.ColorStream.FrameHeight);
+                depthVideo = new Texture2D(graphics.GraphicsDevice, kinect.DepthStream.FrameWidth, kinect.DepthStream.FrameHeight);
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException();
+            }
+
             cameraPosition = new Vector3(0.0f, 5.0f, 10.0f);
             moveOnlyOnceRight = true;
             moveOnlyOnceLeft = true;
@@ -95,6 +124,91 @@ namespace Game
 
             base.Initialize();
         }
+
+        void kinect_AllFramesReady(object sender, AllFramesReadyEventArgs imageFrames)
+        {
+            //
+            // Color Frame 
+            //
+
+            //Get raw image
+            /*
+            ColorImageFrame colorVideoFrame = imageFrames.OpenColorImageFrame();
+
+            if (colorVideoFrame != null)
+            {
+                //Create array for pixel data and copy it from the image frame
+                Byte[] pixelData = new Byte[colorVideoFrame.PixelDataLength];
+                colorVideoFrame.CopyPixelDataTo(pixelData);
+
+                //Convert RGBA to BGRA
+                Byte[] bgraPixelData = new Byte[colorVideoFrame.PixelDataLength];
+                for (int i = 0; i < pixelData.Length; i += 4)
+                {
+                    bgraPixelData[i] = pixelData[i + 2];
+                    bgraPixelData[i + 1] = pixelData[i + 1];
+                    bgraPixelData[i + 2] = pixelData[i];
+                    bgraPixelData[i + 3] = (Byte)255; //The video comes with 0 alpha so it is transparent
+                }
+
+                // Create a texture and assign the realigned pixels
+                colorVideo = new Texture2D(graphics.GraphicsDevice, colorVideoFrame.Width, colorVideoFrame.Height);
+                colorVideo.SetData(bgraPixelData);
+            }
+            */
+
+
+
+            using (SkeletonFrame skeletonFrame = imageFrames.OpenSkeletonFrame())
+            {
+                if (skeletonFrame != null)
+                {
+                    if ((skeletonData == null) || (this.skeletonData.Length != skeletonFrame.SkeletonArrayLength))
+                    {
+                        this.skeletonData = new Skeleton[skeletonFrame.SkeletonArrayLength];
+                    }
+
+                    //Copy the skeleton data to our array
+                    skeletonFrame.CopySkeletonDataTo(this.skeletonData);
+                }            }
+
+            if (skeletonData != null)
+            {
+                foreach (Skeleton skel in skeletonData)
+                {
+                    if (skel.TrackingState == SkeletonTrackingState.Tracked)
+                    {
+                        skeleton = skel;
+                    }
+                }
+            }
+            mainMenu.Update(sender,skeleton);
+        }
+
+        private void DrawSkeleton(SpriteBatch spriteBatch, Vector2 resolution, Texture2D img)
+        {
+            if (skeleton != null)
+            {
+                spriteBatch.Begin();
+                foreach (Joint joint in skeleton.Joints)
+                {
+                    Vector2 position = new Vector2((((0.5f * joint.Position.X) +0.3f) * (resolution.X)),
+                        (((-0.5f * joint.Position.Y) + 0.3f) * (resolution.Y)));
+
+                        spriteBatch.Draw(img, new Rectangle(Convert.ToInt32(position.X), Convert.ToInt32(position.Y), 50, 50), Color.Red);
+
+
+                }
+                spriteBatch.End();
+            }
+        }
+
+
+
+
+
+
+
 
         void CreatePlatforms(int platformCount, float firstPlatformPosition, float distanceBetweenPlatforms)
         {
@@ -135,12 +249,24 @@ namespace Game
 
             mainMenu.scoresSprite[0].LoadSprite(Content, @"Sprites\testsprite1");
             mainMenu.scoresSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
+            mainMenu.scoresBackSprite.LoadSprite(Content, @"Sprites\testsprite1");
 
             mainMenu.exitSprite[0].LoadSprite(Content, @"Sprites\testsprite1");
             mainMenu.exitSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
 
+
+
             mainMenu.backgroundSprite.LoadSprite(Content, @"Sprites\testsprite1");
 
+
+
+
+            mainMenu.handSprite[0, 0].LoadSprite(Content, @"Sprites\cursor_left_normal");
+            mainMenu.handSprite[0, 1].LoadSprite(Content, @"Sprites\cursor_left_border");
+            mainMenu.handSprite[1, 0].LoadSprite(Content, @"Sprites\cursor_right_normal");
+            mainMenu.handSprite[1, 1].LoadSprite(Content, @"Sprites\cursor_right_border");
+
+            jointTexture = Content.Load<Texture2D>(@"Sprites\cursor_left_normal");
 
             aspectRatio = (float)graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height;
 
@@ -168,9 +294,12 @@ namespace Game
 
         private void RemovePlatformsAtEnd()
         {
-            if (platformList[0].ObjectArrangement.Position.Z > EndOfBoardPositionZ)
+            if (platformList.Count>0)
             {
-                platformList.RemoveAt(0);
+                if (platformList[0].ObjectArrangement.Position.Z > EndOfBoardPositionZ)
+                {
+                    platformList.RemoveAt(0);
+                }
             }
         }
 
@@ -210,13 +339,21 @@ namespace Game
 
         protected override void Update(GameTime gameTime)
         {
-            if (Keyboard.GetState().IsKeyDown(Keys.P)) { Exit(); }
+            if (Keyboard.GetState().IsKeyDown(Keys.P)) { UnloadContent(); Exit(); }
             var keyState = Keyboard.GetState();
-                
+             /*   
+            switch(mainMenu.IsGameInMenuMode)
+            {
+                case false:
                 MovePlatforms();
                 AddNewPlatforms();
                 RemovePlatformsAtEnd();
-                
+                break;
+                case true:
+                //if (mainMenu.State == (int)Game.MainMenu.CurrentState.OnExit) { UnloadContent(); Exit(); }
+                break;
+              
+        }   */ 
 
                 #region player controls
                 bool playerCanJump = IsPlayerCanJump();
@@ -259,7 +396,6 @@ namespace Game
                     moveOnlyOnceLeft = true;
                 }
                 #endregion
-
             base.Update(gameTime);
         }
 
@@ -271,22 +407,44 @@ namespace Game
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            
-            
-            foreach (var platform in platformList)
+            /*
+            switch(mainMenu.IsGameInMenuMode)
             {
-                platform.Draw(aspectRatio, cameraPosition,platformModel);
+                case true:
+                    mainMenu.Draw(spriteBatch,debugFont);
+                    break;
+                case false:
+                    foreach (var platform in platformList)
+                    {
+                        platform.Draw(aspectRatio, cameraPosition,platformModel);
+                    }
+                    player.Draw(aspectRatio, cameraPosition,heroModel);
+                    break;
             }
-            player.Draw(aspectRatio, cameraPosition,heroModel);
-            
-            
+            */
+            mainMenu.Draw(spriteBatch, debugFont);
+
+
+
+
+
+
+
+
+            /*
             spriteBatch.Begin();
+            
             spriteBatch.DrawString(debugFont, "platforms in list: " + platformList.Count.ToString(), new Vector2(0, 80), Color.Red);
             spriteBatch.DrawString(debugFont, "PlayerPos:" + player.ObjectArrangement.Position.ToString(), new Vector2(0, 100), Color.Red);
             spriteBatch.DrawString(debugFont, "CurrentPlatformPos:" + player.CurrentPlatformPosition.ToString(), new Vector2(0, 120), Color.Red);
-            spriteBatch.End();
 
-            mainMenu.Draw(spriteBatch);
+          
+            spriteBatch.End();
+            */
+            
+
+            //mainMenu.Draw(spriteBatch,debugFont);
+            //DrawSkeleton(spriteBatch, new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight), jointTexture);
             base.Draw(gameTime);
         }
     }
