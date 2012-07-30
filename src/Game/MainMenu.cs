@@ -378,12 +378,13 @@ namespace Game
 
         public void Draw(SpriteBatch spriteBatch,SpriteFont font)
         {
-            backgroundSprite.DrawByRectangle(spriteBatch);
+            
             
             switch(state)
             {
                 case (int)State.InMainMenu:
                     {
+                        backgroundSprite.DrawByRectangle(spriteBatch);backgroundSprite.DrawByRectangle(spriteBatch);
                         newGameSprite[newGameTextureType].DrawByRectangle(spriteBatch);
                         scoresSprite[scoresTextureType].DrawByRectangle(spriteBatch);
                         exitSprite[exitTextureType].DrawByRectangle(spriteBatch);
@@ -391,20 +392,13 @@ namespace Game
                     }
                 case State.InScores:
                     {
-                        spriteBatch.Begin();
-                        spriteBatch.DrawString(font, "DZIALA!", new Vector2(600, 250), Color.Red);
-                        spriteBatch.End();
+                        backgroundSprite.DrawByRectangle(spriteBatch);
                         scoresBackSprite[scoresBackTextureType].DrawByRectangle(spriteBatch);
                         break;
                     }
             }
             handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].DrawByRectangle(spriteBatch);
             handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].DrawByRectangle(spriteBatch);
-            spriteBatch.Begin();
-            spriteBatch.DrawString(font, "state : " + state.ToString(), new Vector2(600,200), Color.Red);
-            spriteBatch.DrawString(font, onFocusDelayCounter.ToString(), new Vector2(600, 300), Color.Red);
-            spriteBatch.End();
-
         }
     }
 }
