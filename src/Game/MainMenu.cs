@@ -326,6 +326,7 @@ namespace Game
             #endregion
         }
 
+
         private bool AreHandsTogether()
         {
             Vector2 leftHandleMiddle = GetTextureCenter(handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);

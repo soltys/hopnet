@@ -272,6 +272,7 @@ namespace Game
             aspectRatio = (float)graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height;
 
 
+
             logger.Trace("Load Content ends");
             // TODO: use this.Content to load your game content here
         }
