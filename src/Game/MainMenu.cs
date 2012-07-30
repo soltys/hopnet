@@ -26,21 +26,22 @@ namespace Game
         public const int defaultButtonWidth=420;
         public const int defaultButtonHeight=210;
 
-        private enum Texture : int { Normal, WithBorder };
+        private enum Texture : int { Normal=0, WithBorder=1 };
         private enum Hand : int { Left = 0, Right = 1 };
-        private enum State : int { InMainMenu=0, InNewGame=1, InScores=2, OnExit=3, Playing=4}
-        private enum ButtonSelect : int { MainMenu = 0, Scores = 1, Exit = 3, ScoresGoBack=4, None=5 }
+        private enum State : int { InMainMenu = 0, InNewGame = 1, InScores = 2, OnExit = 3, Playing = 4}
+        private enum ButtonSelect : int { Scores = 0, Exit = 1, ScoresGoBack = 2, None = 3, NewGame = 4 }
 
 
         public Sprite []newGameSprite;
-        private int newGameTextureType=(int)Texture.WithBorder;
+        private int newGameTextureType=(int)Texture.Normal;
 
         public Sprite []scoresSprite;
-        public Sprite scoresBackSprite;
-        private int scoresTextureType = (int)Texture.WithBorder;
+        public Sprite []scoresBackSprite;
+        private int scoresTextureType = (int)Texture.Normal;
+        private int scoresBackTextureType = (int)Texture.Normal;
 
         public Sprite []exitSprite;
-        private int exitTextureType = (int)Texture.WithBorder;
+        private int exitTextureType = (int)Texture.Normal;
 
         public Sprite backgroundSprite;
         
@@ -78,28 +79,161 @@ namespace Game
             return new Vector2(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2);
         }
 
-        /*
-        private CurrentButtonSelect CheckButtonSelect()
+        private void ChangeCursorTexture(bool []cursorState)
         {
+            if(cursorState.Length!=2){throw new ArgumentOutOfRangeException();}
 
-            bool areHandTogether = AreHandsTogether();
-            switch(state)
+            switch (cursorState[(int)Hand.Left])
             {
-                case CurrentState.InMainMenu:
-
-
-
+                case true:
+                    handTextureType[(int)Hand.Left] = (int)Texture.WithBorder;
                     break;
+                case false:
+                    handTextureType[(int)Hand.Left] = (int)Texture.Normal;
+                    break;
+            }
 
-
-                case CurrentState.InScores:
-
-
-
+            switch (cursorState[(int)Hand.Right])
+            {
+                case true:
+                    handTextureType[(int)Hand.Right] = (int)Texture.WithBorder;
+                    break;
+                case false:
+                    handTextureType[(int)Hand.Right] = (int)Texture.Normal;
                     break;
             }
         }
-        */
+        private void ChangeButtonTexture(bool []cursorState,  ref int texture)
+        {
+            if (cursorState.Length != 2) { throw new ArgumentOutOfRangeException(); }
+
+            if (cursorState[(int)Hand.Left] & cursorState[(int)Hand.Right])
+            {
+                texture = (int)Texture.WithBorder;
+            }
+            else
+            {
+                texture = (int)Texture.Normal;
+            }
+        }
+        private bool IsCanChangeState(bool[] cursorState)
+        {
+            if (cursorState.Length != 2) { throw new ArgumentOutOfRangeException(); }
+            if(cursorState[(int)Hand.Left] & cursorState[(int)Hand.Right] & AreHandsTogether())
+            {
+                return true;
+            }
+            return false;
+        }
+        private bool IsButtonSelected(bool[] cursorState)
+        {
+            if (cursorState.Length != 2) { throw new ArgumentOutOfRangeException(); }
+
+            if (cursorState[(int)Hand.Left] & cursorState[(int)Hand.Right])
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private ButtonSelect CheckButtonSelect()
+        {
+            ButtonSelect buttonState = ButtonSelect.None;
+            bool []isCursorInsideButton = new bool[2];
+            bool []cursorState = new bool[2];
+
+            switch(state)
+            {
+                case State.InMainMenu:
+                            isCursorInsideButton[(int)Hand.Left] = IsCursorInButtonArea(newGameSprite[newGameTextureType].Rectangle, handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);
+                            isCursorInsideButton[(int)Hand.Right] = IsCursorInButtonArea(newGameSprite[newGameTextureType].Rectangle, handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].Rectangle);
+                            #region cursor over new game button
+
+                            if (isCursorInsideButton[(int)Hand.Left]) { cursorState[(int)Hand.Left] = isCursorInsideButton[(int)Hand.Left]; }
+                            if (isCursorInsideButton[(int)Hand.Right]) { cursorState[(int)Hand.Right] = isCursorInsideButton[(int)Hand.Right]; }
+                            
+                            //ChangeCursorTexture(cursorState);
+                            ChangeButtonTexture(isCursorInsideButton, ref newGameTextureType);
+                            if (IsButtonSelected(isCursorInsideButton))
+                            {
+                                    //isGameInMenu = false; 
+                                    //state = State.Playing;
+                                    if (IsCanChangeState(isCursorInsideButton))
+                                    {
+                                        buttonState = ButtonSelect.NewGame;
+                                        //return ButtonSelect.NewGame;
+                                    }
+                            }
+                            #endregion
+
+                            isCursorInsideButton[(int)Hand.Left] = IsCursorInButtonArea(scoresSprite[scoresTextureType].Rectangle, handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);
+                            isCursorInsideButton[(int)Hand.Right] = IsCursorInButtonArea(scoresSprite[scoresTextureType].Rectangle, handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].Rectangle);
+                            #region cursor over scores button
+
+                            if (isCursorInsideButton[(int)Hand.Left]) { cursorState[(int)Hand.Left] = isCursorInsideButton[(int)Hand.Left]; }
+                            if (isCursorInsideButton[(int)Hand.Right]) { cursorState[(int)Hand.Right] = isCursorInsideButton[(int)Hand.Right]; }
+
+                            //ChangeCursorTexture(cursorState);
+                            ChangeButtonTexture(isCursorInsideButton, ref scoresTextureType);
+                            if (IsButtonSelected(isCursorInsideButton))
+                            {
+                                    //state = State.Playing;
+                                    if (IsCanChangeState(isCursorInsideButton))
+                                    {
+                                        buttonState = ButtonSelect.Scores;
+                                        //return ButtonSelect.Scores;
+                                    }
+                            }
+                            #endregion
+                            
+                            isCursorInsideButton[(int)Hand.Left] = IsCursorInButtonArea(exitSprite[exitTextureType].Rectangle, handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);
+                            isCursorInsideButton[(int)Hand.Right] = IsCursorInButtonArea(exitSprite[exitTextureType].Rectangle, handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].Rectangle);
+                            #region cursor over exit button
+                            if (isCursorInsideButton[(int)Hand.Left]) { cursorState[(int)Hand.Left] = isCursorInsideButton[(int)Hand.Left]; }
+                            if (isCursorInsideButton[(int)Hand.Right]) { cursorState[(int)Hand.Right] = isCursorInsideButton[(int)Hand.Right]; }
+
+                            //ChangeCursorTexture(cursorState);
+                            ChangeButtonTexture(isCursorInsideButton, ref exitTextureType);
+                            if (IsButtonSelected(isCursorInsideButton))
+                            {
+                                    //state = State.Playing;
+                                    if (IsCanChangeState(isCursorInsideButton))
+                                    {
+                                        buttonState = ButtonSelect.Exit;
+                                        //return ButtonSelect.Exit;
+                                    }
+                            }
+                            #endregion
+                    break;
+
+                case State.InScores:
+                            isCursorInsideButton[(int)Hand.Left] = IsCursorInButtonArea(scoresBackSprite[scoresBackTextureType].Rectangle, handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);
+                            isCursorInsideButton[(int)Hand.Right] = IsCursorInButtonArea(scoresBackSprite[scoresBackTextureType].Rectangle, handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].Rectangle);
+                            #region cursor over scoresBack button
+                            if (isCursorInsideButton[(int)Hand.Left]) { cursorState[(int)Hand.Left] = isCursorInsideButton[(int)Hand.Left]; }
+                            if (isCursorInsideButton[(int)Hand.Right]) { cursorState[(int)Hand.Right] = isCursorInsideButton[(int)Hand.Right]; }
+
+                            ChangeCursorTexture(cursorState);
+                            if (IsButtonSelected(isCursorInsideButton))
+                            {
+                                    ChangeButtonTexture(isCursorInsideButton, ref scoresBackTextureType);
+                                    if (IsCanChangeState(isCursorInsideButton))
+                                    {
+                                        return ButtonSelect.ScoresGoBack;
+                                    }
+                            }
+                            #endregion
+                    break;
+
+                case State.OnExit:
+                    break;
+            }
+
+            ChangeCursorTexture(cursorState);
+            return buttonState;
+        }
+        
 
 
         private bool IsCursorInButtonArea(Rectangle buttonRectangle,Rectangle cursor)
@@ -125,7 +259,6 @@ namespace Game
 
         public MainMenu(GraphicsDeviceManager graphics)
         {
-
             handTextureType = new int[2];
             handTextureType[(int)Hand.Left] = (int)Texture.Normal;
             handTextureType[(int)Hand.Right] = (int)Texture.Normal;
@@ -146,13 +279,14 @@ namespace Game
             backgroundSprite=new Sprite();
             newGameSprite = new Sprite[blinkingTextureNumber];
             scoresSprite = new Sprite[blinkingTextureNumber];
-            scoresBackSprite = new Sprite();
+            scoresBackSprite = new Sprite[blinkingTextureNumber];
             exitSprite = new Sprite[blinkingTextureNumber];
 
             #region initialization of every sprite's properties
             for (int i = 0; i < blinkingTextureNumber; i++)
             {
-
+                scoresBackSprite[i] = new Sprite();
+                scoresBackSprite[i].Rectangle = new Rectangle(50, 50, 300, 300);
                 handSprite[(int)Hand.Left, i] = new Sprite();
                 handSprite[(int)Hand.Right, i] = new Sprite();
 
@@ -189,7 +323,6 @@ namespace Game
                 (int)(defaultButtonWidth*horizontalScale),
                 (int)(defaultButtonHeight*verticalScale));*/
 
-            scoresBackSprite.Rectangle = new Rectangle(50, 50, 300, 300);
             #endregion
         }
 
@@ -211,13 +344,6 @@ namespace Game
         {
             if (isGameInMenu)
             {
-                bool leftCursorState = false;
-                bool rightCursorState = false;
-
-                bool isLeftCursorInsideButton;
-                bool isRightCursorInsideButton;
-                bool areHandsTogether = false;
-
                 if (kinectData != null)
                 {
                     /*
@@ -228,119 +354,41 @@ namespace Game
                     */
 
                     kinectHandPosition[(int)Hand.Left].X = ((0.5f * kinectData.Joints[JointType.HandLeft].Position.X) + 0.5f) * screenWidth;
-                    kinectHandPosition[(int)Hand.Left].Y = ((-0.5f * kinectData.Joints[JointType.HandLeft].Position.Y) + 0.3f) * screenHeight;
+                    kinectHandPosition[(int)Hand.Left].Y = ((-0.5f * kinectData.Joints[JointType.HandLeft].Position.Y) + 0.5f) * screenHeight;
                     kinectHandPosition[(int)Hand.Right].X = ((0.5f * kinectData.Joints[JointType.HandRight].Position.X) + 0.5f) * screenWidth;
-                    kinectHandPosition[(int)Hand.Right].Y = ((-0.5f * kinectData.Joints[JointType.HandRight].Position.Y) + 0.3f) * screenHeight;
+                    kinectHandPosition[(int)Hand.Right].Y = ((-0.5f * kinectData.Joints[JointType.HandRight].Position.Y) + 0.5f) * screenHeight;
                 }
                 else
                 {
-                    kinectHandPosition[(int)Hand.Left].X = 0.2f * screenWidth;
+                    kinectHandPosition[(int)Hand.Left].X = 0.8f * screenWidth;
                     kinectHandPosition[(int)Hand.Left].Y = 0.5f * screenHeight;
                     kinectHandPosition[(int)Hand.Right].X = 0.8f * screenWidth;
                     kinectHandPosition[(int)Hand.Right].Y = 0.5f * screenHeight;
                 }
 
-                areHandsTogether = AreHandsTogether();
+                switch (CheckButtonSelect())
+                {
+                    case ButtonSelect.Scores:
+                        state = State.InScores;
+                        break;
+
+                    case ButtonSelect.Exit:
+                        state = State.OnExit;
+                        break;
+
+                    case ButtonSelect.ScoresGoBack:
+                        state = State.InMainMenu;
+                        break;
+
+                    case ButtonSelect.NewGame:
+                        isGameInMenu = false;
+                        state = State.Playing;
+                        break;
+                }
                 
-                switch(state)
-                {
-                    case (int)State.InMainMenu:
-                        {
-                            isLeftCursorInsideButton = IsCursorInButtonArea(newGameSprite[newGameTextureType].Rectangle, handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);
-                            isRightCursorInsideButton = IsCursorInButtonArea(newGameSprite[newGameTextureType].Rectangle, handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].Rectangle);
-                            #region cursor over new game button
 
-                            if (isLeftCursorInsideButton) { leftCursorState = isLeftCursorInsideButton; }
-                            if (isRightCursorInsideButton) { rightCursorState = isRightCursorInsideButton; }
 
-                            if (isLeftCursorInsideButton & isRightCursorInsideButton)
-                            {
-                                newGameTextureType = (int)Texture.WithBorder;
-                            }
-                            else
-                            {
-                                newGameTextureType = (int)Texture.Normal;
-                            }
-                            if (leftCursorState & rightCursorState & areHandsTogether)
-                            {
-                                    isGameInMenu = false; 
-                                    state = State.Playing;
-                            }
-                            #endregion
-
-                            isLeftCursorInsideButton = IsCursorInButtonArea(scoresSprite[scoresTextureType].Rectangle, handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);
-                            isRightCursorInsideButton = IsCursorInButtonArea(scoresSprite[scoresTextureType].Rectangle, handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].Rectangle);
-                            #region cursor over scores button
-                            if (isLeftCursorInsideButton) { leftCursorState = isLeftCursorInsideButton; }
-                            if (isRightCursorInsideButton) { rightCursorState = isRightCursorInsideButton; }
-
-                            if (isLeftCursorInsideButton & isRightCursorInsideButton)
-                            {
-                                scoresTextureType = (int)Texture.WithBorder;
-                            }
-                            else
-                            {
-                                scoresTextureType = (int)Texture.Normal;
-                            }
-                            if (leftCursorState & rightCursorState & areHandsTogether)
-                            {
-                                    state = State.InScores;
-                            }
-                            #endregion
-                            /*
-                            isLeftCursorInsideButton = IsCursorInButtonArea(exitSprite[exitTextureType].Rectangle, handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);
-                            isRightCursorInsideButton = IsCursorInButtonArea(exitSprite[exitTextureType].Rectangle, handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].Rectangle);
-                            #region cursor over exit button
-                            if (isLeftCursorInsideButton) { leftCursorState = isLeftCursorInsideButton; }
-                            if (isRightCursorInsideButton) { rightCursorState = isRightCursorInsideButton; }
-                            if (isLeftCursorInsideButton & isRightCursorInsideButton)
-                            {
-                                exitTextureType = (int)CurrentTexture.WithBorder;
-                            }
-                            else
-                            {
-                                exitTextureType = (int)CurrentTexture.Normal;
-                            }
-                            if (leftCursorState & rightCursorState & areHandsTogether) { state = CurrentState.OnExit; }
-                            #endregion
-                            */
-                        break;
-                        }
-                    case State.InScores:
-                        isLeftCursorInsideButton = IsCursorInButtonArea(scoresBackSprite.Rectangle, handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);
-                        isRightCursorInsideButton = IsCursorInButtonArea(scoresBackSprite.Rectangle, handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].Rectangle);
-                        if (isLeftCursorInsideButton) { leftCursorState = isLeftCursorInsideButton; }
-                        if (isRightCursorInsideButton) { rightCursorState = isRightCursorInsideButton; }
-                        if (leftCursorState & rightCursorState & areHandsTogether)
-                        {
-                                state = (int)State.InMainMenu;
-                        }
-                        break;
-                    case State.OnExit:
-                        break;
-                }
-
-                #region cursor texture changer
-                switch (leftCursorState)
-                {
-                    case true:
-                        handTextureType[(int)Hand.Left] = (int)Texture.WithBorder;
-                        break;
-                    case false:
-                        handTextureType[(int)Hand.Left] = (int)Texture.Normal;
-                        break;
-                }
-
-                switch (rightCursorState)
-                {
-                    case true:
-                        handTextureType[(int)Hand.Right] = (int)Texture.WithBorder;
-                        break;
-                    case false:
-                        handTextureType[(int)Hand.Right] = (int)Texture.Normal;
-                        break;
-                }
-                #endregion
+                
                 
                 handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].rectangle.X = (int)kinectHandPosition[(int)Hand.Left].X;
                 handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].rectangle.Y = (int)kinectHandPosition[(int)Hand.Left].Y;
@@ -368,7 +416,7 @@ namespace Game
                         spriteBatch.Begin();
                         spriteBatch.DrawString(font, "DZIALA!", new Vector2(600, 250), Color.Red);
                         spriteBatch.End();
-                        scoresBackSprite.DrawByRectangle(spriteBatch);
+                        scoresBackSprite[scoresBackTextureType].DrawByRectangle(spriteBatch);
                         break;
                     }
             }
@@ -376,7 +424,6 @@ namespace Game
             handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].DrawByRectangle(spriteBatch);
             spriteBatch.Begin();
             spriteBatch.DrawString(font, "state : " + state.ToString(), new Vector2(600,200), Color.Red);
-            spriteBatch.DrawString(font, State.InScores.ToString(), new Vector2(600, 250), Color.Red);
             spriteBatch.DrawString(font, onFocusDelayCounter.ToString(), new Vector2(600, 300), Color.Red);
             spriteBatch.End();
 
