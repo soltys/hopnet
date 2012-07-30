@@ -271,6 +271,8 @@ namespace Game
 
             aspectRatio = (float)graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height;
 
+
+
             logger.Trace("Load Content ends");
             // TODO: use this.Content to load your game content here
         }
@@ -341,10 +343,19 @@ namespace Game
         {
             if (Keyboard.GetState().IsKeyDown(Keys.P)) { UnloadContent(); Exit(); }
             var keyState = Keyboard.GetState();
-
-            MovePlatforms();
-            AddNewPlatforms();
-            RemovePlatformsAtEnd();
+             /*   
+            switch(mainMenu.IsGameInMenuMode)
+            {
+                case false:
+                MovePlatforms();
+                AddNewPlatforms();
+                RemovePlatformsAtEnd();
+                break;
+                case true:
+                //if (mainMenu.State == (int)Game.MainMenu.CurrentState.OnExit) { UnloadContent(); Exit(); }
+                break;
+              
+        }   */ 
 
                 #region player controls
                 bool playerCanJump = IsPlayerCanJump();
@@ -398,7 +409,7 @@ namespace Game
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            
+            /*
             switch(mainMenu.IsGameInMenuMode)
             {
                 case true:
@@ -412,8 +423,30 @@ namespace Game
                     player.Draw(aspectRatio, cameraPosition,heroModel);
                     break;
             }
-            
+            */
             mainMenu.Draw(spriteBatch, debugFont);
+
+
+
+
+
+
+
+
+            /*
+            spriteBatch.Begin();
+            
+            spriteBatch.DrawString(debugFont, "platforms in list: " + platformList.Count.ToString(), new Vector2(0, 80), Color.Red);
+            spriteBatch.DrawString(debugFont, "PlayerPos:" + player.ObjectArrangement.Position.ToString(), new Vector2(0, 100), Color.Red);
+            spriteBatch.DrawString(debugFont, "CurrentPlatformPos:" + player.CurrentPlatformPosition.ToString(), new Vector2(0, 120), Color.Red);
+
+          
+            spriteBatch.End();
+            */
+            
+
+            //mainMenu.Draw(spriteBatch,debugFont);
+            //DrawSkeleton(spriteBatch, new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight), jointTexture);
             base.Draw(gameTime);
         }
     }

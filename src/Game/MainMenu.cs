@@ -153,12 +153,16 @@ namespace Game
                             if (isCursorInsideButton[(int)Hand.Left]) { cursorState[(int)Hand.Left] = isCursorInsideButton[(int)Hand.Left]; }
                             if (isCursorInsideButton[(int)Hand.Right]) { cursorState[(int)Hand.Right] = isCursorInsideButton[(int)Hand.Right]; }
                             
+                            //ChangeCursorTexture(cursorState);
                             ChangeButtonTexture(isCursorInsideButton, ref newGameTextureType);
                             if (IsButtonSelected(isCursorInsideButton))
                             {
+                                    //isGameInMenu = false; 
+                                    //state = State.Playing;
                                     if (IsCanChangeState(isCursorInsideButton))
                                     {
                                         buttonState = ButtonSelect.NewGame;
+                                        //return ButtonSelect.NewGame;
                                     }
                             }
                             #endregion
@@ -170,12 +174,15 @@ namespace Game
                             if (isCursorInsideButton[(int)Hand.Left]) { cursorState[(int)Hand.Left] = isCursorInsideButton[(int)Hand.Left]; }
                             if (isCursorInsideButton[(int)Hand.Right]) { cursorState[(int)Hand.Right] = isCursorInsideButton[(int)Hand.Right]; }
 
+                            //ChangeCursorTexture(cursorState);
                             ChangeButtonTexture(isCursorInsideButton, ref scoresTextureType);
                             if (IsButtonSelected(isCursorInsideButton))
                             {
+                                    //state = State.Playing;
                                     if (IsCanChangeState(isCursorInsideButton))
                                     {
                                         buttonState = ButtonSelect.Scores;
+                                        //return ButtonSelect.Scores;
                                     }
                             }
                             #endregion
@@ -186,12 +193,15 @@ namespace Game
                             if (isCursorInsideButton[(int)Hand.Left]) { cursorState[(int)Hand.Left] = isCursorInsideButton[(int)Hand.Left]; }
                             if (isCursorInsideButton[(int)Hand.Right]) { cursorState[(int)Hand.Right] = isCursorInsideButton[(int)Hand.Right]; }
 
+                            //ChangeCursorTexture(cursorState);
                             ChangeButtonTexture(isCursorInsideButton, ref exitTextureType);
                             if (IsButtonSelected(isCursorInsideButton))
                             {
+                                    //state = State.Playing;
                                     if (IsCanChangeState(isCursorInsideButton))
                                     {
                                         buttonState = ButtonSelect.Exit;
+                                        //return ButtonSelect.Exit;
                                     }
                             }
                             #endregion
@@ -204,6 +214,7 @@ namespace Game
                             if (isCursorInsideButton[(int)Hand.Left]) { cursorState[(int)Hand.Left] = isCursorInsideButton[(int)Hand.Left]; }
                             if (isCursorInsideButton[(int)Hand.Right]) { cursorState[(int)Hand.Right] = isCursorInsideButton[(int)Hand.Right]; }
 
+                            ChangeCursorTexture(cursorState);
                             if (IsButtonSelected(isCursorInsideButton))
                             {
                                     ChangeButtonTexture(isCursorInsideButton, ref scoresBackTextureType);
@@ -275,12 +286,7 @@ namespace Game
             for (int i = 0; i < blinkingTextureNumber; i++)
             {
                 scoresBackSprite[i] = new Sprite();
-
-                scoresBackSprite[i].Rectangle = new Rectangle((int)(horizontalSpaceFromLeft*horizontalScale),
-    verticalSpaceBetweenButtons,
-    (int)(defaultButtonWidth*horizontalScale),
-    (int)(defaultButtonHeight*verticalScale));
-
+                scoresBackSprite[i].Rectangle = new Rectangle(50, 50, 300, 300);
                 handSprite[(int)Hand.Left, i] = new Sprite();
                 handSprite[(int)Hand.Right, i] = new Sprite();
 
@@ -312,6 +318,11 @@ namespace Game
                     (int)(defaultButtonWidth * horizontalScale), (int)(defaultButtonHeight * verticalScale));
             }
             backgroundSprite.Rectangle = new Rectangle(0, 0, (int)screenWidth, (int)screenHeight);
+            /*scoresBackSprite.Rectangle = new Rectangle((int)(horizontalSpaceFromLeft*horizontalScale),
+                verticalSpaceBetweenButtons,
+                (int)(defaultButtonWidth*horizontalScale),
+                (int)(defaultButtonHeight*verticalScale));*/
+
             #endregion
         }
 
@@ -329,12 +340,20 @@ namespace Game
             return false;
         }
 
+        //public void Update(KinectData kinectData)
         public void Update(object sender, Skeleton kinectData)
         {
             if (isGameInMenu)
             {
                 if (kinectData != null)
                 {
+                    /*
+                    leftHandPosition.X = ((0.5f*kinectData.skeleton.Joints[JointType.HandLeft].Position.X)+0.5f)*screenWidth;
+                    leftHandPosition.Y = ((-0.5f*kinectData.skeleton.Joints[JointType.HandLeft].Position.Y)+0.5f)*screenHeight;
+                    rightHandPosition.X = ((0.5f*kinectData.skeleton.Joints[JointType.HandRight].Position.X)+0.5f)*screenWidth;
+                    rightHandPosition.Y = ((-0.5f*kinectData.skeleton.Joints[JointType.HandRight].Position.Y)+0.5f)*screenHeight;
+                    */
+
                     kinectHandPosition[(int)Hand.Left].X = ((0.5f * kinectData.Joints[JointType.HandLeft].Position.X) + 0.5f) * screenWidth;
                     kinectHandPosition[(int)Hand.Left].Y = ((-0.5f * kinectData.Joints[JointType.HandLeft].Position.Y) + 0.5f) * screenHeight;
                     kinectHandPosition[(int)Hand.Right].X = ((0.5f * kinectData.Joints[JointType.HandRight].Position.X) + 0.5f) * screenWidth;
@@ -367,7 +386,11 @@ namespace Game
                         state = State.Playing;
                         break;
                 }
+                
 
+
+                
+                
                 handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].rectangle.X = (int)kinectHandPosition[(int)Hand.Left].X;
                 handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].rectangle.Y = (int)kinectHandPosition[(int)Hand.Left].Y;
 
@@ -378,13 +401,12 @@ namespace Game
 
         public void Draw(SpriteBatch spriteBatch,SpriteFont font)
         {
-            
+            backgroundSprite.DrawByRectangle(spriteBatch);
             
             switch(state)
             {
                 case (int)State.InMainMenu:
                     {
-                        backgroundSprite.DrawByRectangle(spriteBatch);backgroundSprite.DrawByRectangle(spriteBatch);
                         newGameSprite[newGameTextureType].DrawByRectangle(spriteBatch);
                         scoresSprite[scoresTextureType].DrawByRectangle(spriteBatch);
                         exitSprite[exitTextureType].DrawByRectangle(spriteBatch);
@@ -392,13 +414,20 @@ namespace Game
                     }
                 case State.InScores:
                     {
-                        backgroundSprite.DrawByRectangle(spriteBatch);
+                        spriteBatch.Begin();
+                        spriteBatch.DrawString(font, "DZIALA!", new Vector2(600, 250), Color.Red);
+                        spriteBatch.End();
                         scoresBackSprite[scoresBackTextureType].DrawByRectangle(spriteBatch);
                         break;
                     }
             }
             handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].DrawByRectangle(spriteBatch);
             handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].DrawByRectangle(spriteBatch);
+            spriteBatch.Begin();
+            spriteBatch.DrawString(font, "state : " + state.ToString(), new Vector2(600,200), Color.Red);
+            spriteBatch.DrawString(font, onFocusDelayCounter.ToString(), new Vector2(600, 300), Color.Red);
+            spriteBatch.End();
+
         }
     }
 }
