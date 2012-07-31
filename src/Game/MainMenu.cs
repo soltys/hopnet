@@ -28,15 +28,18 @@ namespace Game
 
         private enum Texture : int { Normal=0, WithBorder=1 };
         private enum Hand : int { Left = 0, Right = 1 };
-        private enum State : int { InMainMenu = 0, InNewGame = 1, InScores = 2, OnExit = 3, Playing = 4}
-        private enum ButtonSelect : int { Scores = 0, Exit = 1, ScoresGoBack = 2, None = 3, NewGame = 4 }
+        private enum State : int { InMainMenu = 0, InNewGame = 1, InScores = 2, OnExit = 3, Playing = 4, OnDifficultySelect = 5 }
+        private enum ButtonSelect : int { Scores = 0, Exit = 1, ScoresGoBack = 2, None = 3, NewGame = 4, EasyDifficulty = 5, MediumDifficulty = 6, HardDifficulty = 7 }
+
+        private State state = State.InMainMenu;
 
         public Sprite []newGameSprite;
         private int newGameTextureType=(int)Texture.Normal;
 
         public Sprite []scoresSprite;
-        public Sprite []scoresBackSprite;
         private int scoresTextureType = (int)Texture.Normal;
+
+        public Sprite []scoresBackSprite;
         private int scoresBackTextureType = (int)Texture.Normal;
 
         public Sprite []exitSprite;
@@ -44,21 +47,24 @@ namespace Game
 
         public Sprite backgroundSprite;
         
-        public const int cursorRadius = 64;
-
         public Sprite[,] handSprite;
-
         private int[] handTextureType;
 
-        private State state = State.InMainMenu;
+        public Sprite timeoutProgressBar;
+        private const int buttonTimeDelay = 50;
+        private int timeCounter = 0;
+        private int timerStepSize = 0;
 
         private Vector2 []kinectHandPosition;
+        public const int cursorRadius = 64;
+
+
+        
 
         public bool IsGameInMenuMode
         {
             get { return isGameInMenu; }
         }
-
 
         private Vector2 GetTextureCenter(Rectangle rectangle)
         {
@@ -242,10 +248,13 @@ namespace Game
             screenWidth = (float)graphics.PreferredBackBufferWidth;
             screenHeight = (float)graphics.PreferredBackBufferHeight;
 
+            timerStepSize = (int)(screenWidth) / buttonTimeDelay;
             horizontalScale = (screenWidth / defaultScreenWidth);
             verticalScale = (screenHeight / defaultScreenHeight);
 
             backgroundSprite=new Sprite();
+            timeoutProgressBar = new Sprite();
+            timeoutProgressBar.rectangle = new Rectangle(0, 0, 0, 30);
             newGameSprite = new Sprite[blinkingTextureNumber];
             scoresSprite = new Sprite[blinkingTextureNumber];
             scoresBackSprite = new Sprite[blinkingTextureNumber];
@@ -255,7 +264,6 @@ namespace Game
             for (int i = 0; i < blinkingTextureNumber; i++)
             {
                 scoresBackSprite[i] = new Sprite();
-
                 scoresBackSprite[i].Rectangle = new Rectangle((int)(horizontalSpaceFromLeft * horizontalScale),
                 verticalSpaceBetweenButtons,
                 (int)(defaultButtonWidth * horizontalScale),
@@ -329,23 +337,35 @@ namespace Game
                     kinectHandPosition[(int)Hand.Right].Y = 0.5f * screenHeight;
                 }
 
-                switch (CheckButtonSelect())
+                var selectedButton = CheckButtonSelect();
+
+                if (selectedButton != ButtonSelect.None)
+                {
+                    timeCounter++;
+                    timeoutProgressBar.rectangle.Width += timerStepSize;
+                }
+                else
+                {
+                    timeCounter = 0;
+                    timeoutProgressBar.rectangle.Width=0;
+                }
+
+                switch (selectedButton)
                 {
                     case ButtonSelect.Scores:
-                        state = State.InScores;
+                        if (timeCounter > buttonTimeDelay) { state = State.InScores; timeCounter = 0; }
                         break;
 
                     case ButtonSelect.Exit:
-                        state = State.OnExit;
+                        if (timeCounter > buttonTimeDelay) { state = State.OnExit; timeCounter = 0; }
                         break;
 
                     case ButtonSelect.ScoresGoBack:
-                        state = State.InMainMenu;
+                        if (timeCounter > buttonTimeDelay) { state = State.InMainMenu; timeCounter = 0; }
                         break;
 
                     case ButtonSelect.NewGame:
-                        isGameInMenu = false;
-                        state = State.Playing;
+                        if (timeCounter > buttonTimeDelay) { state = State.Playing; isGameInMenu = false; timeCounter = 0; }
                         break;
                 }
 
@@ -379,6 +399,12 @@ namespace Game
                         break;
                     }
             }
+
+            spriteBatch.Begin();
+            spriteBatch.DrawString(font, timeCounter.ToString(), new Vector2(400, 200), Color.Red);
+            spriteBatch.End();
+
+            timeoutProgressBar.DrawByRectangle(spriteBatch);
             handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].DrawByRectangle(spriteBatch);
             handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].DrawByRectangle(spriteBatch);
         }
