@@ -218,6 +218,14 @@ namespace Game
             mainMenu.handSprite[1, 0].LoadSprite(Content, @"Sprites\cursor_right_normal");
             mainMenu.handSprite[1, 1].LoadSprite(Content, @"Sprites\cursor_right_border");
             mainMenu.timeoutProgressBar.LoadSprite(Content, @"Sprites\progress_bar");
+            mainMenu.easyDifficulty[0].LoadSprite(Content, @"Sprites\testsprite1");
+            mainMenu.easyDifficulty[1].LoadSprite(Content, @"Sprites\testsprite2");
+            mainMenu.mediumDifficulty[0].LoadSprite(Content, @"Sprites\testsprite1");
+            mainMenu.mediumDifficulty[1].LoadSprite(Content, @"Sprites\testsprite2");
+            mainMenu.hardDifficulty[0].LoadSprite(Content, @"Sprites\testsprite1");
+            mainMenu.hardDifficulty[1].LoadSprite(Content, @"Sprites\testsprite2");
+
+
             jointTexture = Content.Load<Texture2D>(@"Sprites\cursor_left_normal");
 
             aspectRatio = (float)graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height;

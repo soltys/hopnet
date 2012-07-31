@@ -17,36 +17,51 @@ namespace Game
         private float screenHeight;
         private const int defaultScreenWidth = 1280;
         private const int defaultScreenHeight = 720;
-        private float horizontalScale=0;
-        private float verticalScale=0;
-        private int horizontalSpaceFromLeft=100;
-        private int verticalSpaceBetweenButtons = 20;
-        private int blinkingTextureNumber = 2;
+        private float hScale=0;
+        private float vScale=0;
+        private int hSpaceFromLeft=100;
+        private int vSpaceBetweenButtons = 20;
+        private int textureNumber = 2;
 
-        public const int defaultButtonWidth=420;
-        public const int defaultButtonHeight=210;
+        public const int defaultBtnWidth=420;
+        public const int defaultBtnHeight=210;
 
         private enum Texture : int { Normal=0, WithBorder=1 };
         private enum Hand : int { Left = 0, Right = 1 };
         private enum State : int { InMainMenu = 0, InNewGame = 1, InScores = 2, OnExit = 3, Playing = 4, OnDifficultySelect = 5 }
         private enum ButtonSelect : int { Scores = 0, Exit = 1, ScoresGoBack = 2, None = 3, NewGame = 4, EasyDifficulty = 5, MediumDifficulty = 6, HardDifficulty = 7 }
+        private enum GameDifficulty : int { Easy = 1, Medium = 2, Hard = 3 }
+        private float selectedDifficulty = (int)GameDifficulty.Easy;
 
         private State state = State.InMainMenu;
 
-        public Sprite []newGameSprite;
+        public Sprite[] newGameSprite;
         private int newGameTextureType=(int)Texture.Normal;
 
-        public Sprite []scoresSprite;
+        public Sprite[] scoresSprite;
         private int scoresTextureType = (int)Texture.Normal;
 
-        public Sprite []scoresBackSprite;
+        public Sprite[] scoresBackSprite;
         private int scoresBackTextureType = (int)Texture.Normal;
 
-        public Sprite []exitSprite;
+        public Sprite[] exitSprite;
         private int exitTextureType = (int)Texture.Normal;
 
         public Sprite backgroundSprite;
-        
+
+        public Sprite selectDifficultyText;
+
+        public Sprite[] easyDifficulty;
+        private int easyDifficultyTextureType=(int)Texture.Normal;
+
+        public Sprite[] mediumDifficulty;
+        private int mediumDifficultyTextureType=(int)Texture.Normal;
+
+        public Sprite[] hardDifficulty;
+        private int hardDifficultyTextureType=(int)Texture.Normal;
+
+
+
         public Sprite[,] handSprite;
         private int[] handTextureType;
 
@@ -208,6 +223,58 @@ namespace Game
                             }
                             #endregion
                     break;
+                case State.OnDifficultySelect:
+                    		isCursorInsideButton[(int)Hand.Left] = IsCursorInButtonArea(easyDifficulty[easyDifficultyTextureType].Rectangle, handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);
+                            isCursorInsideButton[(int)Hand.Right] = IsCursorInButtonArea(easyDifficulty[easyDifficultyTextureType].Rectangle, handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].Rectangle);
+                            #region cursor over easy difficulty button
+
+                            if (isCursorInsideButton[(int)Hand.Left]) { cursorState[(int)Hand.Left] = isCursorInsideButton[(int)Hand.Left]; }
+                            if (isCursorInsideButton[(int)Hand.Right]) { cursorState[(int)Hand.Right] = isCursorInsideButton[(int)Hand.Right]; }
+                            
+                            ChangeButtonTexture(isCursorInsideButton, ref easyDifficultyTextureType);
+                            if (IsButtonSelected(isCursorInsideButton))
+                            {
+
+                                    if (IsCanChangeState(isCursorInsideButton))
+                                    {
+                                        buttonState = ButtonSelect.EasyDifficulty;
+                                    }
+                            }
+                            #endregion
+
+                            isCursorInsideButton[(int)Hand.Left] = IsCursorInButtonArea(mediumDifficulty[mediumDifficultyTextureType].Rectangle, handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);
+                            isCursorInsideButton[(int)Hand.Right] = IsCursorInButtonArea(mediumDifficulty[mediumDifficultyTextureType].Rectangle, handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].Rectangle);
+                            #region cursor over medium difficulty button
+
+                            if (isCursorInsideButton[(int)Hand.Left]) { cursorState[(int)Hand.Left] = isCursorInsideButton[(int)Hand.Left]; }
+                            if (isCursorInsideButton[(int)Hand.Right]) { cursorState[(int)Hand.Right] = isCursorInsideButton[(int)Hand.Right]; }
+
+                            ChangeButtonTexture(isCursorInsideButton, ref mediumDifficultyTextureType);
+                            if (IsButtonSelected(isCursorInsideButton))
+                            {
+                                    if (IsCanChangeState(isCursorInsideButton))
+                                    {
+                                        buttonState = ButtonSelect.MediumDifficulty;
+                                    }
+                            }
+                            #endregion
+                            
+                            isCursorInsideButton[(int)Hand.Left] = IsCursorInButtonArea(hardDifficulty[hardDifficultyTextureType].Rectangle, handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);
+                            isCursorInsideButton[(int)Hand.Right] = IsCursorInButtonArea(hardDifficulty[hardDifficultyTextureType].Rectangle, handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].Rectangle);
+                            #region cursor over hard difficulty
+                            if (isCursorInsideButton[(int)Hand.Left]) { cursorState[(int)Hand.Left] = isCursorInsideButton[(int)Hand.Left]; }
+                            if (isCursorInsideButton[(int)Hand.Right]) { cursorState[(int)Hand.Right] = isCursorInsideButton[(int)Hand.Right]; }
+
+                            ChangeButtonTexture(isCursorInsideButton, ref hardDifficultyTextureType);
+                            if (IsButtonSelected(isCursorInsideButton))
+                            {
+                                    if (IsCanChangeState(isCursorInsideButton))
+                                    {
+                                        buttonState = ButtonSelect.HardDifficulty;
+                                    }
+                            }
+                            #endregion
+                    break;
                 case State.OnExit:
                     break;
             }
@@ -243,31 +310,52 @@ namespace Game
             kinectHandPosition[(int)Hand.Left] = Vector2.Zero;
             kinectHandPosition[(int)Hand.Right] = Vector2.Zero;
 
-            handSprite = new Sprite[2,blinkingTextureNumber];
+            handSprite = new Sprite[2,textureNumber];
 
             screenWidth = (float)graphics.PreferredBackBufferWidth;
             screenHeight = (float)graphics.PreferredBackBufferHeight;
 
             timerStepSize = (int)(screenWidth) / buttonTimeDelay;
-            horizontalScale = (screenWidth / defaultScreenWidth);
-            verticalScale = (screenHeight / defaultScreenHeight);
+            hScale = (screenWidth / defaultScreenWidth);
+            vScale = (screenHeight / defaultScreenHeight);
 
             backgroundSprite=new Sprite();
             timeoutProgressBar = new Sprite();
             timeoutProgressBar.rectangle = new Rectangle(0, 0, 0, 30);
-            newGameSprite = new Sprite[blinkingTextureNumber];
-            scoresSprite = new Sprite[blinkingTextureNumber];
-            scoresBackSprite = new Sprite[blinkingTextureNumber];
-            exitSprite = new Sprite[blinkingTextureNumber];
+            newGameSprite = new Sprite[textureNumber];
+            scoresSprite = new Sprite[textureNumber];
+            scoresBackSprite = new Sprite[textureNumber];
+            exitSprite = new Sprite[textureNumber];
+            easyDifficulty = new Sprite[textureNumber];
+            mediumDifficulty = new Sprite[textureNumber];
+            hardDifficulty = new Sprite[textureNumber];
 
             #region initialization of every sprite's properties
-            for (int i = 0; i < blinkingTextureNumber; i++)
+            for (int i = 0; i < textureNumber; i++)
             {
                 scoresBackSprite[i] = new Sprite();
-                scoresBackSprite[i].Rectangle = new Rectangle((int)(horizontalSpaceFromLeft * horizontalScale),
-                verticalSpaceBetweenButtons,
-                (int)(defaultButtonWidth * horizontalScale),
-                (int)(defaultButtonHeight * verticalScale));
+                scoresBackSprite[i].Rectangle = new Rectangle((int)(hSpaceFromLeft * hScale),
+                vSpaceBetweenButtons,
+                (int)(defaultBtnWidth * hScale),
+                (int)(defaultBtnHeight * vScale));
+
+                easyDifficulty[i] = new Sprite();
+                easyDifficulty[i].Rectangle = new Rectangle(
+                    (int)(screenWidth / 2 - defaultBtnWidth * hScale / 2),
+                    (int)(vSpaceBetweenButtons * vScale), (int)(defaultBtnWidth * hScale),
+                    (int)(defaultBtnHeight * vScale));
+
+                mediumDifficulty[i] = new Sprite();
+                mediumDifficulty[i].Rectangle = new Rectangle(
+                    (int)(screenWidth / 2 - defaultBtnWidth * hScale / 2),
+                    (int)((2 * vSpaceBetweenButtons + defaultBtnHeight) * (vScale)),
+                    (int)(defaultBtnWidth * hScale), (int)(defaultBtnHeight * vScale));
+
+                hardDifficulty[i] = new Sprite();
+                hardDifficulty[i].Rectangle = new Rectangle(
+                    (int)(screenWidth / 2 - defaultBtnWidth * hScale / 2),
+                    (int)((3 * vSpaceBetweenButtons + 2 * defaultBtnHeight) * (vScale)),
+                    (int)(defaultBtnWidth * hScale), (int)(defaultBtnHeight * vScale));
 
                 handSprite[(int)Hand.Left, i] = new Sprite();
                 handSprite[(int)Hand.Right, i] = new Sprite();
@@ -275,29 +363,29 @@ namespace Game
                 handSprite[(int)Hand.Left, i].Position = new Vector2(screenWidth / 2, screenHeight / 2);
                 handSprite[(int)Hand.Right, i].Position = new Vector2(screenWidth / 2, screenHeight / 2);
 
-                handSprite[(int)Hand.Left, i].Rectangle = new Rectangle((int)(screenWidth / 2 - (cursorRadius / 2) * horizontalScale),
-                    (int)(screenHeight / 2 - (cursorRadius / 2) * verticalScale), (int)(cursorRadius * horizontalScale), (int)(cursorRadius * verticalScale));
+                handSprite[(int)Hand.Left, i].Rectangle = new Rectangle((int)(screenWidth / 2 - (cursorRadius / 2) * hScale),
+                    (int)(screenHeight / 2 - (cursorRadius / 2) * vScale), (int)(cursorRadius * hScale), (int)(cursorRadius * vScale));
 
-                handSprite[(int)Hand.Right, i].Rectangle = new Rectangle((int)(screenWidth / 2 - (cursorRadius / 2) * horizontalScale),
-                    (int)(screenHeight / 2 - (cursorRadius / 2) * verticalScale), (int)(cursorRadius * horizontalScale), (int)(cursorRadius * verticalScale));
+                handSprite[(int)Hand.Right, i].Rectangle = new Rectangle((int)(screenWidth / 2 - (cursorRadius / 2) * hScale),
+                    (int)(screenHeight / 2 - (cursorRadius / 2) * vScale), (int)(cursorRadius * hScale), (int)(cursorRadius * vScale));
 
                 newGameSprite[i] = new Sprite();
                 newGameSprite[i].Rectangle = new Rectangle(
-                    (int)(horizontalSpaceFromLeft * horizontalScale), 
-                    (int)(verticalSpaceBetweenButtons*verticalScale), (int)(defaultButtonWidth*horizontalScale), 
-                    (int)(defaultButtonHeight*verticalScale));
+                    (int)(hSpaceFromLeft * hScale), 
+                    (int)(vSpaceBetweenButtons*vScale), (int)(defaultBtnWidth*hScale), 
+                    (int)(defaultBtnHeight*vScale));
 
                 scoresSprite[i] = new Sprite();
                 scoresSprite[i].Rectangle = new Rectangle(
-                    (int)(horizontalSpaceFromLeft * horizontalScale),
-                    (int)((2 * verticalSpaceBetweenButtons + defaultButtonHeight) * (verticalScale)), 
-                    (int)(defaultButtonWidth * horizontalScale), (int)(defaultButtonHeight * verticalScale));
+                    (int)(hSpaceFromLeft * hScale),
+                    (int)((2 * vSpaceBetweenButtons + defaultBtnHeight) * (vScale)), 
+                    (int)(defaultBtnWidth * hScale), (int)(defaultBtnHeight * vScale));
 
                 exitSprite[i] = new Sprite();
                 exitSprite[i].Rectangle = new Rectangle(
-                    (int)(horizontalSpaceFromLeft * horizontalScale), 
-                    (int)((3 * verticalSpaceBetweenButtons + 2 * defaultButtonHeight) * (verticalScale)), 
-                    (int)(defaultButtonWidth * horizontalScale), (int)(defaultButtonHeight * verticalScale));
+                    (int)(hSpaceFromLeft * hScale), 
+                    (int)((3 * vSpaceBetweenButtons + 2 * defaultBtnHeight) * (vScale)), 
+                    (int)(defaultBtnWidth * hScale), (int)(defaultBtnHeight * vScale));
             }
             backgroundSprite.Rectangle = new Rectangle(0, 0, (int)screenWidth, (int)screenHeight);
             #endregion
@@ -365,6 +453,21 @@ namespace Game
                         break;
 
                     case ButtonSelect.NewGame:
+                        if (timeCounter > buttonTimeDelay) { state = State.OnDifficultySelect; timeCounter = 0; }
+                        break;
+
+                    case ButtonSelect.EasyDifficulty:
+                        selectedDifficulty = (int)GameDifficulty.Easy;
+                        if (timeCounter > buttonTimeDelay) { state = State.Playing; isGameInMenu = false; timeCounter = 0; }
+                        break;
+
+                    case ButtonSelect.MediumDifficulty:
+                        selectedDifficulty = (int)GameDifficulty.Medium;
+                        if (timeCounter > buttonTimeDelay) { state = State.Playing; isGameInMenu = false; timeCounter = 0; }
+                        break;
+
+                    case ButtonSelect.HardDifficulty:
+                        selectedDifficulty = (int)GameDifficulty.Hard;
                         if (timeCounter > buttonTimeDelay) { state = State.Playing; isGameInMenu = false; timeCounter = 0; }
                         break;
                 }
@@ -396,6 +499,13 @@ namespace Game
                         spriteBatch.DrawString(font, "DZIALA!", new Vector2(600, 250), Color.Red);
                         spriteBatch.End();
                         scoresBackSprite[scoresBackTextureType].DrawByRectangle(spriteBatch);
+                        break;
+                    }
+                case State.OnDifficultySelect:
+                    {
+                        easyDifficulty[easyDifficultyTextureType].DrawByRectangle(spriteBatch);
+                        mediumDifficulty[mediumDifficultyTextureType].DrawByRectangle(spriteBatch);
+                        hardDifficulty[hardDifficultyTextureType].DrawByRectangle(spriteBatch);
                         break;
                     }
             }
