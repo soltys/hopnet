@@ -208,8 +208,8 @@ namespace Game
             mainMenu.newGameSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
             mainMenu.scoresSprite[0].LoadSprite(Content, @"Sprites\testsprite1");
             mainMenu.scoresSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
-            mainMenu.scoresBackSprite[0].LoadSprite(Content, @"Sprites\testsprite1");
-            mainMenu.scoresBackSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
+            mainMenu.goBackSprite[0].LoadSprite(Content, @"Sprites\testsprite1");
+            mainMenu.goBackSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
             mainMenu.exitSprite[0].LoadSprite(Content, @"Sprites\testsprite1");
             mainMenu.exitSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
             mainMenu.backgroundSprite.LoadSprite(Content, @"Sprites\testsprite1");
