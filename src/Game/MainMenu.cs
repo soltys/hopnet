@@ -28,8 +28,8 @@ namespace Game
 
         private enum Texture : int { Normal=0, WithBorder=1 };
         private enum Hand : int { Left = 0, Right = 1 };
-        private enum State : int { InMainMenu = 0, InNewGame = 1, InScores = 2, OnExit = 3, Playing = 4, OnDifficultySelect = 5 }
-        private enum ButtonSelect : int { Scores = 0, Exit = 1, GoBack = 2, None = 3, NewGame = 4, EasyDifficulty = 5, MediumDifficulty = 6, HardDifficulty = 7 }
+        private enum State : int { InMainMenu = 0, InNewGame = 1, InScores = 2, OnExit = 3, Playing = 4, OnDifficultySelect = 5, ExitConfirmed = 6 }
+        private enum ButtonSelect : int { Scores = 0, Exit = 1, GoBack = 2, None = 3, NewGame = 4, EasyDifficulty = 5, MediumDifficulty = 6, HardDifficulty = 7, ConfirmExit = 8 }
         private enum GameDifficulty : int { Easy = 1, Medium = 2, Hard = 3 }
         private int selectedDifficulty = (int)GameDifficulty.Easy;
 
@@ -67,6 +67,9 @@ namespace Game
         private const int buttonTimeDelay = 50;
         private int timeCounter = 0;
         private int timerStepSize = 0;
+
+        public Sprite []confirmExit;
+        private int confirmExitTextureType = (int)Texture.Normal;
 
         private Vector2[] kinectHandPosition;
         private bool[] cursorState;
@@ -174,7 +177,6 @@ namespace Game
             switch(state)
             {
                 case State.InMainMenu:
-
                     buttonState = CheckCurrentButton(newGameSprite[newGameTextureType].Rectangle, ref newGameTextureType, ButtonSelect.NewGame, ref buttonState);
                     buttonState = CheckCurrentButton(scoresSprite[scoresTextureType].Rectangle, ref scoresTextureType, ButtonSelect.Scores, ref buttonState);
                     buttonState = CheckCurrentButton(exitSprite[exitTextureType].Rectangle, ref exitTextureType, ButtonSelect.Exit, ref buttonState);
@@ -192,6 +194,8 @@ namespace Game
                     break;
 
                 case State.OnExit:
+                    buttonState = CheckCurrentButton(goBackSprite[goBackTextureType].Rectangle, ref goBackTextureType, ButtonSelect.GoBack, ref buttonState);
+                    buttonState = CheckCurrentButton(confirmExit[confirmExitTextureType].Rectangle, ref confirmExitTextureType, ButtonSelect.ConfirmExit, ref buttonState);
                     break;
             }
             ChangeCursorTexture(cursorState);
@@ -247,10 +251,18 @@ namespace Game
             easyDifficulty = new Sprite[textureNumber];
             mediumDifficulty = new Sprite[textureNumber];
             hardDifficulty = new Sprite[textureNumber];
+            confirmExit = new Sprite[textureNumber];
 
             #region initialization of every sprite's properties
             for (int i = 0; i < textureNumber; i++)
             {
+                confirmExit[i] = new Sprite();
+                confirmExit[i].Rectangle = new Rectangle(
+                    (int)(screenWidth / 2 - defaultBtnWidth * hScale / 2),
+                    (int)(screenHeight / 2 - defaultBtnHeight * vScale / 2),
+                    (int)(defaultBtnWidth * hScale), (int)(defaultBtnHeight * vScale));
+
+
                 goBackSprite[i] = new Sprite();
                 goBackSprite[i].Rectangle = new Rectangle((int)(hSpaceFromLeft * hScale),
                 (int)((3 * vSpaceBetweenButtons + 2 * defaultBtnHeight) * (vScale)),
@@ -329,7 +341,6 @@ namespace Game
             {
                 if (kinectData != null)
                 {
-
                     kinectHandPosition[(int)Hand.Left].X = ((0.5f * kinectData.Joints[JointType.HandLeft].Position.X) + 0.5f) * screenWidth;
                     kinectHandPosition[(int)Hand.Left].Y = ((-0.5f * kinectData.Joints[JointType.HandLeft].Position.Y) + 0.5f) * screenHeight;
                     kinectHandPosition[(int)Hand.Right].X = ((0.5f * kinectData.Joints[JointType.HandRight].Position.X) + 0.5f) * screenWidth;
@@ -388,6 +399,10 @@ namespace Game
                         selectedDifficulty = (int)GameDifficulty.Hard;
                         if (timeCounter > buttonTimeDelay) { state = State.Playing; isGameInMenu = false; timeCounter = 0; }
                         break;
+
+                    case ButtonSelect.ConfirmExit:
+                        if (timeCounter > buttonTimeDelay) { state = State.ExitConfirmed; timeCounter = 0; }
+                        break;
                 }
 
                 handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].rectangle.X = (int)kinectHandPosition[(int)Hand.Left].X;
@@ -424,6 +439,12 @@ namespace Game
                         easyDifficulty[easyDifficultyTextureType].DrawByRectangle(spriteBatch);
                         mediumDifficulty[mediumDifficultyTextureType].DrawByRectangle(spriteBatch);
                         hardDifficulty[hardDifficultyTextureType].DrawByRectangle(spriteBatch);
+                        goBackSprite[goBackTextureType].DrawByRectangle(spriteBatch);
+                        break;
+                    }
+                case State.OnExit:
+                    {
+                        confirmExit[confirmExitTextureType].DrawByRectangle(spriteBatch);
                         goBackSprite[goBackTextureType].DrawByRectangle(spriteBatch);
                         break;
                     }

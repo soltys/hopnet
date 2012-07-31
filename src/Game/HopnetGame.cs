@@ -224,8 +224,8 @@ namespace Game
             mainMenu.mediumDifficulty[1].LoadSprite(Content, @"Sprites\testsprite2");
             mainMenu.hardDifficulty[0].LoadSprite(Content, @"Sprites\testsprite1");
             mainMenu.hardDifficulty[1].LoadSprite(Content, @"Sprites\testsprite2");
-
-
+            mainMenu.confirmExit[0].LoadSprite(Content, @"Sprites\testsprite1");
+            mainMenu.confirmExit[1].LoadSprite(Content, @"Sprites\testsprite2");
             jointTexture = Content.Load<Texture2D>(@"Sprites\cursor_left_normal");
 
             aspectRatio = (float)graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height;
