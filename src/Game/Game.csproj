@@ -84,6 +84,7 @@
   <ItemGroup>
     <Compile Include="Hero.cs" />
     <Compile Include="HighScores.cs" />
+    <Compile Include="KinectData.cs" />
     <Compile Include="KinectPlayer.cs" />
     <Compile Include="MainMenu.cs" />
     <Compile Include="Object.cs" />
