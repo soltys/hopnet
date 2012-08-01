@@ -12,6 +12,7 @@ namespace Game
 {
     class MainMenu
     {
+        private HopnetGame hopNetGame;
         private bool isGameInMenu=true;
         private float screenWidth;
         private float screenHeight;
@@ -32,6 +33,7 @@ namespace Game
         private enum ButtonSelect : int { Scores = 0, Exit = 1, GoBack = 2, None = 3, NewGame = 4, EasyDifficulty = 5, MediumDifficulty = 6, HardDifficulty = 7, ConfirmExit = 8 }
         private enum GameDifficulty : int { Easy = 1, Medium = 2, Hard = 3 }
         private int selectedDifficulty = (int)GameDifficulty.Easy;
+        private ButtonSelect lastButton = ButtonSelect.None;
 
         private State state = State.InMainMenu;
 
@@ -64,7 +66,7 @@ namespace Game
         private int[] handTextureType;
 
         public Sprite timeoutProgressBar;
-        private const int buttonTimeDelay = 50;
+        private const int buttonTimeDelay = 100;
         private int timeCounter = 0;
         private int timerStepSize = 0;
 
@@ -143,19 +145,19 @@ namespace Game
 
         private ButtonSelect CheckCurrentButton(Rectangle spriteRectangle, ref int spriteTexture, ButtonSelect newState, ref ButtonSelect lastState)
         {
+            bool[] isCursorInsideButton = new bool[2];
+            ChangeButtonTexture(isCursorInsideButton, ref spriteTexture);
             if (lastState == ButtonSelect.None)
             {
-                bool[] isCursorInsideButton = new bool[2];
-
                 isCursorInsideButton[(int)Hand.Left] = IsCursorInButtonArea(spriteRectangle, handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);
                 isCursorInsideButton[(int)Hand.Right] = IsCursorInButtonArea(spriteRectangle, handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].Rectangle);
 
                 if (isCursorInsideButton[(int)Hand.Left]) { cursorState[(int)Hand.Left] = isCursorInsideButton[(int)Hand.Left]; }
                 if (isCursorInsideButton[(int)Hand.Right]) { cursorState[(int)Hand.Right] = isCursorInsideButton[(int)Hand.Right]; }
 
-                ChangeButtonTexture(isCursorInsideButton, ref spriteTexture);
                 if (IsButtonSelected(isCursorInsideButton))
                 {
+                    ChangeButtonTexture(isCursorInsideButton, ref spriteTexture);
                     if (IsCanChangeState(isCursorInsideButton))
                     {
                         return newState;
@@ -183,7 +185,7 @@ namespace Game
                     break;
 
                 case State.InScores:
-                    buttonState = CheckCurrentButton(goBackSprite[goBackTextureType].Rectangle, ref goBackTextureType, ButtonSelect.Exit, ref buttonState);
+                    buttonState = CheckCurrentButton(goBackSprite[goBackTextureType].Rectangle, ref goBackTextureType, ButtonSelect.GoBack, ref buttonState);
                     break;
 
                 case State.OnDifficultySelect:
@@ -196,6 +198,9 @@ namespace Game
                 case State.OnExit:
                     buttonState = CheckCurrentButton(goBackSprite[goBackTextureType].Rectangle, ref goBackTextureType, ButtonSelect.GoBack, ref buttonState);
                     buttonState = CheckCurrentButton(confirmExit[confirmExitTextureType].Rectangle, ref confirmExitTextureType, ButtonSelect.ConfirmExit, ref buttonState);
+                    break;
+                case State.ExitConfirmed:
+                    hopNetGame.Exit();
                     break;
             }
             ChangeCursorTexture(cursorState);
@@ -220,8 +225,9 @@ namespace Game
             return false;
         }
 
-        public MainMenu(GraphicsDeviceManager graphics)
+        public MainMenu(GraphicsDeviceManager graphics, HopnetGame hopnetGame)
         {
+            hopNetGame = hopnetGame;
             handTextureType = new int[2];
             handTextureType[(int)Hand.Left] = (int)Texture.Normal;
             handTextureType[(int)Hand.Right] = (int)Texture.Normal;
@@ -335,7 +341,7 @@ namespace Game
             return false;
         }
 
-        public void Update(object sender, Skeleton kinectData)
+        public void Update(Skeleton kinectData, Vector2 mousePos)
         {
             if (isGameInMenu)
             {
@@ -348,15 +354,15 @@ namespace Game
                 }
                 else
                 {
-                    kinectHandPosition[(int)Hand.Left].X = 0.8f * screenWidth;
-                    kinectHandPosition[(int)Hand.Left].Y = 0.5f * screenHeight;
-                    kinectHandPosition[(int)Hand.Right].X = 0.8f * screenWidth;
-                    kinectHandPosition[(int)Hand.Right].Y = 0.5f * screenHeight;
+                    kinectHandPosition[(int)Hand.Left].X = mousePos.X-40;
+                    kinectHandPosition[(int)Hand.Left].Y = mousePos.Y;
+                    kinectHandPosition[(int)Hand.Right].X = mousePos.X + 40;
+                    kinectHandPosition[(int)Hand.Right].Y = mousePos.Y;
                 }
 
                 var selectedButton = CheckButtonSelect();
 
-                if (selectedButton != ButtonSelect.None)
+                if (selectedButton != ButtonSelect.None & selectedButton==lastButton)
                 {
                     timeCounter++;
                     timeoutProgressBar.rectangle.Width += timerStepSize;
@@ -370,41 +376,42 @@ namespace Game
                 switch (selectedButton)
                 {
                     case ButtonSelect.Scores:
-                        if (timeCounter > buttonTimeDelay) { state = State.InScores; timeCounter = 0; }
+                        if (timeCounter > buttonTimeDelay) { state = State.InScores; timeCounter = 0; timeoutProgressBar.rectangle.Width = 0; }
                         break;
 
                     case ButtonSelect.Exit:
-                        if (timeCounter > buttonTimeDelay) { state = State.OnExit; timeCounter = 0; }
+                        if (timeCounter > buttonTimeDelay) { state = State.OnExit; timeCounter = 0; timeoutProgressBar.rectangle.Width = 0; }
                         break;
 
                     case ButtonSelect.GoBack:
-                        if (timeCounter > buttonTimeDelay) { state = State.InMainMenu; timeCounter = 0; }
+                        if (timeCounter > buttonTimeDelay) { state = State.InMainMenu; timeCounter = 0; timeoutProgressBar.rectangle.Width = 0; }
                         break;
 
                     case ButtonSelect.NewGame:
-                        if (timeCounter > buttonTimeDelay) { state = State.OnDifficultySelect; timeCounter = 0; }
+                        if (timeCounter > buttonTimeDelay) { state = State.OnDifficultySelect; timeCounter = 0; timeoutProgressBar.rectangle.Width = 0; }
                         break;
 
                     case ButtonSelect.EasyDifficulty:
                         selectedDifficulty = (int)GameDifficulty.Easy;
-                        if (timeCounter > buttonTimeDelay) { state = State.Playing; isGameInMenu = false; timeCounter = 0; }
+                        if (timeCounter > buttonTimeDelay) { state = State.Playing; isGameInMenu = false; timeCounter = 0; timeoutProgressBar.rectangle.Width = 0; }
                         break;
 
                     case ButtonSelect.MediumDifficulty:
                         selectedDifficulty = (int)GameDifficulty.Medium;
-                        if (timeCounter > buttonTimeDelay) { state = State.Playing; isGameInMenu = false; timeCounter = 0; }
+                        if (timeCounter > buttonTimeDelay) { state = State.Playing; isGameInMenu = false; timeCounter = 0; timeoutProgressBar.rectangle.Width = 0; }
                         break;
 
                     case ButtonSelect.HardDifficulty:
                         selectedDifficulty = (int)GameDifficulty.Hard;
-                        if (timeCounter > buttonTimeDelay) { state = State.Playing; isGameInMenu = false; timeCounter = 0; }
+                        if (timeCounter > buttonTimeDelay) { state = State.Playing; isGameInMenu = false; timeCounter = 0; timeoutProgressBar.rectangle.Width = 0; }
                         break;
 
                     case ButtonSelect.ConfirmExit:
-                        if (timeCounter > buttonTimeDelay) { state = State.ExitConfirmed; timeCounter = 0; }
+                        if (timeCounter > buttonTimeDelay) { state = State.ExitConfirmed; timeCounter = 0; timeoutProgressBar.rectangle.Width = 0;}
                         break;
                 }
 
+                lastButton = selectedButton;
                 handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].rectangle.X = (int)kinectHandPosition[(int)Hand.Left].X;
                 handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].rectangle.Y = (int)kinectHandPosition[(int)Hand.Left].Y;
 
@@ -412,6 +419,35 @@ namespace Game
                 handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].rectangle.Y = (int)kinectHandPosition[(int)Hand.Right].Y;
             }
         }
+
+        public void LoadContent(ContentManager content)
+        {
+            newGameSprite[0].LoadSprite(content, @"Sprites\testsprite1");
+            newGameSprite[1].LoadSprite(content, @"Sprites\testsprite2");
+            scoresSprite[0].LoadSprite(content, @"Sprites\testsprite1");
+            scoresSprite[1].LoadSprite(content, @"Sprites\testsprite2");
+            goBackSprite[0].LoadSprite(content, @"Sprites\testsprite1");
+            goBackSprite[1].LoadSprite(content, @"Sprites\testsprite2");
+            exitSprite[0].LoadSprite(content, @"Sprites\testsprite1");
+            exitSprite[1].LoadSprite(content, @"Sprites\testsprite2");
+            backgroundSprite.LoadSprite(content, @"Sprites\testsprite1");
+            handSprite[0, 0].LoadSprite(content, @"Sprites\cursor_left_normal");
+            handSprite[0, 1].LoadSprite(content, @"Sprites\cursor_left_border");
+            handSprite[1, 0].LoadSprite(content, @"Sprites\cursor_right_normal");
+            handSprite[1, 1].LoadSprite(content, @"Sprites\cursor_right_border");
+            timeoutProgressBar.LoadSprite(content, @"Sprites\progress_bar");
+            easyDifficulty[0].LoadSprite(content, @"Sprites\testsprite1");
+            easyDifficulty[1].LoadSprite(content, @"Sprites\testsprite2");
+            mediumDifficulty[0].LoadSprite(content, @"Sprites\testsprite1");
+            mediumDifficulty[1].LoadSprite(content, @"Sprites\testsprite2");
+            hardDifficulty[0].LoadSprite(content, @"Sprites\testsprite1");
+            hardDifficulty[1].LoadSprite(content, @"Sprites\testsprite2");
+            confirmExit[0].LoadSprite(content, @"Sprites\testsprite1");
+            confirmExit[1].LoadSprite(content, @"Sprites\testsprite2");
+        }
+
+
+
 
         public void Draw(SpriteBatch spriteBatch,SpriteFont font)
         {
@@ -428,9 +464,6 @@ namespace Game
                     }
                 case State.InScores:
                     {
-                        spriteBatch.Begin();
-                        spriteBatch.DrawString(font, "DZIALA!", new Vector2(600, 250), Color.Red);
-                        spriteBatch.End();
                         goBackSprite[goBackTextureType].DrawByRectangle(spriteBatch);
                         break;
                     }
@@ -451,7 +484,8 @@ namespace Game
             }
 
             spriteBatch.Begin();
-            spriteBatch.DrawString(font, timeCounter.ToString(), new Vector2(400, 200), Color.Red);
+            spriteBatch.DrawString(font, state.ToString(), new Vector2(400, 200), Color.Red);
+
             spriteBatch.End();
 
             timeoutProgressBar.DrawByRectangle(spriteBatch);

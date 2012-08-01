@@ -17,6 +17,10 @@ namespace Game
     /// </summary>
     public class HopnetGame : Microsoft.Xna.Framework.Game
     {
+        bool isUserHasKinect = false;
+
+
+
 
         KinectSensor kinect;
         Texture2D colorVideo,depthVideo;
@@ -75,6 +79,7 @@ namespace Game
         /// </summary>
         protected override void Initialize()
         {
+            
             graphics.PreferredBackBufferWidth = 1280;
             graphics.PreferredBackBufferHeight = 720;
             graphics.IsFullScreen = false;
@@ -85,27 +90,29 @@ namespace Game
             colorVideo = new Texture2D(graphics.GraphicsDevice,320,240);
             depthVideo = new Texture2D(graphics.GraphicsDevice, 320, 240) ;
 
-
-            try
+            if (isUserHasKinect)
             {
-                kinect = KinectSensor.KinectSensors[0];
-                kinect.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
-                kinect.DepthStream.Enable(DepthImageFormat.Resolution320x240Fps30);
-                kinect.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(kinect_AllFramesReady);
-                kinect.SkeletonStream.Enable();
-                kinect.Start();
-                colorVideo = new Texture2D(graphics.GraphicsDevice, kinect.ColorStream.FrameWidth, kinect.ColorStream.FrameHeight);
-                depthVideo = new Texture2D(graphics.GraphicsDevice, kinect.DepthStream.FrameWidth, kinect.DepthStream.FrameHeight);
+                try
+                {
+                    kinect = KinectSensor.KinectSensors[0];
+                    kinect.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+                    kinect.DepthStream.Enable(DepthImageFormat.Resolution320x240Fps30);
+                    kinect.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(kinect_AllFramesReady);
+                    kinect.SkeletonStream.Enable();
+                    kinect.Start();
+                    colorVideo = new Texture2D(graphics.GraphicsDevice, kinect.ColorStream.FrameWidth, kinect.ColorStream.FrameHeight);
+                    depthVideo = new Texture2D(graphics.GraphicsDevice, kinect.DepthStream.FrameWidth, kinect.DepthStream.FrameHeight);
+                }
+                catch (Exception e)
+                {
+                    throw new ArgumentException();
+                }
             }
-            catch (Exception e)
-            {
-                throw new ArgumentException();
-            }
-
+            
             cameraPosition = new Vector3(0.0f, 5.0f, 10.0f);
             moveOnlyOnceRight = true;
             moveOnlyOnceLeft = true;
-            mainMenu = new MainMenu(graphics);
+            mainMenu = new MainMenu(graphics,this);
 
             platformList = new List<Platform>();
             platformGenerator=new PlatformCollection();
@@ -147,7 +154,7 @@ namespace Game
                     }
                 }
             }
-            mainMenu.Update(sender,skeleton);
+            mainMenu.Update(skeleton, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
         }
 
 
@@ -162,8 +169,6 @@ namespace Game
                         (((-0.5f * joint.Position.Y) + 0.3f) * (resolution.Y)));
 
                         spriteBatch.Draw(img, new Rectangle(Convert.ToInt32(position.X), Convert.ToInt32(position.Y), 50, 50), Color.Red);
-
-
                 }
                 spriteBatch.End();
             }
@@ -204,31 +209,10 @@ namespace Game
             heroModel = Content.Load<Model>(@"Models\hero");
 
             platformModel = Content.Load<Model>(@"Models\platforma");
-            mainMenu.newGameSprite[0].LoadSprite(Content, @"Sprites\testsprite1");
-            mainMenu.newGameSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
-            mainMenu.scoresSprite[0].LoadSprite(Content, @"Sprites\testsprite1");
-            mainMenu.scoresSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
-            mainMenu.goBackSprite[0].LoadSprite(Content, @"Sprites\testsprite1");
-            mainMenu.goBackSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
-            mainMenu.exitSprite[0].LoadSprite(Content, @"Sprites\testsprite1");
-            mainMenu.exitSprite[1].LoadSprite(Content, @"Sprites\testsprite2");
-            mainMenu.backgroundSprite.LoadSprite(Content, @"Sprites\testsprite1");
-            mainMenu.handSprite[0, 0].LoadSprite(Content, @"Sprites\cursor_left_normal");
-            mainMenu.handSprite[0, 1].LoadSprite(Content, @"Sprites\cursor_left_border");
-            mainMenu.handSprite[1, 0].LoadSprite(Content, @"Sprites\cursor_right_normal");
-            mainMenu.handSprite[1, 1].LoadSprite(Content, @"Sprites\cursor_right_border");
-            mainMenu.timeoutProgressBar.LoadSprite(Content, @"Sprites\progress_bar");
-            mainMenu.easyDifficulty[0].LoadSprite(Content, @"Sprites\testsprite1");
-            mainMenu.easyDifficulty[1].LoadSprite(Content, @"Sprites\testsprite2");
-            mainMenu.mediumDifficulty[0].LoadSprite(Content, @"Sprites\testsprite1");
-            mainMenu.mediumDifficulty[1].LoadSprite(Content, @"Sprites\testsprite2");
-            mainMenu.hardDifficulty[0].LoadSprite(Content, @"Sprites\testsprite1");
-            mainMenu.hardDifficulty[1].LoadSprite(Content, @"Sprites\testsprite2");
-            mainMenu.confirmExit[0].LoadSprite(Content, @"Sprites\testsprite1");
-            mainMenu.confirmExit[1].LoadSprite(Content, @"Sprites\testsprite2");
             jointTexture = Content.Load<Texture2D>(@"Sprites\cursor_left_normal");
 
             aspectRatio = (float)graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height;
+            mainMenu.LoadContent(Content);
 
             logger.Trace("Load Content ends");
             // TODO: use this.Content to load your game content here
@@ -308,6 +292,14 @@ namespace Game
                 AddNewPlatforms();
                 RemovePlatformsAtEnd();
                 break;
+                    
+                case true:
+                if (!isUserHasKinect)
+                {
+                    mainMenu.Update(null, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+                }
+                break;
+                     
             }
 
                 #region player controls
