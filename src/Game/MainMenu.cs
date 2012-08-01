@@ -37,45 +37,45 @@ namespace Game
 
         private State state = State.InMainMenu;
 
-        public Sprite[] newGameSprite;
+        private Sprite[] newGameSprite;
         private int newGameTextureType=(int)Texture.Normal;
 
-        public Sprite[] scoresSprite;
+        private Sprite[] scoresSprite;
         private int scoresTextureType = (int)Texture.Normal;
 
-        public Sprite[] goBackSprite;
+        private Sprite[] goBackSprite;
         private int goBackTextureType = (int)Texture.Normal;
 
-        public Sprite[] exitSprite;
+        private Sprite[] exitSprite;
         private int exitTextureType = (int)Texture.Normal;
 
-        public Sprite backgroundSprite;
+        private Sprite backgroundSprite;
 
-        public Sprite selectDifficultyText;
+        private Sprite selectDifficultyText;
 
-        public Sprite[] easyDifficulty;
+        private Sprite[] easyDifficulty;
         private int easyDifficultyTextureType=(int)Texture.Normal;
 
-        public Sprite[] mediumDifficulty;
+        private Sprite[] mediumDifficulty;
         private int mediumDifficultyTextureType=(int)Texture.Normal;
 
-        public Sprite[] hardDifficulty;
+        private Sprite[] hardDifficulty;
         private int hardDifficultyTextureType=(int)Texture.Normal;
 
-        public Sprite[,] handSprite;
+        private Sprite[,] handSprite;
         private int[] handTextureType;
 
-        public Sprite timeoutProgressBar;
+        private Sprite timeoutProgressBar;
         private const int buttonTimeDelay = 100;
         private int timeCounter = 0;
         private int timerStepSize = 0;
 
-        public Sprite []confirmExit;
+        private Sprite []confirmExit;
         private int confirmExitTextureType = (int)Texture.Normal;
 
         private Vector2[] kinectHandPosition;
         private bool[] cursorState;
-        public const int cursorRadius = 64;
+        private const int cursorRadius = 64;
 
         public bool IsGameInMenuMode
         {
@@ -482,11 +482,6 @@ namespace Game
                         break;
                     }
             }
-
-            spriteBatch.Begin();
-            spriteBatch.DrawString(font, state.ToString(), new Vector2(400, 200), Color.Red);
-
-            spriteBatch.End();
 
             timeoutProgressBar.DrawByRectangle(spriteBatch);
             handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].DrawByRectangle(spriteBatch);

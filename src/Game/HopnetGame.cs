@@ -19,9 +19,6 @@ namespace Game
     {
         bool isUserHasKinect = false;
 
-
-
-
         KinectSensor kinect;
         Texture2D colorVideo,depthVideo;
         Skeleton[] skeletonData;
@@ -284,7 +281,8 @@ namespace Game
         {
             if (Keyboard.GetState().IsKeyDown(Keys.P)) { UnloadContent(); Exit(); }
             var keyState = Keyboard.GetState();
-               
+            
+            
             switch(mainMenu.IsGameInMenuMode)
             {
                 case false:
@@ -301,7 +299,7 @@ namespace Game
                 break;
                      
             }
-
+            
                 #region player controls
                 bool playerCanJump = IsPlayerCanJump();
 
@@ -354,7 +352,6 @@ namespace Game
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            
             switch(mainMenu.IsGameInMenuMode)
             {
                 case true:
@@ -368,7 +365,6 @@ namespace Game
                     player.Draw(aspectRatio, cameraPosition,heroModel);
                     break;
             }
-
             base.Draw(gameTime);
         }
     }
