@@ -29,13 +29,25 @@ namespace Game
 
         private enum Texture : int { Normal=0, WithBorder=1 };
         private enum Hand : int { Left = 0, Right = 1 };
-        private enum State : int { InMainMenu = 0, InNewGame = 1, InScores = 2, OnExit = 3, Playing = 4, OnDifficultySelect = 5, ExitConfirmed = 6 }
-        private enum ButtonSelect : int { Scores = 0, Exit = 1, GoBack = 2, None = 3, NewGame = 4, EasyDifficulty = 5, MediumDifficulty = 6, HardDifficulty = 7, ConfirmExit = 8 }
-        private enum GameDifficulty : int { Easy = 1, Medium = 2, Hard = 3 }
+        public enum State : int { InMainMenu = 0, InNewGame = 1, InScores = 2, OnExit = 3, Playing = 4, OnDifficultySelect = 5, ExitConfirmed = 6 }
+        public enum ButtonSelect : int { Scores = 0, Exit = 1, GoBack = 2, None = 3, NewGame = 4, EasyDifficulty = 5, MediumDifficulty = 6, HardDifficulty = 7, ConfirmExit = 8 }
+        public enum GameDifficulty : int { Easy = 1, Medium = 2, Hard = 3 }
         private int selectedDifficulty = (int)GameDifficulty.Easy;
+
+        private float defaultShoulderHeight = 0.2f;
+        private float heightModifier = 0f;
+        private float lastHeightModifier = 0.4f;
+        private float heightTreshold = 0.01f;
         private ButtonSelect lastButton = ButtonSelect.None;
 
         private State state = State.InMainMenu;
+
+        private State MenuState
+        {
+            get { return state; }
+            set { state = value; }
+        }
+
 
         private Sprite[] newGameSprite;
         private int newGameTextureType=(int)Texture.Normal;
@@ -80,6 +92,7 @@ namespace Game
         public bool IsGameInMenuMode
         {
             get { return isGameInMenu; }
+            set { isGameInMenu = value; }
         }
         private Vector2 GetTextureCenter(Rectangle rectangle)
         {
@@ -347,10 +360,17 @@ namespace Game
             {
                 if (kinectData != null)
                 {
+
+                    if (Math.Abs(heightModifier - lastHeightModifier) > heightTreshold)
+                    {
+                        lastHeightModifier = heightModifier;
+                        heightModifier = defaultShoulderHeight - kinectData.Joints[JointType.ShoulderCenter].Position.Y;
+                    }
+
                     kinectHandPosition[(int)Hand.Left].X = ((0.5f * kinectData.Joints[JointType.HandLeft].Position.X) + 0.5f) * screenWidth;
-                    kinectHandPosition[(int)Hand.Left].Y = ((-0.5f * kinectData.Joints[JointType.HandLeft].Position.Y) + 0.5f) * screenHeight;
+                    kinectHandPosition[(int)Hand.Left].Y = ((-0.5f * kinectData.Joints[JointType.HandLeft].Position.Y) + 0.5f - heightModifier/2) * screenHeight;
                     kinectHandPosition[(int)Hand.Right].X = ((0.5f * kinectData.Joints[JointType.HandRight].Position.X) + 0.5f) * screenWidth;
-                    kinectHandPosition[(int)Hand.Right].Y = ((-0.5f * kinectData.Joints[JointType.HandRight].Position.Y) + 0.5f) * screenHeight;
+                    kinectHandPosition[(int)Hand.Right].Y = ((-0.5f * kinectData.Joints[JointType.HandRight].Position.Y) + 0.5f - heightModifier/2) * screenHeight;
                 }
                 else
                 {
@@ -483,6 +503,9 @@ namespace Game
                     }
             }
 
+            spriteBatch.Begin();
+            spriteBatch.DrawString(font, heightModifier.ToString(), new Vector2(400, 200), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
+            spriteBatch.End();
             timeoutProgressBar.DrawByRectangle(spriteBatch);
             handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].DrawByRectangle(spriteBatch);
             handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].DrawByRectangle(spriteBatch);
