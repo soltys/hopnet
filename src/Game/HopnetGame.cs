@@ -10,6 +10,9 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using NLog;
 using Microsoft.Kinect;
+using System.Diagnostics;
+
+
 namespace Game
 {
     /// <summary>
@@ -17,7 +20,7 @@ namespace Game
     /// </summary>
     public class HopnetGame : Microsoft.Xna.Framework.Game
     {
-        bool isUserHasKinect = false;
+        bool isUserHasKinect = true;
 
         KinectSensor kinect;
         Texture2D colorVideo,depthVideo;
@@ -40,6 +43,10 @@ namespace Game
         Vector3 cameraPosition;
         bool moveOnlyOnceRight;
         bool moveOnlyOnceLeft;
+        KinectPlayer kinectPlayer;
+        Stopwatch stopWatch;
+        double gravity = 5.0f;
+
 
         // The aspect ratio determines how to scale 3d to 2d projection.
         float aspectRatio;
@@ -71,12 +78,11 @@ namespace Game
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
         /// This is where it can query for any required services and load any non-graphic
-        /// related content.  Calling base.Initialize will enumerate through any components
+        /// related content.  Calling base. Initialize will enumerate through any components
         /// and initialize them as well.
         /// </summary>
         protected override void Initialize()
-        {
-            
+        {         
             graphics.PreferredBackBufferWidth = 1280;
             graphics.PreferredBackBufferHeight = 720;
             graphics.IsFullScreen = false;
@@ -87,8 +93,6 @@ namespace Game
             colorVideo = new Texture2D(graphics.GraphicsDevice,320,240);
             depthVideo = new Texture2D(graphics.GraphicsDevice, 320, 240) ;
 
-            if (isUserHasKinect)
-            {
                 try
                 {
                     kinect = KinectSensor.KinectSensors[0];
@@ -102,18 +106,23 @@ namespace Game
                 }
                 catch (Exception e)
                 {
-                    throw new ArgumentException();
+                    isUserHasKinect = false;
                 }
-            }
             
             cameraPosition = new Vector3(0.0f, 5.0f, 10.0f);
             moveOnlyOnceRight = true;
             moveOnlyOnceLeft = true;
             mainMenu = new MainMenu(graphics,this);
+            mainMenu.IsGameInMenuMode = false;
+            kinectPlayer = new KinectPlayer(Content,new Vector3(DistanceBetweenPlatforms,0,2.55f));
+            stopWatch = new Stopwatch();
+            stopWatch.Reset();
+            stopWatch.Stop();
+
 
             platformList = new List<Platform>();
             platformGenerator=new PlatformCollection();
-            var heroArrangement = new ObjectArrangementIn3D
+            var heroArrangement = new ObjectData3D
                                       {
                                           Position = new Vector3(0.0f, 0.5f, 9.0f),
                                           Scale = new Vector3(0.5f, 0.5f, 0.5f),
@@ -152,6 +161,7 @@ namespace Game
                 }
             }
             mainMenu.Update(skeleton, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+            kinectPlayer.Update(skeleton);
         }
 
 
@@ -165,7 +175,10 @@ namespace Game
                     Vector2 position = new Vector2((((0.5f * joint.Position.X) +0.3f) * (resolution.X)),
                         (((-0.5f * joint.Position.Y) + 0.3f) * (resolution.Y)));
 
-                        spriteBatch.Draw(img, new Rectangle(Convert.ToInt32(position.X), Convert.ToInt32(position.Y), 50, 50), Color.Red);
+                    if ((joint.JointType == JointType.FootRight))
+                    {
+                        spriteBatch.Draw(img, new Rectangle(Convert.ToInt32(position.X), Convert.ToInt32(position.Y), 50, 50), Color.Black);
+                    }
                 }
                 spriteBatch.End();
             }
@@ -181,7 +194,7 @@ namespace Game
             {
                 if (rowFromGenerator[i] == true)
                 {
-                    ObjectArrangementIn3D platformArrangement = new ObjectArrangementIn3D();
+                    ObjectData3D platformArrangement = new ObjectData3D();
                     platformArrangement.Position = new Vector3(firstPlatformPosition + i * distanceBetweenPlatforms, 0.0f, BeginningOfBoardPositionZ);
                     platformArrangement.Scale = new Vector3(0.5f);
                     platformArrangement.Rotation = new Vector3(0.0f);
@@ -224,6 +237,10 @@ namespace Game
             // TODO: Unload any non ContentManager content here
         }
 
+        static int tajmer = 0;
+        bool runOnce = true;
+        
+
         private void MovePlatforms()
         {
             foreach (Platform platform in platformList)
@@ -236,9 +253,21 @@ namespace Game
         {
             if (platformList.Count>0)
             {
-                if (platformList[0].ObjectArrangement.Position.Z > EndOfBoardPositionZ)
+                if (platformList[0].objectArrangement.Position.Z > EndOfBoardPositionZ)
                 {
                     platformList.RemoveAt(0);
+
+                    if (!runOnce)
+                    {
+                        stopWatch.Stop();
+                    }
+
+
+                    if (runOnce)
+                    {
+                        stopWatch.Start();
+                        runOnce=false;
+                    }
                 }
             }
         }
@@ -249,8 +278,8 @@ namespace Game
         {
             foreach (Platform platform in platformList)
             {
-                if (platform.ObjectArrangement.Position.Z < player.ObjectArrangement.Position.Z + safeRangeForJump
-                    && platform.ObjectArrangement.Position.Z > player.ObjectArrangement.Position.Z - safeRangeForJump)
+                if (platform.objectArrangement.Position.Z < player.objectArrangement.Position.Z + safeRangeForJump
+                    && platform.objectArrangement.Position.Z > player.objectArrangement.Position.Z - safeRangeForJump)
                 {
                     return true;
                 }
@@ -281,7 +310,8 @@ namespace Game
         {
             if (Keyboard.GetState().IsKeyDown(Keys.P)) { UnloadContent(); Exit(); }
             var keyState = Keyboard.GetState();
-            
+
+            kinectPlayer.Update(SpeedOfPlatforms,SpeedOfPlatforms, gravity);
             
             switch(mainMenu.IsGameInMenuMode)
             {
@@ -351,7 +381,7 @@ namespace Game
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-
+            
             switch(mainMenu.IsGameInMenuMode)
             {
                 case true:
@@ -362,9 +392,15 @@ namespace Game
                     {
                         platform.Draw(aspectRatio, cameraPosition,platformModel);
                     }
-                    player.Draw(aspectRatio, cameraPosition,heroModel);
+                    //kinectPlayer.Draw(spriteBatch, debugFont, aspectRatio, cameraPosition);
                     break;
             }
+            
+            spriteBatch.Begin();
+            spriteBatch.DrawString(debugFont, stopWatch.Elapsed.TotalMilliseconds.ToString(), new Vector2(400, 80), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
+            spriteBatch.End();
+            
+            //DrawSkeleton(spriteBatch, new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight), jointTexture);
             base.Draw(gameTime);
         }
     }

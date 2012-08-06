@@ -2,13 +2,13 @@ using Microsoft.Xna.Framework;
 
 namespace Game
 {
-    class ObjectArrangementIn3D
+    class ObjectData3D
     {
-        public ObjectArrangementIn3D()
+        public ObjectData3D()
         {
 
         }
-        public ObjectArrangementIn3D(Vector3 position, Vector3 scale, Vector3 rotation)
+        public ObjectData3D(Vector3 position, Vector3 scale, Vector3 rotation)
         {
             Position = position;
             Scale = scale;

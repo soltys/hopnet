@@ -17,9 +17,6 @@ namespace Game
             get { return skeleton; }
         }
 
-
-
-
         public KinectData()
         {
             try

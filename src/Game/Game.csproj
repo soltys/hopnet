@@ -88,7 +88,7 @@
     <Compile Include="KinectPlayer.cs" />
     <Compile Include="MainMenu.cs" />
     <Compile Include="Object.cs" />
-    <Compile Include="ObjectArrangementIn3D.cs" />
+    <Compile Include="ObjectData3D.cs" />
     <Compile Include="Platform.cs" />
     <Compile Include="PlatformRow.cs" />
     <Compile Include="PlatformCollection.cs" />

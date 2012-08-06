@@ -6,7 +6,7 @@ namespace Game
 {
     class Platform : Object
     {
-        public Platform(ObjectArrangementIn3D platformArrangement)
+        public Platform(ObjectData3D platformArrangement)
             : base()
         {
             base.ArrangeObjectOnScene(platformArrangement);
@@ -15,8 +15,8 @@ namespace Game
 
         public void MoveInAxisZ(float MoveValue)
         {
-            Vector3 newPosition = new Vector3(ObjectArrangement.Position.X, ObjectArrangement.Position.Y, ObjectArrangement.Position.Z + MoveValue);
-            ObjectArrangement.Position = newPosition;
+            Vector3 newPosition = new Vector3(objectArrangement.Position.X, objectArrangement.Position.Y, objectArrangement.Position.Z + MoveValue);
+            objectArrangement.Position = newPosition;
         }
 
     }
