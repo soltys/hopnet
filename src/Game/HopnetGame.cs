@@ -44,7 +44,6 @@ namespace Game
         bool moveOnlyOnceRight;
         bool moveOnlyOnceLeft;
         KinectPlayer kinectPlayer;
-        Stopwatch stopWatch;
         double gravity = 5.0f;
 
 
@@ -115,10 +114,6 @@ namespace Game
             mainMenu = new MainMenu(graphics,this);
             mainMenu.IsGameInMenuMode = false;
             kinectPlayer = new KinectPlayer(Content,new Vector3(DistanceBetweenPlatforms,0,2.55f));
-            stopWatch = new Stopwatch();
-            stopWatch.Reset();
-            stopWatch.Stop();
-
 
             platformList = new List<Platform>();
             platformGenerator=new PlatformCollection();
@@ -175,10 +170,7 @@ namespace Game
                     Vector2 position = new Vector2((((0.5f * joint.Position.X) +0.3f) * (resolution.X)),
                         (((-0.5f * joint.Position.Y) + 0.3f) * (resolution.Y)));
 
-                    if ((joint.JointType == JointType.FootRight))
-                    {
                         spriteBatch.Draw(img, new Rectangle(Convert.ToInt32(position.X), Convert.ToInt32(position.Y), 50, 50), Color.Black);
-                    }
                 }
                 spriteBatch.End();
             }
@@ -256,18 +248,6 @@ namespace Game
                 if (platformList[0].objectArrangement.Position.Z > EndOfBoardPositionZ)
                 {
                     platformList.RemoveAt(0);
-
-                    if (!runOnce)
-                    {
-                        stopWatch.Stop();
-                    }
-
-
-                    if (runOnce)
-                    {
-                        stopWatch.Start();
-                        runOnce=false;
-                    }
                 }
             }
         }
@@ -382,6 +362,7 @@ namespace Game
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
             
+            
             switch(mainMenu.IsGameInMenuMode)
             {
                 case true:
@@ -392,15 +373,10 @@ namespace Game
                     {
                         platform.Draw(aspectRatio, cameraPosition,platformModel);
                     }
-                    //kinectPlayer.Draw(spriteBatch, debugFont, aspectRatio, cameraPosition);
+                    kinectPlayer.Draw(spriteBatch, debugFont, aspectRatio, cameraPosition);
                     break;
             }
             
-            spriteBatch.Begin();
-            spriteBatch.DrawString(debugFont, stopWatch.Elapsed.TotalMilliseconds.ToString(), new Vector2(400, 80), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
-            spriteBatch.End();
-            
-            //DrawSkeleton(spriteBatch, new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight), jointTexture);
             base.Draw(gameTime);
         }
     }
