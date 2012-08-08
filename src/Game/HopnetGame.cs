@@ -44,8 +44,6 @@ namespace Game
         bool moveOnlyOnceRight;
         bool moveOnlyOnceLeft;
         KinectPlayer kinectPlayer;
-        double gravity = 5.0f;
-
 
         // The aspect ratio determines how to scale 3d to 2d projection.
         float aspectRatio;
@@ -54,17 +52,15 @@ namespace Game
         private bool[] rowFromGenerator = new bool[PlatformRow.rowLength];
 
         //The constants that define range of board
-        const float EndOfBoardPositionZ = 13.0f;
-        const float BeginningOfBoardPositionZ = -26.0f;
+        const float EndOfBoardPositionZ = 20.0f;
+        const float BeginningOfBoardPositionZ = 8.0f;
 
-        static int speedLevelFactor = 5;
+        static float speedLevelFactor = 10f;
         static float SpeedOfPlatforms = 0.1f * speedLevelFactor;
 
-        int counterForNextRowAppearence = 0;
-        float DistanceBetweenPlatforms = 4.0f;
-        int PlatformCount = 5;
+        float DistanceBetweenPlatforms = 4f;
         float FirstPlatformPosition = -8.0f;
-
+        float spaceBetweenRows = 5f;
         private const float safeRangeForJump = 0.5f;
 
         public HopnetGame()
@@ -112,7 +108,7 @@ namespace Game
             moveOnlyOnceRight = true;
             moveOnlyOnceLeft = true;
             mainMenu = new MainMenu(graphics,this);
-            mainMenu.IsGameInMenuMode = true;
+            mainMenu.IsGameInMenuMode = false;
             kinectPlayer = new KinectPlayer(Content,new Vector3(DistanceBetweenPlatforms,0,2.55f));
 
             platformList = new List<Platform>();
@@ -125,7 +121,11 @@ namespace Game
                                       };
             player = new Hero(heroArrangement);
 
-            CreatePlatforms(PlatformCount, FirstPlatformPosition, DistanceBetweenPlatforms);
+            CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, DistanceBetweenPlatforms, BeginningOfBoardPositionZ);
+            for (int i = 0; i < PlatformCollection.lanesNumber+5; i++)
+            {
+                CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, DistanceBetweenPlatforms,platformList.Last().objectArrangement.Position.Z-spaceBetweenRows);
+            }
 
             base.Initialize();
         }
@@ -155,8 +155,8 @@ namespace Game
                     }
                 }
             }
-            mainMenu.Update(skeleton, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
-            kinectPlayer.Update(skeleton);
+            mainMenu.KinectUpdate(skeleton, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+            kinectPlayer.KinectUpdate(skeleton);
         }
 
 
@@ -177,9 +177,8 @@ namespace Game
         }
 
 
-        void CreatePlatforms(int platformCount, float firstPlatformPosition, float distanceBetweenPlatforms)
+        void CreatePlatforms(int platformCount, float firstPlatformPosition, float distanceBetweenPlatforms, float zDistance)
         {
-            platformGenerator.UpdatePlatforms();
             rowFromGenerator = platformGenerator.GetLastAddedRowValues;
 
             for (int i = 0; i < platformCount; i++)
@@ -187,7 +186,7 @@ namespace Game
                 if (rowFromGenerator[i] == true)
                 {
                     ObjectData3D platformArrangement = new ObjectData3D();
-                    platformArrangement.Position = new Vector3(firstPlatformPosition + i * distanceBetweenPlatforms, 0.0f, BeginningOfBoardPositionZ);
+                    platformArrangement.Position = new Vector3(firstPlatformPosition + i * distanceBetweenPlatforms, 0.0f, zDistance);
                     platformArrangement.Scale = new Vector3(0.5f);
                     platformArrangement.Rotation = new Vector3(0.0f);
                     Platform newPlatform = new Platform(platformArrangement);
@@ -229,10 +228,6 @@ namespace Game
             // TODO: Unload any non ContentManager content here
         }
 
-        static int tajmer = 0;
-        bool runOnce = true;
-        
-
         private void MovePlatforms()
         {
             foreach (Platform platform in platformList)
@@ -248,6 +243,8 @@ namespace Game
                 if (platformList[0].objectArrangement.Position.Z > EndOfBoardPositionZ)
                 {
                     platformList.RemoveAt(0);
+                    platformGenerator.UpdatePlatforms();
+                    CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, DistanceBetweenPlatforms,platformList.Last().objectArrangement.Position.Z - spaceBetweenRows);
                 }
             }
         }
@@ -268,17 +265,6 @@ namespace Game
             return false;
         }
 
-
-        private void AddNewPlatforms()
-        {
-            counterForNextRowAppearence++;
-            if (counterForNextRowAppearence == 60 / speedLevelFactor)
-            {
-                CreatePlatforms(PlatformCount, FirstPlatformPosition, DistanceBetweenPlatforms);
-                counterForNextRowAppearence = 0;
-            }
-        }
-
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -297,14 +283,14 @@ namespace Game
             {
                 case false:
                 MovePlatforms();
-                AddNewPlatforms();
+                //AddNewPlatforms();
                 RemovePlatformsAtEnd();
                 break;
                     
                 case true:
                 if (!isUserHasKinect)
                 {
-                    mainMenu.Update(null, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+                    mainMenu.KinectUpdate(null, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
                 }
                 break;
                      
@@ -369,10 +355,12 @@ namespace Game
                     mainMenu.Draw(spriteBatch,debugFont);
                     break;
                 case false:
-                    foreach (var platform in platformList)
+
+                    for (int i = platformList.Count-1; i > 0; i--)
                     {
-                        platform.Draw(aspectRatio, cameraPosition,platformModel);
+                        platformList[i].Draw(aspectRatio, cameraPosition, platformModel);
                     }
+
                     kinectPlayer.Draw(spriteBatch, debugFont, aspectRatio, cameraPosition);
                     break;
             }

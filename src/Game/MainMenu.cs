@@ -12,6 +12,7 @@ namespace Game
 {
     class MainMenu
     {
+        #region properties and accessors
         private HopnetGame hopNetGame;
         private bool isGameInMenu=true;
         private float screenWidth;
@@ -39,9 +40,7 @@ namespace Game
         private float heightThreshold = 0.005f;
         private double heightChangeTime = 3000.0f;
         private float idleHeight = 0.4f;
-
         private ButtonSelect lastButton = ButtonSelect.None;
-
         private State state = State.InMainMenu;
 
         private State MenuState
@@ -49,7 +48,6 @@ namespace Game
             get { return state; }
             set { state = value; }
         }
-
 
         private Sprite[] newGameSprite;
         private int newGameTextureType=(int)Texture.Normal;
@@ -91,13 +89,13 @@ namespace Game
         private bool[] cursorState;
         private const int cursorRadius = 64;
         private Stopwatch jumpTimer;
+        #endregion
 
         public bool IsGameInMenuMode
         {
             get { return isGameInMenu; }
             set { isGameInMenu = value; }
         }
-
         private Vector2 GetTextureCenter(Rectangle rectangle)
         {
             return new Vector2(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2);
@@ -159,7 +157,6 @@ namespace Game
 
             return false;
         }
-
         private ButtonSelect CheckCurrentButton(Rectangle spriteRectangle, ref int spriteTexture, ButtonSelect newState, ref ButtonSelect lastState)
         {
             bool[] isCursorInsideButton = new bool[2];
@@ -183,7 +180,6 @@ namespace Game
             }
             return lastState;
         }
-
         private ButtonSelect CheckButtonSelect()
         {
             ButtonSelect buttonState = ButtonSelect.None;
@@ -222,8 +218,7 @@ namespace Game
             }
             ChangeCursorTexture(cursorState);
             return buttonState;
-        }
-        
+        }      
         private bool IsCursorInButtonArea(Rectangle buttonRectangle,Rectangle cursor)
         {
             Vector2 recangleMiddlePos = GetTextureCenter(buttonRectangle);
@@ -241,12 +236,10 @@ namespace Game
             }
             return false;
         }
-
         public MainMenu(GraphicsDeviceManager graphics, HopnetGame hopnetGame)
         {
             jumpTimer = new Stopwatch();
             jumpTimer.Reset();
-
 
             hopNetGame = hopnetGame;
             handTextureType = new int[2];
@@ -347,8 +340,6 @@ namespace Game
             backgroundSprite.Rectangle = new Rectangle(0, 0, (int)screenWidth, (int)screenHeight);
             #endregion
         }
-
-
         private bool AreHandsTogether()
         {
             Vector2 leftHandleMiddle = GetTextureCenter(handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].Rectangle);
@@ -361,37 +352,39 @@ namespace Game
 
             return false;
         }
+        private void CalculateHeightPosition(Skeleton skeleton)
+        {
+            if (!jumpTimer.IsRunning)
+            {
+                lastHeightModifier = heightModifier;
+            }
 
-        public void Update(Skeleton kinectData, Vector2 mousePos)
+            heightModifier = skeleton.Joints[JointType.ShoulderCenter].Position.Y;
+
+            if (Math.Abs(lastHeightModifier - heightModifier) > heightThreshold)
+            {
+                if (!jumpTimer.IsRunning)
+                {
+                    jumpTimer.Start();
+                }
+                else
+                {
+                    if (jumpTimer.Elapsed.TotalMilliseconds > heightChangeTime)
+                    {
+                        idleHeight = heightModifier;
+                        jumpTimer.Reset();
+                    }
+                }
+            }
+        }
+
+        public void KinectUpdate(Skeleton kinectData, Vector2 mousePos)
         {
             if (isGameInMenu)
             {
                 if (kinectData != null)
                 {
-                    
-                    if (!jumpTimer.IsRunning)
-                    {
-                        lastHeightModifier = heightModifier;
-                    }
-
-                    heightModifier = kinectData.Joints[JointType.ShoulderCenter].Position.Y;
-
-                    if (Math.Abs(lastHeightModifier - heightModifier) > heightThreshold)
-                    {
-                        if (!jumpTimer.IsRunning)
-                        {
-                            jumpTimer.Start();
-                        }
-                        else
-                        {
-                            if (jumpTimer.Elapsed.TotalMilliseconds > heightChangeTime)
-                            {
-                                idleHeight = heightModifier;
-                                jumpTimer.Reset();
-                            }
-                        }
-                    }
-
+                    CalculateHeightPosition(kinectData);
                     kinectHandPosition[(int)Hand.Left].X = ((0.5f * kinectData.Joints[JointType.HandLeft].Position.X) + 0.5f) * screenWidth;
                     kinectHandPosition[(int)Hand.Left].Y = ((-0.5f * kinectData.Joints[JointType.HandLeft].Position.Y) + 0.5f + 0.3f*idleHeight) * screenHeight;
                     kinectHandPosition[(int)Hand.Right].X = ((0.5f * kinectData.Joints[JointType.HandRight].Position.X) + 0.5f) * screenWidth;
@@ -464,7 +457,6 @@ namespace Game
                 handSprite[(int)Hand.Right, handTextureType[(int)Hand.Right]].rectangle.Y = (int)kinectHandPosition[(int)Hand.Right].Y;
             }
         }
-
         public void LoadContent(ContentManager content)
         {
             newGameSprite[0].LoadSprite(content, @"Sprites\testsprite1");
@@ -490,10 +482,6 @@ namespace Game
             confirmExit[0].LoadSprite(content, @"Sprites\testsprite1");
             confirmExit[1].LoadSprite(content, @"Sprites\testsprite2");
         }
-
-
-
-
         public void Draw(SpriteBatch spriteBatch,SpriteFont font)
         {
             backgroundSprite.DrawByRectangle(spriteBatch);
