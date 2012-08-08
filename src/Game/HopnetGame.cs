@@ -52,17 +52,17 @@ namespace Game
         private bool[] rowFromGenerator = new bool[PlatformRow.rowLength];
 
         //The constants that define range of board
-        const float EndOfBoardPositionZ = 13.0f;
-        const float BeginningOfBoardPositionZ = -26.0f;
+        const float EndOfBoardPositionZ = 20.0f;
+        const float BeginningOfBoardPositionZ = 8.0f;
 
-        static int speedLevelFactor = 5;
+        static float speedLevelFactor = 10f;
         static float SpeedOfPlatforms = 0.1f * speedLevelFactor;
 
         int counterForNextRowAppearence = 0;
-        float DistanceBetweenPlatforms = 4.0f;
+        float DistanceBetweenPlatforms = 4f;
         int PlatformCount = 5;
         float FirstPlatformPosition = -8.0f;
-
+        float spaceBetweenRows = 5f;
         private const float safeRangeForJump = 0.5f;
 
         public HopnetGame()
@@ -123,7 +123,11 @@ namespace Game
                                       };
             player = new Hero(heroArrangement);
 
-            CreatePlatforms(PlatformCount, FirstPlatformPosition, DistanceBetweenPlatforms);
+            CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, DistanceBetweenPlatforms, BeginningOfBoardPositionZ);
+            for (int i = 0; i < PlatformCollection.lanesNumber+5; i++)
+            {
+                CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, DistanceBetweenPlatforms,platformList.Last().objectArrangement.Position.Z-spaceBetweenRows);
+            }
 
             base.Initialize();
         }
@@ -175,7 +179,7 @@ namespace Game
         }
 
 
-        void CreatePlatforms(int platformCount, float firstPlatformPosition, float distanceBetweenPlatforms)
+        void CreatePlatforms(int platformCount, float firstPlatformPosition, float distanceBetweenPlatforms, float zDistance)
         {
             platformGenerator.UpdatePlatforms();
             rowFromGenerator = platformGenerator.GetLastAddedRowValues;
@@ -185,7 +189,7 @@ namespace Game
                 if (rowFromGenerator[i] == true)
                 {
                     ObjectData3D platformArrangement = new ObjectData3D();
-                    platformArrangement.Position = new Vector3(firstPlatformPosition + i * distanceBetweenPlatforms, 0.0f, BeginningOfBoardPositionZ);
+                    platformArrangement.Position = new Vector3(firstPlatformPosition + i * distanceBetweenPlatforms, 0.0f, zDistance);
                     platformArrangement.Scale = new Vector3(0.5f);
                     platformArrangement.Rotation = new Vector3(0.0f);
                     Platform newPlatform = new Platform(platformArrangement);
@@ -246,6 +250,7 @@ namespace Game
                 if (platformList[0].objectArrangement.Position.Z > EndOfBoardPositionZ)
                 {
                     platformList.RemoveAt(0);
+                    CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, DistanceBetweenPlatforms,platformList.Last().objectArrangement.Position.Z - spaceBetweenRows);
                 }
             }
         }
@@ -272,7 +277,7 @@ namespace Game
             counterForNextRowAppearence++;
             if (counterForNextRowAppearence == 60 / speedLevelFactor)
             {
-                CreatePlatforms(PlatformCount, FirstPlatformPosition, DistanceBetweenPlatforms);
+                //CreatePlatforms(PlatformCount, FirstPlatformPosition, DistanceBetweenPlatforms);
                 counterForNextRowAppearence = 0;
             }
         }
@@ -295,7 +300,7 @@ namespace Game
             {
                 case false:
                 MovePlatforms();
-                AddNewPlatforms();
+                //AddNewPlatforms();
                 RemovePlatformsAtEnd();
                 break;
                     
@@ -367,10 +372,12 @@ namespace Game
                     mainMenu.Draw(spriteBatch,debugFont);
                     break;
                 case false:
-                    foreach (var platform in platformList)
+
+                    for (int i = platformList.Count-1; i > 0; i--)
                     {
-                        platform.Draw(aspectRatio, cameraPosition,platformModel);
+                        platformList[i].Draw(aspectRatio, cameraPosition, platformModel);
                     }
+
                     kinectPlayer.Draw(spriteBatch, debugFont, aspectRatio, cameraPosition);
                     break;
             }
