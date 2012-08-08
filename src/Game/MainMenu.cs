@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Kinect;
-
+using System.Diagnostics;
 
 namespace Game
 {
@@ -34,10 +34,12 @@ namespace Game
         public enum GameDifficulty : int { Easy = 1, Medium = 2, Hard = 3 }
         private int selectedDifficulty = (int)GameDifficulty.Easy;
 
-        private float defaultShoulderHeight = 0.2f;
         private float heightModifier = 0f;
-        private float lastHeightModifier = 0.4f;
-        private float heightTreshold = 0.01f;
+        private float lastHeightModifier = 4f;
+        private float heightThreshold = 0.005f;
+        private double heightChangeTime = 3000.0f;
+        private float idleHeight = 0.4f;
+
         private ButtonSelect lastButton = ButtonSelect.None;
 
         private State state = State.InMainMenu;
@@ -88,12 +90,14 @@ namespace Game
         private Vector2[] kinectHandPosition;
         private bool[] cursorState;
         private const int cursorRadius = 64;
+        private Stopwatch jumpTimer;
 
         public bool IsGameInMenuMode
         {
             get { return isGameInMenu; }
             set { isGameInMenu = value; }
         }
+
         private Vector2 GetTextureCenter(Rectangle rectangle)
         {
             return new Vector2(rectangle.X + rectangle.Width / 2, rectangle.Y + rectangle.Height / 2);
@@ -240,6 +244,10 @@ namespace Game
 
         public MainMenu(GraphicsDeviceManager graphics, HopnetGame hopnetGame)
         {
+            jumpTimer = new Stopwatch();
+            jumpTimer.Reset();
+
+
             hopNetGame = hopnetGame;
             handTextureType = new int[2];
             handTextureType[(int)Hand.Left] = (int)Texture.Normal;
@@ -360,17 +368,34 @@ namespace Game
             {
                 if (kinectData != null)
                 {
-
-                    if (Math.Abs(heightModifier - lastHeightModifier) > heightTreshold)
+                    
+                    if (!jumpTimer.IsRunning)
                     {
                         lastHeightModifier = heightModifier;
-                        heightModifier = defaultShoulderHeight - kinectData.Joints[JointType.ShoulderCenter].Position.Y;
+                    }
+
+                    heightModifier = kinectData.Joints[JointType.ShoulderCenter].Position.Y;
+
+                    if (Math.Abs(lastHeightModifier - heightModifier) > heightThreshold)
+                    {
+                        if (!jumpTimer.IsRunning)
+                        {
+                            jumpTimer.Start();
+                        }
+                        else
+                        {
+                            if (jumpTimer.Elapsed.TotalMilliseconds > heightChangeTime)
+                            {
+                                idleHeight = heightModifier;
+                                jumpTimer.Reset();
+                            }
+                        }
                     }
 
                     kinectHandPosition[(int)Hand.Left].X = ((0.5f * kinectData.Joints[JointType.HandLeft].Position.X) + 0.5f) * screenWidth;
-                    kinectHandPosition[(int)Hand.Left].Y = ((-0.5f * kinectData.Joints[JointType.HandLeft].Position.Y) + 0.5f - heightModifier/2) * screenHeight;
+                    kinectHandPosition[(int)Hand.Left].Y = ((-0.5f * kinectData.Joints[JointType.HandLeft].Position.Y) + 0.5f + 0.3f*idleHeight) * screenHeight;
                     kinectHandPosition[(int)Hand.Right].X = ((0.5f * kinectData.Joints[JointType.HandRight].Position.X) + 0.5f) * screenWidth;
-                    kinectHandPosition[(int)Hand.Right].Y = ((-0.5f * kinectData.Joints[JointType.HandRight].Position.Y) + 0.5f - heightModifier/2) * screenHeight;
+                    kinectHandPosition[(int)Hand.Right].Y = ((-0.5f * kinectData.Joints[JointType.HandRight].Position.Y) + 0.5f + 0.3f*idleHeight) * screenHeight;
                 }
                 else
                 {
@@ -504,7 +529,7 @@ namespace Game
             }
 
             spriteBatch.Begin();
-            spriteBatch.DrawString(font, heightModifier.ToString(), new Vector2(400, 200), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
+            spriteBatch.DrawString(font, idleHeight.ToString(), new Vector2(400, 200), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
             spriteBatch.End();
             timeoutProgressBar.DrawByRectangle(spriteBatch);
             handSprite[(int)Hand.Left, handTextureType[(int)Hand.Left]].DrawByRectangle(spriteBatch);

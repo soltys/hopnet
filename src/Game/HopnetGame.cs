@@ -112,7 +112,7 @@ namespace Game
             moveOnlyOnceRight = true;
             moveOnlyOnceLeft = true;
             mainMenu = new MainMenu(graphics,this);
-            mainMenu.IsGameInMenuMode = false;
+            mainMenu.IsGameInMenuMode = true;
             kinectPlayer = new KinectPlayer(Content,new Vector3(DistanceBetweenPlatforms,0,2.55f));
 
             platformList = new List<Platform>();
@@ -291,7 +291,7 @@ namespace Game
             if (Keyboard.GetState().IsKeyDown(Keys.P)) { UnloadContent(); Exit(); }
             var keyState = Keyboard.GetState();
 
-            kinectPlayer.Update(SpeedOfPlatforms,SpeedOfPlatforms, gravity);
+            //kinectPlayer.Update(SpeedOfPlatforms,SpeedOfPlatforms, gravity);
             
             switch(mainMenu.IsGameInMenuMode)
             {
