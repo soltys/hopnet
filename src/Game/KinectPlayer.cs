@@ -30,23 +30,23 @@ namespace Game
         private float hPlatformSpace;
         private float dPlatformSpace;
 
-        private float spaceRequiredToSideJump = 0.2f;
-        private float spaceRequiredToJump = 0.1f;
-        private float spaceRequiredToResetHand = -0.55f;
+        private float spaceRequiredToSideJump = 4.0f;
+        private float spaceRequiredToJump = 4.0f;
+        private float spaceRequiredToResetHand = -4f;
 
         private float shoulderMinToChange = 0.005f;
-        private float shoulderHeight = 0.8f;
-        private float lastShoulderHeight = 0.1f;
+        private float shoulderHeight = 0.3f;
+        private float lastShoulderHeight = 0.3f;
         private float shoulderChangeTime = 3000.0f;
-        private float idleShoulderHeight = 0.7f;
+        private float idleShoulderHeight = 2.0f;
 
-        private Stopwatch jumpTimer;
+        private Stopwatch heightChangeTimer;
 
 
         public KinectPlayer(ContentManager content, Vector3 platformData)
         {
-            jumpTimer = new Stopwatch();
-            jumpTimer.Reset();
+            heightChangeTimer = new Stopwatch();
+            heightChangeTimer.Reset();
             modelPosition= new Hero(new ObjectData3D
                                       {
                                           Position = new Vector3(0.0f, 0.5f, 9.0f),
@@ -150,7 +150,7 @@ namespace Game
         {
             if (skeleton != null)
             {
-                    if(!jumpTimer.IsRunning)
+                    if(!heightChangeTimer.IsRunning)
                     {
                         lastShoulderHeight = shoulderHeight;
                     }
@@ -158,19 +158,19 @@ namespace Game
 
                     if(Math.Abs(lastShoulderHeight-shoulderHeight) > shoulderMinToChange)
                     {
-                        if (!jumpTimer.IsRunning)
+                        if (!heightChangeTimer.IsRunning)
                         {
-                            jumpTimer.Start();
+                            heightChangeTimer.Start();
                         }
                         else
                         {
-                            if (jumpTimer.Elapsed.TotalMilliseconds > shoulderChangeTime)
+                            if (heightChangeTimer.Elapsed.TotalMilliseconds > shoulderChangeTime)
                             {
                                 idleShoulderHeight = shoulderHeight;
                                 spaceRequiredToJump = idleShoulderHeight + 0.15f;
                                 spaceRequiredToResetHand = idleShoulderHeight - 0.3f;
                                 spaceRequiredToSideJump = idleShoulderHeight + 0.25f;
-                                jumpTimer.Reset();
+                                heightChangeTimer.Reset();
                             }
                         }
                     }
