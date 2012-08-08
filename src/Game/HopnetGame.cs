@@ -58,9 +58,7 @@ namespace Game
         static float speedLevelFactor = 10f;
         static float SpeedOfPlatforms = 0.1f * speedLevelFactor;
 
-        int counterForNextRowAppearence = 0;
         float DistanceBetweenPlatforms = 4f;
-        int PlatformCount = 5;
         float FirstPlatformPosition = -8.0f;
         float spaceBetweenRows = 5f;
         private const float safeRangeForJump = 0.5f;
@@ -181,7 +179,6 @@ namespace Game
 
         void CreatePlatforms(int platformCount, float firstPlatformPosition, float distanceBetweenPlatforms, float zDistance)
         {
-            platformGenerator.UpdatePlatforms();
             rowFromGenerator = platformGenerator.GetLastAddedRowValues;
 
             for (int i = 0; i < platformCount; i++)
@@ -231,10 +228,6 @@ namespace Game
             // TODO: Unload any non ContentManager content here
         }
 
-        static int tajmer = 0;
-        bool runOnce = true;
-        
-
         private void MovePlatforms()
         {
             foreach (Platform platform in platformList)
@@ -250,6 +243,7 @@ namespace Game
                 if (platformList[0].objectArrangement.Position.Z > EndOfBoardPositionZ)
                 {
                     platformList.RemoveAt(0);
+                    platformGenerator.UpdatePlatforms();
                     CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, DistanceBetweenPlatforms,platformList.Last().objectArrangement.Position.Z - spaceBetweenRows);
                 }
             }
@@ -269,17 +263,6 @@ namespace Game
                 return false;
             }
             return false;
-        }
-
-
-        private void AddNewPlatforms()
-        {
-            counterForNextRowAppearence++;
-            if (counterForNextRowAppearence == 60 / speedLevelFactor)
-            {
-                //CreatePlatforms(PlatformCount, FirstPlatformPosition, DistanceBetweenPlatforms);
-                counterForNextRowAppearence = 0;
-            }
         }
 
         /// <summary>
