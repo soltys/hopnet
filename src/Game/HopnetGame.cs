@@ -44,8 +44,6 @@ namespace Game
         bool moveOnlyOnceRight;
         bool moveOnlyOnceLeft;
         KinectPlayer kinectPlayer;
-        double gravity = 5.0f;
-
 
         // The aspect ratio determines how to scale 3d to 2d projection.
         float aspectRatio;
@@ -112,7 +110,7 @@ namespace Game
             moveOnlyOnceRight = true;
             moveOnlyOnceLeft = true;
             mainMenu = new MainMenu(graphics,this);
-            mainMenu.IsGameInMenuMode = true;
+            mainMenu.IsGameInMenuMode = false;
             kinectPlayer = new KinectPlayer(Content,new Vector3(DistanceBetweenPlatforms,0,2.55f));
 
             platformList = new List<Platform>();
@@ -155,8 +153,8 @@ namespace Game
                     }
                 }
             }
-            mainMenu.Update(skeleton, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
-            kinectPlayer.Update(skeleton);
+            mainMenu.KinectUpdate(skeleton, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+            kinectPlayer.KinectUpdate(skeleton);
         }
 
 
@@ -304,7 +302,7 @@ namespace Game
                 case true:
                 if (!isUserHasKinect)
                 {
-                    mainMenu.Update(null, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+                    mainMenu.KinectUpdate(null, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
                 }
                 break;
                      

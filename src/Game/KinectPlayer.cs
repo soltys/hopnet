@@ -141,40 +141,49 @@ namespace Game
                     break;
             }
         }
+        private void CalcualteHeightPosition(Skeleton skeleton)
+        {
+            if (!heightChangeTimer.IsRunning)
+            {
+                lastShoulderHeight = shoulderHeight;
+            }
+            shoulderHeight = skeleton.Joints[JointType.ShoulderCenter].Position.Y;
+
+            if (Math.Abs(lastShoulderHeight - shoulderHeight) > shoulderMinToChange)
+            {
+                if (!heightChangeTimer.IsRunning)
+                {
+                    heightChangeTimer.Start();
+                }
+                else
+                {
+                    if (heightChangeTimer.Elapsed.TotalMilliseconds > shoulderChangeTime)
+                    {
+                        idleShoulderHeight = shoulderHeight;
+                        spaceRequiredToJump = idleShoulderHeight + 0.15f;
+                        spaceRequiredToResetHand = idleShoulderHeight - 0.3f;
+                        spaceRequiredToSideJump = idleShoulderHeight + 0.25f;
+                        heightChangeTimer.Reset();
+                    }
+                }
+            }
+        }
+
+
+
+
+
 
         public void Update(double dTimeBetweenPlatforms, double platformsSpeed, double gravity)
         {
         }
 
-        public void Update(Skeleton skeleton)
+        public void KinectUpdate(Skeleton skeleton)
         {
             if (skeleton != null)
             {
-                    if(!heightChangeTimer.IsRunning)
-                    {
-                        lastShoulderHeight = shoulderHeight;
-                    }
-                    shoulderHeight = skeleton.Joints[JointType.ShoulderCenter].Position.Y;
-
-                    if(Math.Abs(lastShoulderHeight-shoulderHeight) > shoulderMinToChange)
-                    {
-                        if (!heightChangeTimer.IsRunning)
-                        {
-                            heightChangeTimer.Start();
-                        }
-                        else
-                        {
-                            if (heightChangeTimer.Elapsed.TotalMilliseconds > shoulderChangeTime)
-                            {
-                                idleShoulderHeight = shoulderHeight;
-                                spaceRequiredToJump = idleShoulderHeight + 0.15f;
-                                spaceRequiredToResetHand = idleShoulderHeight - 0.3f;
-                                spaceRequiredToSideJump = idleShoulderHeight + 0.25f;
-                                heightChangeTimer.Reset();
-                            }
-                        }
-                    }
-                    CheckPlayerStance(skeleton);
+                CalcualteHeightPosition(skeleton);
+                CheckPlayerStance(skeleton);
             }
         }
 
