@@ -12,10 +12,6 @@ namespace Game
             CurrentPlatformPosition = PlatformRow.rowLength/2;
         }
 
-        int jumpTimer = 0;
-
-
-
         public void MoveRight()
         {
             if (CurrentPlatformPosition < PlatformRow.rowLength-1)
