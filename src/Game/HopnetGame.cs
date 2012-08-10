@@ -52,16 +52,18 @@ namespace Game
         private bool[] rowFromGenerator = new bool[PlatformRow.rowLength];
 
         //The constants that define range of board
-        const float EndOfBoardPositionZ = 20.0f;
+        const float EndOfBoardPositionZ = 9.0f+2.0f;
         const float BeginningOfBoardPositionZ = 8.0f;
 
         static float speedLevelFactor = 10f;
         static float SpeedOfPlatforms = 0.1f * speedLevelFactor;
 
-        float DistanceBetweenPlatforms = 4f;
+        float spaceBetweenPlatforms = 4f;
         float FirstPlatformPosition = -8.0f;
         float spaceBetweenRows = 5f;
-        private const float safeRangeForJump = 0.5f;
+        private const float safeRangeForJump = 2f;
+
+        private float PlatformUpdateSpeed;
 
         public HopnetGame()
         {
@@ -84,6 +86,7 @@ namespace Game
             IsMouseVisible = true;
             graphics.ApplyChanges();
 
+            PlatformUpdateSpeed = SpeedOfPlatforms;
 
             colorVideo = new Texture2D(graphics.GraphicsDevice,320,240);
             depthVideo = new Texture2D(graphics.GraphicsDevice, 320, 240) ;
@@ -104,12 +107,13 @@ namespace Game
                     isUserHasKinect = false;
                 }
             
-            cameraPosition = new Vector3(0.0f, 5.0f, 10.0f);
+            cameraPosition = new Vector3(30.0f, 0.0f, 0.0f);
             moveOnlyOnceRight = true;
             moveOnlyOnceLeft = true;
             mainMenu = new MainMenu(graphics,this);
             mainMenu.IsGameInMenuMode = false;
-            kinectPlayer = new KinectPlayer(Content,new Vector3(DistanceBetweenPlatforms,0,2.55f));
+            kinectPlayer = new KinectPlayer(Content,new Vector3(spaceBetweenPlatforms,0,2.55f),safeRangeForJump);
+            kinectPlayer.GetPlatformToPlatformMoveTime(SpeedOfPlatforms, spaceBetweenRows);
 
             platformList = new List<Platform>();
             platformGenerator=new PlatformCollection();
@@ -121,12 +125,13 @@ namespace Game
                                       };
             player = new Hero(heroArrangement);
 
-            CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, DistanceBetweenPlatforms, BeginningOfBoardPositionZ);
+            CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, spaceBetweenPlatforms, BeginningOfBoardPositionZ);
+            
             for (int i = 0; i < PlatformCollection.lanesNumber+5; i++)
             {
-                CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, DistanceBetweenPlatforms,platformList.Last().objectArrangement.Position.Z-spaceBetweenRows);
+                CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, spaceBetweenPlatforms,platformList.Last().objectArrangement.Position.Z-spaceBetweenRows);
             }
-
+            
             base.Initialize();
         }
 
@@ -236,15 +241,29 @@ namespace Game
             }
         }
 
+
+
+        private Stopwatch zegar = new Stopwatch();
+
         private void RemovePlatformsAtEnd()
         {
             if (platformList.Count>0)
             {
                 if (platformList[0].objectArrangement.Position.Z > EndOfBoardPositionZ)
                 {
+                    if (!zegar.IsRunning)
+                    {
+                        zegar.Reset();
+                        zegar.Start();
+                    }
+                    else
+                    {
+                        zegar.Stop();
+                    }
+
                     platformList.RemoveAt(0);
                     platformGenerator.UpdatePlatforms();
-                    CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, DistanceBetweenPlatforms,platformList.Last().objectArrangement.Position.Z - spaceBetweenRows);
+                    CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, spaceBetweenPlatforms,platformList.Last().objectArrangement.Position.Z - spaceBetweenRows);
                 }
             }
         }
@@ -277,21 +296,20 @@ namespace Game
             if (Keyboard.GetState().IsKeyDown(Keys.P)) { UnloadContent(); Exit(); }
             var keyState = Keyboard.GetState();
 
-            //kinectPlayer.Update(SpeedOfPlatforms,SpeedOfPlatforms, gravity);
-            
             switch(mainMenu.IsGameInMenuMode)
             {
                 case false:
-                MovePlatforms();
-                //AddNewPlatforms();
-                RemovePlatformsAtEnd();
+                    kinectPlayer.IsPlayerOnPlatform(platformList);
+                    kinectPlayer.Update(spaceBetweenPlatforms, spaceBetweenRows,SpeedOfPlatforms);
+                    MovePlatforms();
+                    RemovePlatformsAtEnd();
                 break;
                     
                 case true:
-                if (!isUserHasKinect)
-                {
-                    mainMenu.KinectUpdate(null, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
-                }
+                    if (!isUserHasKinect)
+                    {
+                        mainMenu.KinectUpdate(null, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+                    }
                 break;
                      
             }
@@ -347,16 +365,14 @@ namespace Game
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            
-            
+
             switch(mainMenu.IsGameInMenuMode)
             {
                 case true:
                     mainMenu.Draw(spriteBatch,debugFont);
                     break;
                 case false:
-
-                    for (int i = platformList.Count-1; i > 0; i--)
+                    for (int i = platformList.Count-1; i >= 0; i--)
                     {
                         platformList[i].Draw(aspectRatio, cameraPosition, platformModel);
                     }
@@ -364,7 +380,13 @@ namespace Game
                     kinectPlayer.Draw(spriteBatch, debugFont, aspectRatio, cameraPosition);
                     break;
             }
-            
+
+            spriteBatch.Begin();
+            spriteBatch.DrawString(debugFont, kinectPlayer.isOnPlatform.ToString() , new Vector2(200, 200), Color.Red);
+            spriteBatch.DrawString(debugFont, platformList.First().objectArrangement.Position.Z.ToString(), new Vector2(200, 240), Color.Red);
+            spriteBatch.DrawString(debugFont, zegar.Elapsed.TotalMilliseconds.ToString(), new Vector2(200, 280), Color.Red);
+            spriteBatch.End();
+
             base.Draw(gameTime);
         }
     }
