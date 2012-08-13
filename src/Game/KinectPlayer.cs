@@ -19,7 +19,7 @@ namespace Game
     {
         #region Public properties
 
-        public enum PlayerStances { Idle = 1, JumpForwardUp = 2, JumpLeftDown = 3, JumpRightDown = 4, JumpLeftUp = 5, JumpRightUp = 6,JumpForwardDown = 7, TooNear = 8, TooFar = 9 }
+        public enum PlayerStances { Idle = 1, IdleJump = 2, JumpLeftDown = 3, JumpRightDown = 4, JumpLeftUp = 5, JumpRightUp = 6, JumpForward=7}
         public PlayerStances currentStance { get; set; }
         private PlayerStances lastStance { get; set; }
         private bool moveEnabled;
@@ -39,18 +39,23 @@ namespace Game
         private float shoulderHeight = 0.3f;
         private float lastShoulderHeight = 0.3f;
         private float shoulderChangeTime = 3000.0f;
-        private float idleShoulderHeight = 2.0f;
+        public float idleShoulderHeight = 2.0f;
 
         private Stopwatch heightChangeTimer;
         private Stopwatch movementTimer;
 
-        private float platformToPlatformMoveTime;
-        private float playerVelocity;
-        private float playerToPlatformThreshold;
-        private float timer = 0.0f;
-        private float gravity = 0.0f;
-
-
+        public float rowToRowMoveTime=0;
+        public float verticalVelocity=0;
+        public float horizontalVelocity=0;
+        private float playerToPlatformThreshold=0;
+        public float timer = 0;
+        public float gravity = 0;
+        private float jumpHeightDivider = 20f;
+        public float timeAmount;
+        private float jumpDirection = 0;
+        private float modelHeight = 1.0f;
+        public float platformRadius;
+        public float radiusToIdleJump;
 
         public KinectPlayer(ContentManager content, Vector3 platformData, float playerToPlatformSafeArea)
         {
@@ -64,7 +69,7 @@ namespace Game
 
             modelPosition= new Hero(new ObjectData3D
                                       {
-                                          Position = new Vector3(0.0f, modelGroundLevel, 9.0f),
+                                          Position = new Vector3(0.0f, 0, 0.0f),
                                           Scale = new Vector3(0.5f, 0.5f, 0.5f),
                                           Rotation = new Vector3(0.0f)
                                       });
@@ -72,46 +77,56 @@ namespace Game
             currentStance = PlayerStances.Idle;
             lastStance = PlayerStances.Idle;
             moveEnabled = true;
-            hPlatformSpace = platformData.X;
-            dPlatformSpace = platformData.Z;
+            modelGroundLevel = platformData.Y+modelHeight;
+            modelPosition.objectArrangement.Position = new Vector3(platformData.X,modelGroundLevel,platformData.Z);
+            modelPosition.oldArrangement = modelPosition.objectArrangement;
         }
         #endregion
 
-        private float distance;
-        public void IsPlayerOnPlatform(List<Platform> platformList)
+        public float distance=0;
+        public float tdistance=0;
+        public void CheckPlayerOnPlatformStatus(List<Platform> platformList)
         {
             distance = (float)(Math.Sqrt((Math.Pow( modelPosition.objectArrangement.Position.Z - platformList.First().objectArrangement.Position.Z,2))));
 
-            if (distance < playerToPlatformThreshold)
+            if ((distance >= radiusToIdleJump) && (modelPosition.objectArrangement.Position.Z > platformList.First().objectArrangement.Position.Z))
             {
-                if (distance < 0.01f)
-                {
-                    lastStance = currentStance;
-                    currentStance = PlayerStances.JumpForwardUp;
-                }
+                tdistance = distance;
+                lastStance = currentStance;
+                currentStance= PlayerStances.IdleJump;
                 isOnPlatform = true;
             }
             else
             {
                 isOnPlatform = false;
             }
-
         }
 
-
-        public void GetPlatformToPlatformMoveTime(float platformSpeed, float distanceBetweenRows)
+        public void GetPlatformToPlatformMoveTime(float platformSpeed, float distanceBetweenRows, float timerUpdate, float distanceBetweenPlatforms)
         {
-            platformToPlatformMoveTime =  ((distanceBetweenRows / platformSpeed)/60)*1000;
-            playerVelocity = platformSpeed;
-            gravity = ((((2 * playerVelocity) / (platformToPlatformMoveTime)))/60)*1000;
+            rowToRowMoveTime =  ((distanceBetweenRows / platformSpeed)/60)*1000;
+            verticalVelocity = platformSpeed;
+            horizontalVelocity = (distanceBetweenPlatforms / rowToRowMoveTime);
+            gravity = ((((2 * verticalVelocity) / (rowToRowMoveTime)))/60)*1000;
+            timeAmount = timerUpdate/10;
+        }
+        public void GetPlatformRadius(float singlePlatformRadius)
+        {
+            platformRadius = singlePlatformRadius;
+            radiusToIdleJump = 0.8f * singlePlatformRadius;
         }
 
+
+        private void CheckIdleJump()
+        {
+
+        }
         private void CheckJumpForward(Skeleton skeleton)
         {
             if (skeleton.Joints[JointType.ShoulderCenter].Position.Y > spaceRequiredToJump)
             {
                 lastStance = currentStance;
-                currentStance = PlayerStances.JumpForwardUp;
+                currentStance = PlayerStances.JumpForward;
             }
         }
         private void CheckJumpLeftUp(Skeleton skeleton)
@@ -121,7 +136,7 @@ namespace Game
                 if (skeleton.Joints[JointType.HandLeft].Position.Y > spaceRequiredToSideJump)
                 {
                     moveEnabled = false;
-                    modelPosition.MoveLeft();
+                    jumpDirection = -1;
                     lastStance = currentStance;
                     currentStance = PlayerStances.JumpLeftUp;
                 }
@@ -134,7 +149,7 @@ namespace Game
                 if (skeleton.Joints[JointType.HandRight].Position.Y > spaceRequiredToSideJump)
                 {
                     moveEnabled = false;
-                    modelPosition.MoveRight();
+                    jumpDirection = 1;
                     lastStance = currentStance;
                     currentStance = PlayerStances.JumpRightUp;
                 }
@@ -142,11 +157,11 @@ namespace Game
         }
         private void CheckJumpLeftDown(Skeleton skeleton)
         {
-            if (skeleton.Joints[JointType.HandLeft].Position.Y < spaceRequiredToResetHand)
-                {
-                    lastStance = currentStance;
-                    currentStance = PlayerStances.Idle;
-                }
+            if(skeleton.Joints[JointType.HandLeft].Position.Y < spaceRequiredToResetHand)
+            {
+                lastStance = currentStance;
+                currentStance = PlayerStances.Idle;
+            }
         }
         private void CheckJumpRightDown(Skeleton skeleton)
         {
@@ -168,7 +183,6 @@ namespace Game
                         CheckJumpLeftUp(skeleton);
                         CheckJumpRightUp(skeleton);
                     }
-                    
                     break;
                 case PlayerStances.JumpLeftUp:
                     CheckJumpForward(skeleton);
@@ -178,13 +192,13 @@ namespace Game
                     CheckJumpForward(skeleton);
                     CheckJumpRightDown(skeleton);
                     break;
-                case PlayerStances.JumpForwardUp:
+                case PlayerStances.JumpForward:
                     CheckJumpLeftUp(skeleton);
                     CheckJumpRightUp(skeleton);
                     break;
             }
         }
-        private void CalcualteHeightPosition(Skeleton skeleton)
+        private void CalculateShoulderPosition(Skeleton skeleton)
         {
             if (!heightChangeTimer.IsRunning)
             {
@@ -213,50 +227,59 @@ namespace Game
         }
 
         
-        public void Update(float spaceBetweenPlatforms, float spaceBetweenRows, float movementSpeed)
+        private void VerticalJump(float gravityDivider)
         {
-            switch (currentStance)
+            if ((timer < rowToRowMoveTime) & modelPosition.objectArrangement.Position.Y >= modelGroundLevel)
             {
-                case PlayerStances.JumpForwardUp:
-                    
-                    if ((timer < platformToPlatformMoveTime) & modelPosition.objectArrangement.Position.Y>=modelGroundLevel)
-                    {
-                        timer += 1.6f;
-                        modelPosition.objectArrangement.Position = new Vector3(modelPosition.oldArrangement.Position.X,
-                           modelPosition.oldArrangement.Position.Y + (playerVelocity * timer - gravity * timer * timer / 2),
-                           modelPosition.oldArrangement.Position.Z);
-                    }
-                        
-                    else
-                    {
-                        timer = 0;
-                        
-                        modelPosition.objectArrangement.Position = new Vector3(
-                            modelPosition.objectArrangement.Position.X, 
-                            modelGroundLevel, 
-                            modelPosition.objectArrangement.Position.Z);
-                        
-
-                        modelPosition.oldArrangement.Position = new Vector3(
-                            modelPosition.objectArrangement.Position.X,
-                            modelPosition.objectArrangement.Position.Y,
-                            modelPosition.objectArrangement.Position.Z);
-
-                        lastStance = currentStance;
-                        currentStance = PlayerStances.Idle;
-                    }
-                         
-                    
-                    break;
+                timer += timeAmount;
+                modelPosition.objectArrangement.Position = new Vector3(modelPosition.oldArrangement.Position.X,
+                   modelPosition.oldArrangement.Position.Y + (verticalVelocity * timer - gravity * timer * timer / gravityDivider) / jumpHeightDivider,
+                   modelPosition.oldArrangement.Position.Z);
             }
+            else
+            {
+                timer = 0;
 
+                modelPosition.objectArrangement.Position = new Vector3(
+                    modelPosition.objectArrangement.Position.X,
+                    modelGroundLevel,
+                    modelPosition.objectArrangement.Position.Z);
+
+                modelPosition.oldArrangement.Position = new Vector3(
+                    modelPosition.objectArrangement.Position.X,
+                    modelPosition.objectArrangement.Position.Y,
+                    modelPosition.objectArrangement.Position.Z);
+
+                lastStance = currentStance;
+                currentStance = PlayerStances.Idle;
+            }
+        }
+        private void HorizontalJump()
+        {
+
+        }
+
+
+
+        public void Update(List <Platform> platformList)
+        {
+        CheckPlayerOnPlatformStatus(platformList);
+                switch (currentStance)
+                {
+                    case PlayerStances.IdleJump:
+                        VerticalJump(2);
+                        break;
+                    case PlayerStances.JumpForward:
+                        VerticalJump(4);
+                        break;
+                }
         }
 
         public void KinectUpdate(Skeleton skeleton)
         {
             if (skeleton != null)
             {
-                CalcualteHeightPosition(skeleton);
+                CalculateShoulderPosition(skeleton);
                 CheckPlayerStance(skeleton);
             }
         }
@@ -264,14 +287,6 @@ namespace Game
         public void Draw(SpriteBatch spriteBatch, SpriteFont font,float aspectRatio, Vector3 cameraPosition)
         {
             modelPosition.Draw(aspectRatio, cameraPosition, model);
-            spriteBatch.Begin();
-            spriteBatch.DrawString(font, distance.ToString(), new Vector2(100, 200), Color.Red);
-            spriteBatch.DrawString(font, currentStance.ToString(), new Vector2(400, 320), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, idleShoulderHeight.ToString(), new Vector2(400, 400), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, timer.ToString(), new Vector2(200, 300), Color.Red);
-            spriteBatch.DrawString(font, platformToPlatformMoveTime.ToString(), new Vector2(200, 450), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, "gravity :" + gravity.ToString(), new Vector2(200, 550), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            spriteBatch.End();
         }
     }
 }
