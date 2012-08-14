@@ -44,12 +44,14 @@ namespace Game
         private Stopwatch heightChangeTimer;
         private Stopwatch movementTimer;
 
-        public float rowToRowMoveTime=0;
+        public float rowToRowIdleMoveTime=0;
+        public float rowToRowMoveTime = 0;
         public float verticalVelocity=0;
         public float horizontalVelocity=0;
         private float playerToPlatformThreshold=0;
         public float timer = 0;
-        public float gravity = 0;
+        public float idleJumpGravity = 0;
+        public float jumpGravity = 0;
         private float jumpHeightDivider = 20f;
         public float timeAmount;
         private float jumpDirection = 0;
@@ -85,16 +87,29 @@ namespace Game
 
         public float distance=0;
         public float tdistance=0;
+        public bool isBehind=false;
         public void CheckPlayerOnPlatformStatus(List<Platform> platformList)
         {
             distance = (float)(Math.Sqrt((Math.Pow( modelPosition.objectArrangement.Position.Z - platformList.First().objectArrangement.Position.Z,2))));
 
-            if ((distance >= radiusToIdleJump) && (modelPosition.objectArrangement.Position.Z > platformList.First().objectArrangement.Position.Z))
+            if (modelPosition.objectArrangement.Position.Z > platformList.First().objectArrangement.Position.Z)
             {
-                tdistance = distance;
-                lastStance = currentStance;
-                currentStance= PlayerStances.IdleJump;
-                isOnPlatform = true;
+                isBehind = false;
+            }
+            else
+            {
+                isBehind = true;
+            }
+
+            if ((distance >= radiusToIdleJump) )//(modelPosition.objectArrangement.Position.Z > platformList.First().objectArrangement.Position.Z))
+            {
+                if (isBehind)
+                {
+                    tdistance = distance;
+                    lastStance = currentStance;
+                    currentStance = PlayerStances.IdleJump;
+                    isOnPlatform = true;
+                }
             }
             else
             {
@@ -104,16 +119,18 @@ namespace Game
 
         public void GetPlatformToPlatformMoveTime(float platformSpeed, float distanceBetweenRows, float timerUpdate, float distanceBetweenPlatforms)
         {
-            rowToRowMoveTime =  ((distanceBetweenRows / platformSpeed)/60)*1000;
+            rowToRowIdleMoveTime =  (((distanceBetweenRows-2*radiusToIdleJump) / platformSpeed)/60)*1000;
+            rowToRowMoveTime = ((distanceBetweenRows / platformSpeed) / 60) * 1000;
             verticalVelocity = platformSpeed;
-            horizontalVelocity = (distanceBetweenPlatforms / rowToRowMoveTime);
-            gravity = ((((2 * verticalVelocity) / (rowToRowMoveTime)))/60)*1000;
+            horizontalVelocity = distanceBetweenPlatforms / ((distanceBetweenRows - 2 * radiusToIdleJump)/platformSpeed);
+            idleJumpGravity = ((((2 * verticalVelocity) / (rowToRowIdleMoveTime)))/60)*1000;
+            jumpGravity = ((((2 * verticalVelocity) / (rowToRowMoveTime))) / 60) * 1000;
             timeAmount = timerUpdate/10;
         }
         public void GetPlatformRadius(float singlePlatformRadius)
         {
             platformRadius = singlePlatformRadius;
-            radiusToIdleJump = 0.8f * singlePlatformRadius;
+            radiusToIdleJump = 0.6f * singlePlatformRadius;
         }
 
 
@@ -227,13 +244,13 @@ namespace Game
         }
 
         
-        private void VerticalJump(float gravityDivider)
+        private void PerformIdleJump(float gravityDivider)
         {
-            if ((timer < rowToRowMoveTime) & modelPosition.objectArrangement.Position.Y >= modelGroundLevel)
+            if ((timer < rowToRowIdleMoveTime) & modelPosition.objectArrangement.Position.Y >= modelGroundLevel)
             {
                 timer += timeAmount;
                 modelPosition.objectArrangement.Position = new Vector3(modelPosition.oldArrangement.Position.X,
-                   modelPosition.oldArrangement.Position.Y + (verticalVelocity * timer - gravity * timer * timer / gravityDivider) / jumpHeightDivider,
+                   modelPosition.oldArrangement.Position.Y + (verticalVelocity * timer - idleJumpGravity * timer * timer /gravityDivider) / jumpHeightDivider,
                    modelPosition.oldArrangement.Position.Z);
             }
             else
@@ -254,9 +271,44 @@ namespace Game
                 currentStance = PlayerStances.Idle;
             }
         }
-        private void HorizontalJump()
-        {
 
+        private void PerformJump(float gravityDivider)
+        {
+            if ((timer < rowToRowMoveTime) & modelPosition.objectArrangement.Position.Y >= modelGroundLevel)
+            {
+                timer += timeAmount;
+                modelPosition.objectArrangement.Position = new Vector3(modelPosition.oldArrangement.Position.X,
+                   modelPosition.oldArrangement.Position.Y + (verticalVelocity * timer - jumpGravity * timer * timer / gravityDivider) / jumpHeightDivider,
+                   modelPosition.oldArrangement.Position.Z);
+            }
+            else
+            {
+                timer = 0;
+
+                modelPosition.objectArrangement.Position = new Vector3(
+                    modelPosition.objectArrangement.Position.X,
+                    modelGroundLevel,
+                    modelPosition.objectArrangement.Position.Z);
+
+                modelPosition.oldArrangement.Position = new Vector3(
+                    modelPosition.objectArrangement.Position.X,
+                    modelPosition.objectArrangement.Position.Y,
+                    modelPosition.objectArrangement.Position.Z);
+
+                lastStance = currentStance;
+                currentStance = PlayerStances.Idle;
+            }
+        }
+
+
+
+
+
+        private void HorizontalJump(float currentModelHeight)
+        {
+            modelPosition.objectArrangement.Position = new Vector3(modelPosition.oldArrangement.Position.X + horizontalVelocity * timer,
+                currentModelHeight,
+                modelPosition.objectArrangement.Position.Z);
         }
 
 
@@ -267,10 +319,10 @@ namespace Game
                 switch (currentStance)
                 {
                     case PlayerStances.IdleJump:
-                        VerticalJump(2);
+                        PerformJump(4);
                         break;
                     case PlayerStances.JumpForward:
-                        VerticalJump(4);
+                        PerformIdleJump(4);
                         break;
                 }
         }
