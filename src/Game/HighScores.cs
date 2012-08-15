@@ -14,6 +14,8 @@ namespace Game
         private List<Score> scores;
         private const int maxCapacity = 10;
         private readonly IsolatedStorageFile storage;
+        private const string highScoreFileName = "highscores.xml";
+
         public HighScores()
         {
             scores = new List<Score>(maxCapacity);
@@ -49,10 +51,10 @@ namespace Game
         }
         public void Load()
         {
-            if (storage.FileExists("highscores.xml"))
+            if (storage.FileExists(highScoreFileName))
             {
                 var serializer = new XmlSerializer(typeof(List<Score>));
-                using (var stream = new IsolatedStorageFileStream("highscores.xml", FileMode.Open, storage))
+                using (var stream = new IsolatedStorageFileStream(highScoreFileName, FileMode.Open, storage))
                 {
                     using (var reader = XmlReader.Create(stream))
                     {
@@ -70,7 +72,7 @@ namespace Game
         public void Save()
         {
             var serializer = new XmlSerializer(typeof(List<Score>));
-            using (var stream = new IsolatedStorageFileStream("highscores.xml", FileMode.Create, storage))
+            using (var stream = new IsolatedStorageFileStream(highScoreFileName, FileMode.Create, storage))
             {
                 using (var writer = new StreamWriter(stream))
                 {
@@ -78,10 +80,7 @@ namespace Game
                 }
             }
         }
-        public void SortDescending()
-        {
-            scores = scores.OrderByDescending(s => s.Points).ThenBy(s => s.Name).ToList<Score>();
-        }
+
         public IEnumerator<Score> GetEnumerator()
         {
             return scores.GetEnumerator();

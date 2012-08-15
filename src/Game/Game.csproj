@@ -82,14 +82,21 @@
     <Reference Include="System.Net" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Hero.cs" />
     <Compile Include="HighScores.cs" />
+    <Compile Include="KinectData.cs" />
     <Compile Include="KinectPlayer.cs" />
+    <Compile Include="MainMenu.cs" />
+    <Compile Include="Object.cs" />
+    <Compile Include="ObjectData3D.cs" />
+    <Compile Include="Platform.cs" />
     <Compile Include="PlatformRow.cs" />
-    <Compile Include="Platforms.cs" />
+    <Compile Include="PlatformCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="HopnetGame.cs" />
     <Compile Include="Score.cs" />
+    <Compile Include="Sprite.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />
