@@ -13,7 +13,7 @@ namespace Game
     {
         #region Public properties
 
-        public enum PlayerStances { Idle = 1, IdleJump = 2, JumpLeftUp = 3, JumpRightUp = 4, JumpLeftDown = 5, JumpRightDown = 6, JumpForward=7}
+        public enum PlayerStances { Idle = 1, IdleJump = 2, LeftHandUp = 3, RightHandUp = 4, JumpReady=7, Jump=8, SideJump=9, SideJumpReady=10}
         public PlayerStances currentStance { get; set; }
         private PlayerStances lastStance { get; set; }
         private bool moveEnabled;
@@ -32,8 +32,8 @@ namespace Game
         private float shoulderChangeTime = 3000.0f;
         public float idleShoulderHeight = 2.0f;
 
-        private Stopwatch heightChangeTimer;
-        private Stopwatch movementTimer;
+        private Stopwatch heightChangeStopwatch;
+        private Stopwatch movementStopwatch;
 
         public float rowToRowIdleMoveTime=0;
         public float rowToRowMoveTime = 0;
@@ -51,10 +51,10 @@ namespace Game
 
         public KinectPlayer(ContentManager content, Vector3 platformData)
         {
-            heightChangeTimer = new Stopwatch();
-            heightChangeTimer.Reset();
-            movementTimer = new Stopwatch();
-            movementTimer.Reset();
+            heightChangeStopwatch = new Stopwatch();
+            heightChangeStopwatch.Reset();
+            movementStopwatch = new Stopwatch();
+            movementStopwatch.Reset();
 
 
             modelPosition= new Hero(new ObjectData3D
@@ -75,40 +75,48 @@ namespace Game
 
         public float distance=0;
         public float tdistance=0;
-        public bool isBehind=false;
+        public bool isFirstPlatformBehindPlayer=false;
 
 
 
-        private void isBehindFirstPlatform(List<Platform> platformList)
+        private void IsBehindFirstPlatform(List<Platform> platformList)
         {
             if (modelPosition.objectArrangement.Position.Z > platformList.First().objectArrangement.Position.Z)
             {
-                isBehind = false;
+                isFirstPlatformBehindPlayer = false;
             }
             else
             {
-                isBehind = true;
+                isFirstPlatformBehindPlayer = true;
             }
         }
-
-
-
-
 
         public void WaitForPlatformEnd(List<Platform> platformList)
         {
             distance = (float)(Math.Sqrt((Math.Pow( modelPosition.objectArrangement.Position.Z - platformList.First().objectArrangement.Position.Z,2))));
 
-            isBehindFirstPlatform(platformList);
+            IsBehindFirstPlatform(platformList);
 
-            if ((distance >= radiusToIdleJump) )
+            if ((distance >= radiusToIdleJump) && (distance < platformRadius))
             {
-                if (isBehind)
+                if (isFirstPlatformBehindPlayer)
                 {
-                    if (currentStance == PlayerStances.Idle)
+                    switch (currentStance)
                     {
-                        lastStance = currentStance;
-                        currentStance = PlayerStances.IdleJump;
+                            case PlayerStances.Idle:
+                            lastStance = currentStance;
+                            currentStance = PlayerStances.IdleJump;
+                            break;
+
+                            case PlayerStances.JumpReady:
+                            lastStance = currentStance;
+                            currentStance = PlayerStances.Jump;
+                            break;
+
+                            case  PlayerStances.SideJumpReady:
+                            lastStance = currentStance;
+                            currentStance=PlayerStances.SideJump;
+                            break;
                     }
                 }
             }
@@ -117,7 +125,7 @@ namespace Game
         public void SetPlatformToPlatformMoveTime(float platformSpeed, float distanceBetweenRows, float timerUpdate, float distanceBetweenPlatforms)
         {
             rowToRowIdleMoveTime =  (((distanceBetweenRows-2*radiusToIdleJump) / platformSpeed)/60)*1000;
-            rowToRowMoveTime = ((2*distanceBetweenRows / platformSpeed) / 60) * 1000;
+            rowToRowMoveTime = (((2*distanceBetweenRows -2*radiusToIdleJump) / platformSpeed) / 60) * 1000;
             verticalVelocity = platformSpeed;
             horizontalVelocity = (2*distanceBetweenPlatforms) / ((distanceBetweenRows - 2 * radiusToIdleJump)/platformSpeed);
             idleJumpGravity = ((((2 * verticalVelocity) / (rowToRowIdleMoveTime)))/60)*1000;
@@ -130,20 +138,15 @@ namespace Game
             radiusToIdleJump = 0.7f * singlePlatformRadius;
         }
 
-
-        private void CheckIdleJump()
-        {
-
-        }
         private void CheckJumpForward(Skeleton skeleton)
         {
             if (skeleton.Joints[JointType.ShoulderCenter].Position.Y > spaceRequiredToJump)
             {
                 lastStance = currentStance;
-                currentStance = PlayerStances.JumpForward;
+                currentStance = PlayerStances.JumpReady;
             }
         }
-        private void CheckJumpLeftUp(Skeleton skeleton)
+        private void CheckLeftHandUp(Skeleton skeleton)
         {
             if (moveEnabled)
             {
@@ -152,11 +155,11 @@ namespace Game
                     moveEnabled = false;
                     jumpDirection = -1;
                     lastStance = currentStance;
-                    currentStance = PlayerStances.JumpLeftUp;
+                    currentStance = PlayerStances.SideJumpReady;
                 }
             }
         }
-        private void CheckJumpRightUp(Skeleton skeleton)
+        private void CheckRightHandUp(Skeleton skeleton)
         {
             if (moveEnabled)
             {
@@ -165,25 +168,9 @@ namespace Game
                     moveEnabled = false;
                     jumpDirection = 1;
                     lastStance = currentStance;
-                    currentStance = PlayerStances.JumpRightUp;
+                    currentStance = PlayerStances.SideJumpReady;
                 }
             }
-        }
-        private void CheckJumpLeftDown(Skeleton skeleton)
-        {
-            if(skeleton.Joints[JointType.HandLeft].Position.Y < spaceRequiredToResetHand)
-            {
-                lastStance = currentStance;
-                currentStance = PlayerStances.Idle;
-            }
-        }
-        private void CheckJumpRightDown(Skeleton skeleton)
-        {
-                if(skeleton.Joints[JointType.HandRight].Position.Y < spaceRequiredToResetHand)
-                {
-                    lastStance = currentStance;
-                    currentStance = PlayerStances.Idle;
-                }
         }
         private void CheckPlayerStance(Skeleton skeleton)
         {
@@ -194,27 +181,15 @@ namespace Game
                     CheckJumpForward(skeleton);
                     if (currentStance == PlayerStances.Idle)
                     {
-                        CheckJumpLeftUp(skeleton);
-                        CheckJumpRightUp(skeleton);
+                        CheckLeftHandUp(skeleton);
+                        CheckRightHandUp(skeleton);
                     }
-                    break;
-                case PlayerStances.JumpLeftUp:
-                    CheckJumpForward(skeleton);
-                    CheckJumpLeftDown(skeleton);
-                    break;
-                case PlayerStances.JumpRightUp:
-                    //CheckJumpForward(skeleton);
-                    //CheckJumpRightDown(skeleton);
-                    break;
-                case PlayerStances.JumpForward:
-                    CheckJumpLeftUp(skeleton);
-                    CheckJumpRightUp(skeleton);
                     break;
             }
         }
         private void CalculateShoulderPosition(Skeleton skeleton)
         {
-            if (!heightChangeTimer.IsRunning)
+            if (!heightChangeStopwatch.IsRunning)
             {
                 lastShoulderHeight = shoulderHeight;
             }
@@ -222,19 +197,19 @@ namespace Game
 
             if (Math.Abs(lastShoulderHeight - shoulderHeight) > shoulderMinToChange)
             {
-                if (!heightChangeTimer.IsRunning)
+                if (!heightChangeStopwatch.IsRunning)
                 {
-                    heightChangeTimer.Start();
+                    heightChangeStopwatch.Start();
                 }
                 else
                 {
-                    if (heightChangeTimer.Elapsed.TotalMilliseconds > shoulderChangeTime)
+                    if (heightChangeStopwatch.Elapsed.TotalMilliseconds > shoulderChangeTime)
                     {
                         idleShoulderHeight = shoulderHeight;
                         spaceRequiredToJump = idleShoulderHeight + 0.15f;
                         spaceRequiredToResetHand = idleShoulderHeight - 0.3f;
                         spaceRequiredToSideJump = idleShoulderHeight + 0.25f;
-                        heightChangeTimer.Reset();
+                        heightChangeStopwatch.Reset();
                     }
                 }
             }
@@ -311,22 +286,14 @@ namespace Game
 
         public void Update(List <Platform> platformList, float distanceBetweenRows)
         {
-            switch (currentStance)
-            {
-                case PlayerStances.Idle:
-                    WaitForPlatformEnd(platformList);
-                break;
-            }
+            WaitForPlatformEnd(platformList);
 
             switch (currentStance)
             {
                 case PlayerStances.IdleJump:
                     PerformIdleJump(2);
                     break;
-                case PlayerStances.JumpForward:
-                    PerformJump(2);
-                    break;
-                case PlayerStances.JumpRightUp:
+                case PlayerStances.Jump:
                     PerformJump(2);
                     break;
             }

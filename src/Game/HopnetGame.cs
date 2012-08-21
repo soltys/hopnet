@@ -118,7 +118,7 @@ namespace Game
 
 
 
-            //this.TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 10.0f); // zmniejszenie Update'u do 10/s
+            //TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 10.0f); // zmniejszenie Update'u do 10/s
 
             var heroArrangement = new ObjectData3D
                                       {
@@ -382,7 +382,7 @@ namespace Game
         private void drawDebufInfo(SpriteBatch spritebatch, SpriteFont debugFont)
         {
             spriteBatch.Begin();
-            spriteBatch.DrawString(debugFont, "kinectPlayer.isBehind :" + kinectPlayer.isBehind.ToString(), new Vector2(100, 10), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+            spriteBatch.DrawString(debugFont, "kinectPlayer.isBehind :" + kinectPlayer.isFirstPlatformBehindPlayer.ToString(), new Vector2(100, 10), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             spriteBatch.DrawString(debugFont, "platformList.First().Z : "+ platformList.First().objectArrangement.Position.Z.ToString(), new Vector2(100, 30), Color.Red);
             spriteBatch.DrawString(debugFont, "zegar.ElapsedMS : " + zegar.Elapsed.TotalMilliseconds.ToString(), new Vector2(100, 50), Color.Red);
             
