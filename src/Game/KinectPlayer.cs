@@ -2,16 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 using Microsoft.Kinect;
 using System.Diagnostics;
-
-
 
 namespace Game
 {
@@ -19,17 +13,14 @@ namespace Game
     {
         #region Public properties
 
-        public enum PlayerStances { Idle = 1, IdleJump = 2, JumpLeftDown = 3, JumpRightDown = 4, JumpLeftUp = 5, JumpRightUp = 6, JumpForward=7}
+        public enum PlayerStances { Idle = 1, IdleJump = 2, JumpLeftUp = 3, JumpRightUp = 4, JumpLeftDown = 5, JumpRightDown = 6, JumpForward=7}
         public PlayerStances currentStance { get; set; }
         private PlayerStances lastStance { get; set; }
         private bool moveEnabled;
-        public bool isOnPlatform;
         private Hero modelPosition;
         private Model model;
 
         private float modelGroundLevel=0.8f;
-        private float hPlatformSpace;
-        private float dPlatformSpace;
 
         private float spaceRequiredToSideJump = 4.0f;
         private float spaceRequiredToJump = 4.0f;
@@ -48,7 +39,6 @@ namespace Game
         public float rowToRowMoveTime = 0;
         public float verticalVelocity=0;
         public float horizontalVelocity=0;
-        private float playerToPlatformThreshold=0;
         public float timer = 0;
         public float idleJumpGravity = 0;
         public float jumpGravity = 0;
@@ -59,15 +49,13 @@ namespace Game
         public float platformRadius;
         public float radiusToIdleJump;
 
-        public KinectPlayer(ContentManager content, Vector3 platformData, float playerToPlatformSafeArea)
+        public KinectPlayer(ContentManager content, Vector3 platformData)
         {
-            isOnPlatform = true;
             heightChangeTimer = new Stopwatch();
             heightChangeTimer.Reset();
             movementTimer = new Stopwatch();
             movementTimer.Reset();
 
-            playerToPlatformThreshold = playerToPlatformSafeArea;
 
             modelPosition= new Hero(new ObjectData3D
                                       {
@@ -88,10 +76,11 @@ namespace Game
         public float distance=0;
         public float tdistance=0;
         public bool isBehind=false;
-        public void CheckPlayerOnPlatformStatus(List<Platform> platformList)
-        {
-            distance = (float)(Math.Sqrt((Math.Pow( modelPosition.objectArrangement.Position.Z - platformList.First().objectArrangement.Position.Z,2))));
 
+
+
+        private void isBehindFirstPlatform(List<Platform> platformList)
+        {
             if (modelPosition.objectArrangement.Position.Z > platformList.First().objectArrangement.Position.Z)
             {
                 isBehind = false;
@@ -100,37 +89,45 @@ namespace Game
             {
                 isBehind = true;
             }
+        }
 
-            if ((distance >= radiusToIdleJump) )//(modelPosition.objectArrangement.Position.Z > platformList.First().objectArrangement.Position.Z))
+
+
+
+
+        public void WaitForPlatformEnd(List<Platform> platformList)
+        {
+            distance = (float)(Math.Sqrt((Math.Pow( modelPosition.objectArrangement.Position.Z - platformList.First().objectArrangement.Position.Z,2))));
+
+            isBehindFirstPlatform(platformList);
+
+            if ((distance >= radiusToIdleJump) )
             {
                 if (isBehind)
                 {
-                    tdistance = distance;
-                    lastStance = currentStance;
-                    currentStance = PlayerStances.IdleJump;
-                    isOnPlatform = true;
+                    if (currentStance == PlayerStances.Idle)
+                    {
+                        lastStance = currentStance;
+                        currentStance = PlayerStances.IdleJump;
+                    }
                 }
-            }
-            else
-            {
-                isOnPlatform = false;
             }
         }
 
-        public void GetPlatformToPlatformMoveTime(float platformSpeed, float distanceBetweenRows, float timerUpdate, float distanceBetweenPlatforms)
+        public void SetPlatformToPlatformMoveTime(float platformSpeed, float distanceBetweenRows, float timerUpdate, float distanceBetweenPlatforms)
         {
             rowToRowIdleMoveTime =  (((distanceBetweenRows-2*radiusToIdleJump) / platformSpeed)/60)*1000;
-            rowToRowMoveTime = ((distanceBetweenRows / platformSpeed) / 60) * 1000;
+            rowToRowMoveTime = ((2*distanceBetweenRows / platformSpeed) / 60) * 1000;
             verticalVelocity = platformSpeed;
-            horizontalVelocity = distanceBetweenPlatforms / ((distanceBetweenRows - 2 * radiusToIdleJump)/platformSpeed);
+            horizontalVelocity = (2*distanceBetweenPlatforms) / ((distanceBetweenRows - 2 * radiusToIdleJump)/platformSpeed);
             idleJumpGravity = ((((2 * verticalVelocity) / (rowToRowIdleMoveTime)))/60)*1000;
             jumpGravity = ((((2 * verticalVelocity) / (rowToRowMoveTime))) / 60) * 1000;
             timeAmount = timerUpdate/10;
         }
-        public void GetPlatformRadius(float singlePlatformRadius)
+        public void SetPlatformRadius(float singlePlatformRadius)
         {
             platformRadius = singlePlatformRadius;
-            radiusToIdleJump = 0.6f * singlePlatformRadius;
+            radiusToIdleJump = 0.7f * singlePlatformRadius;
         }
 
 
@@ -206,8 +203,8 @@ namespace Game
                     CheckJumpLeftDown(skeleton);
                     break;
                 case PlayerStances.JumpRightUp:
-                    CheckJumpForward(skeleton);
-                    CheckJumpRightDown(skeleton);
+                    //CheckJumpForward(skeleton);
+                    //CheckJumpRightDown(skeleton);
                     break;
                 case PlayerStances.JumpForward:
                     CheckJumpLeftUp(skeleton);
@@ -312,19 +309,27 @@ namespace Game
         }
 
 
-
-        public void Update(List <Platform> platformList)
+        public void Update(List <Platform> platformList, float distanceBetweenRows)
         {
-        CheckPlayerOnPlatformStatus(platformList);
-                switch (currentStance)
-                {
-                    case PlayerStances.IdleJump:
-                        PerformJump(4);
-                        break;
-                    case PlayerStances.JumpForward:
-                        PerformIdleJump(4);
-                        break;
-                }
+            switch (currentStance)
+            {
+                case PlayerStances.Idle:
+                    WaitForPlatformEnd(platformList);
+                break;
+            }
+
+            switch (currentStance)
+            {
+                case PlayerStances.IdleJump:
+                    PerformIdleJump(2);
+                    break;
+                case PlayerStances.JumpForward:
+                    PerformJump(2);
+                    break;
+                case PlayerStances.JumpRightUp:
+                    PerformJump(2);
+                    break;
+            }
         }
 
         public void KinectUpdate(Skeleton skeleton)

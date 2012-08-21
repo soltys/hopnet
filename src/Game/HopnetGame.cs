@@ -2,12 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 using NLog;
 using Microsoft.Kinect;
 using System.Diagnostics;
@@ -41,8 +37,6 @@ namespace Game
         Model heroModel;
         SpriteFont debugFont;
         Vector3 cameraPosition;
-        bool moveOnlyOnceRight;
-        bool moveOnlyOnceLeft;
         KinectPlayer kinectPlayer;
 
         // The aspect ratio determines how to scale 3d to 2d projection.
@@ -62,7 +56,7 @@ namespace Game
         float FirstPlatformPosition = -8.0f;
         float spaceBetweenRows = 5f;
         float platformGroundLevel = 0.0f;
-        float platformRadius = 2.0f;
+        float platformRadius = 1.8f;
         private const float safeRangeForJump = 0.1f;
 
         private float PlatformUpdateSpeed;
@@ -111,13 +105,11 @@ namespace Game
             
             cameraPosition = new Vector3(10.0f, 0.0f, 0.0f); // kamera od boku
             //cameraPosition = new Vector3(0.0f, 5.0f, 10.0f);  // kamera pokazuj¹ca tak, jak ma byæ w grze finalnie
-            moveOnlyOnceRight = true;
-            moveOnlyOnceLeft = true;
             mainMenu = new MainMenu(graphics,this);
             mainMenu.IsGameInMenuMode = false;
-            kinectPlayer = new KinectPlayer(Content,new Vector3(FirstPlatformPosition + (PlatformRow.rowLength/2)*spaceBetweenPlatforms,platformGroundLevel,BeginningOfBoardPositionZ), safeRangeForJump);
-            kinectPlayer.GetPlatformRadius(platformRadius);
-            kinectPlayer.GetPlatformToPlatformMoveTime(SpeedOfPlatforms, spaceBetweenRows, (float)(this.TargetElapsedTime.TotalMilliseconds),spaceBetweenPlatforms);
+            kinectPlayer = new KinectPlayer(Content,new Vector3(FirstPlatformPosition + (PlatformRow.rowLength/2)*spaceBetweenPlatforms,platformGroundLevel,BeginningOfBoardPositionZ));
+            kinectPlayer.SetPlatformRadius(platformRadius);
+            kinectPlayer.SetPlatformToPlatformMoveTime(SpeedOfPlatforms, spaceBetweenRows, (float)(this.TargetElapsedTime.TotalMilliseconds),spaceBetweenPlatforms);
             platformList = new List<Platform>();
             platformGenerator=new PlatformCollection();
 
@@ -126,7 +118,7 @@ namespace Game
 
 
 
-            //this.TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 5.0f); // zmniejszenie Update'u do 10/s
+            //this.TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 10.0f); // zmniejszenie Update'u do 10/s
 
             var heroArrangement = new ObjectData3D
                                       {
@@ -280,22 +272,6 @@ namespace Game
             }
         }
 
-
-
-        private bool IsPlayerCanJump()
-        {
-            foreach (Platform platform in platformList)
-            {
-                if (platform.objectArrangement.Position.Z < player.objectArrangement.Position.Z + safeRangeForJump
-                    && platform.objectArrangement.Position.Z > player.objectArrangement.Position.Z - safeRangeForJump)
-                {
-                    return true;
-                }
-                return false;
-            }
-            return false;
-        }
-
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -330,7 +306,7 @@ namespace Game
                 {
                     speedLevelFactor -= 0.1f;
                     SpeedOfPlatforms = 0.1f * speedLevelFactor;
-                    kinectPlayer.GetPlatformToPlatformMoveTime(SpeedOfPlatforms, spaceBetweenRows, (float)(this.TargetElapsedTime.TotalMilliseconds),spaceBetweenPlatforms);
+                    kinectPlayer.SetPlatformToPlatformMoveTime(SpeedOfPlatforms, spaceBetweenRows, (float)(this.TargetElapsedTime.TotalMilliseconds),spaceBetweenPlatforms);
                     change = false;
                     btnTimer.Start();
                 }
@@ -342,7 +318,7 @@ namespace Game
                 {   
                     speedLevelFactor += 0.1f;
                     SpeedOfPlatforms = 0.1f * speedLevelFactor;
-                    kinectPlayer.GetPlatformToPlatformMoveTime(SpeedOfPlatforms, spaceBetweenRows, (float)(this.TargetElapsedTime.TotalMilliseconds),spaceBetweenPlatforms);
+                    kinectPlayer.SetPlatformToPlatformMoveTime(SpeedOfPlatforms, spaceBetweenRows, (float)(this.TargetElapsedTime.TotalMilliseconds),spaceBetweenPlatforms);
                      
                     //MovePlatforms();
                     //RemovePlatformsAtEnd();
@@ -360,7 +336,7 @@ namespace Game
             switch (mainMenu.IsGameInMenuMode)
             {
                 case false:
-                    kinectPlayer.Update(platformList);
+                    kinectPlayer.Update(platformList,spaceBetweenRows);
                     MovePlatforms();
                     RemovePlatformsAtEnd();
                 break;
@@ -373,48 +349,7 @@ namespace Game
                 break;
                      
             }
-            
-                #region player controls
-                bool playerCanJump = IsPlayerCanJump();
-
-                if (keyState.IsKeyDown(Keys.Right))
-                {
-                    if (moveOnlyOnceRight && playerCanJump)
-                    {
-                        if (player.CurrentPlatformPosition < 4)
-                        {
-                            player.MoveRight();
-                        }
-                        moveOnlyOnceRight = false;
-                        playerCanJump = false;
-                    }
-                }
-
-                if (keyState.IsKeyUp(Keys.Right))
-                {
-                    moveOnlyOnceRight = true;
-                }
-
-
-                if (keyState.IsKeyDown(Keys.Left))
-                {
-                    if (moveOnlyOnceLeft && playerCanJump)
-                    {
-                        if (player.CurrentPlatformPosition > 0)
-                        {
-                            player.MoveLeft();
-                        }
-
-                        moveOnlyOnceLeft = false;
-                        playerCanJump = false;
-                    }
-                }
-
-                if (keyState.IsKeyUp(Keys.Left))
-                {
-                    moveOnlyOnceLeft = true;
-                }
-                #endregion
+         
             base.Update(gameTime);
         }
 
@@ -450,7 +385,7 @@ namespace Game
             spriteBatch.DrawString(debugFont, "kinectPlayer.isBehind :" + kinectPlayer.isBehind.ToString(), new Vector2(100, 10), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             spriteBatch.DrawString(debugFont, "platformList.First().Z : "+ platformList.First().objectArrangement.Position.Z.ToString(), new Vector2(100, 30), Color.Red);
             spriteBatch.DrawString(debugFont, "zegar.ElapsedMS : " + zegar.Elapsed.TotalMilliseconds.ToString(), new Vector2(100, 50), Color.Red);
-            spriteBatch.DrawString(debugFont, "kinectPlayer.isOnPlatform : " + kinectPlayer.isOnPlatform.ToString(), new Vector2(100, 70), Color.Red);
+            
             spriteBatch.DrawString(debugFont, "kinectPlayer.timeAmount : " + kinectPlayer.timeAmount.ToString(), new Vector2(100, 90), Color.Red);
             spriteBatch.DrawString(debugFont, "kinectPlayer.distance : " + kinectPlayer.distance.ToString(), new Vector2(100, 110), Color.Red);
             spriteBatch.DrawString(debugFont, "kinectPlayer.CurrentStance : " + kinectPlayer.currentStance.ToString(), new Vector2(100, 130), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
@@ -463,6 +398,7 @@ namespace Game
             spriteBatch.DrawString(debugFont, "kinectPlayer.horizontalVelocity :" + kinectPlayer.horizontalVelocity.ToString(), new Vector2(100, 270), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             spriteBatch.DrawString(debugFont, "kinectPlayer.platformRadius :" + kinectPlayer.platformRadius.ToString(), new Vector2(100, 290), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             spriteBatch.DrawString(debugFont, "kinectPlayer.radiusToIdleJump :" + kinectPlayer.radiusToIdleJump.ToString(), new Vector2(100, 310), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+            spriteBatch.DrawString(debugFont, kinectPlayer.currentStance.ToString(), new Vector2(50, 450), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
 
             spriteBatch.End();
         }
