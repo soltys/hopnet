@@ -127,7 +127,7 @@ namespace Game
             rowToRowIdleMoveTime =  (((distanceBetweenRows-2*radiusToIdleJump) / platformSpeed)/60)*1000;
             rowToRowMoveTime = (((2*distanceBetweenRows -2*radiusToIdleJump) / platformSpeed) / 60) * 1000;
             verticalVelocity = platformSpeed;
-            horizontalVelocity = (2*distanceBetweenPlatforms) / ((distanceBetweenRows - 2 * radiusToIdleJump)/platformSpeed);
+            horizontalVelocity = (distanceBetweenRows/distanceBetweenPlatforms) * platformSpeed;
             idleJumpGravity = ((((2 * verticalVelocity) / (rowToRowIdleMoveTime)))/60)*1000;
             jumpGravity = ((((2 * verticalVelocity) / (rowToRowMoveTime))) / 60) * 1000;
             timeAmount = timerUpdate/10;
@@ -135,7 +135,7 @@ namespace Game
         public void SetPlatformRadius(float singlePlatformRadius)
         {
             platformRadius = singlePlatformRadius;
-            radiusToIdleJump = 0.7f * singlePlatformRadius;
+            radiusToIdleJump = 0.6f * singlePlatformRadius;
         }
 
         private void CheckJumpForward(Skeleton skeleton)
@@ -187,6 +187,7 @@ namespace Game
                     break;
             }
         }
+
         private void CalculateShoulderPosition(Skeleton skeleton)
         {
             if (!heightChangeStopwatch.IsRunning)
@@ -272,16 +273,13 @@ namespace Game
             }
         }
 
-
-
-
-
-        private void HorizontalJump(float currentModelHeight)
+        private void PerformHorizontalJump()
         {
-            modelPosition.objectArrangement.Position = new Vector3(modelPosition.oldArrangement.Position.X + horizontalVelocity * timer,
-                currentModelHeight,
-                modelPosition.objectArrangement.Position.Z);
-        }
+            modelPosition.objectArrangement.Position =
+                new Vector3(modelPosition.oldArrangement.Position.X + jumpDirection*horizontalVelocity,
+                            modelPosition.objectArrangement.Position.Y,
+                            modelPosition.objectArrangement.Position.Z);
+    }
 
 
         public void Update(List <Platform> platformList, float distanceBetweenRows)
@@ -295,6 +293,10 @@ namespace Game
                     break;
                 case PlayerStances.Jump:
                     PerformJump(2);
+                    break;
+                case PlayerStances.SideJump:
+                    PerformIdleJump(2);
+                    PerformHorizontalJump();
                     break;
             }
         }

@@ -19,7 +19,6 @@ namespace Game
         bool isUserHasKinect = true;
 
         KinectSensor kinect;
-        Texture2D colorVideo,depthVideo;
         Skeleton[] skeletonData;
         Skeleton skeleton;
 
@@ -49,7 +48,7 @@ namespace Game
         const float EndOfBoardPositionZ = 9.0f+2.0f;
         const float BeginningOfBoardPositionZ = 8.0f;
 
-        static float speedLevelFactor = 0.5f;
+        static float speedLevelFactor = 0.3f;
         static float SpeedOfPlatforms = 0.1f * speedLevelFactor;
 
         float spaceBetweenPlatforms = 4f;
@@ -84,27 +83,22 @@ namespace Game
 
             PlatformUpdateSpeed = SpeedOfPlatforms;
 
-            colorVideo = new Texture2D(graphics.GraphicsDevice,320,240);
-            depthVideo = new Texture2D(graphics.GraphicsDevice, 320, 240) ;
-
-                try
-                {
-                    kinect = KinectSensor.KinectSensors[0];
-                    kinect.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
-                    kinect.DepthStream.Enable(DepthImageFormat.Resolution320x240Fps30);
-                    kinect.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(kinect_AllFramesReady);
-                    kinect.SkeletonStream.Enable();
-                    kinect.Start();
-                    colorVideo = new Texture2D(graphics.GraphicsDevice, kinect.ColorStream.FrameWidth, kinect.ColorStream.FrameHeight);
-                    depthVideo = new Texture2D(graphics.GraphicsDevice, kinect.DepthStream.FrameWidth, kinect.DepthStream.FrameHeight);
-                }
-                catch (Exception e)
-                {
-                    isUserHasKinect = false;
-                }
+            try
+            {
+                kinect = KinectSensor.KinectSensors[0];
+                kinect.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
+                kinect.DepthStream.Enable(DepthImageFormat.Resolution320x240Fps30);
+                kinect.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(kinect_AllFramesReady);
+                kinect.SkeletonStream.Enable();
+                kinect.Start();
+            }
+            catch (Exception e)
+            {
+                isUserHasKinect = false;
+            }
             
-            cameraPosition = new Vector3(10.0f, 0.0f, 0.0f); // kamera od boku
-            //cameraPosition = new Vector3(0.0f, 5.0f, 10.0f);  // kamera pokazuj¹ca tak, jak ma byæ w grze finalnie
+            //cameraPosition = new Vector3(10.0f, 0.0f, 0.0f); // kamera od boku
+            cameraPosition = new Vector3(0.0f, 5.0f, 10.0f);  // kamera pokazuj¹ca tak, jak ma byæ w grze finalnie
             mainMenu = new MainMenu(graphics,this);
             mainMenu.IsGameInMenuMode = false;
             kinectPlayer = new KinectPlayer(Content,new Vector3(FirstPlatformPosition + (PlatformRow.rowLength/2)*spaceBetweenPlatforms,platformGroundLevel,BeginningOfBoardPositionZ));
@@ -113,10 +107,7 @@ namespace Game
             platformList = new List<Platform>();
             platformGenerator=new PlatformCollection();
 
-
-                rowFromGenerator[2] = true;
-
-
+            rowFromGenerator[2] = true;
 
             //TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 10.0f); // zmniejszenie Update'u do 10/s
 
@@ -146,7 +137,7 @@ namespace Game
                 {
                     if ((skeletonData == null) || (this.skeletonData.Length != skeletonFrame.SkeletonArrayLength))
                     {
-                        this.skeletonData = new Skeleton[skeletonFrame.SkeletonArrayLength];
+                        skeletonData = new Skeleton[skeletonFrame.SkeletonArrayLength];
                     }
 
                     skeletonFrame.CopySkeletonDataTo(this.skeletonData);
