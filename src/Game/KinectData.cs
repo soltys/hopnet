@@ -1,65 +1,70 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Kinect;
+using System.Diagnostics;
 
 namespace Game
 {
     public class KinectData
     {
-        public KinectSensor kinectSensor = null;
-        private Skeleton[] skeletonData = null;
-        private Skeleton skeleton = null;
+        private KinectSensor kinectSensor;
+        private Skeleton[] skeletonData;
+        private Skeleton skeleton;
+        private readonly bool isKinectConnected = true;
+        private Stopwatch heightChangeStopWatch;
+        private float personHeight;
+        private float lastPersonHeight = 100.0f;
 
+        #region public properties and accessors
+        public bool IsKinectConnected
+        {
+            get { return isKinectConnected; }
+        }
         public Skeleton Skeleton
         {
             get { return skeleton; }
+            set { skeleton = value; }
         }
+        public Skeleton[] SkeletonData
+        {
+            get { return skeletonData; }
+            set { skeletonData = value; }
+        }
+        public KinectSensor KinectSensor
+        {
+            get { return kinectSensor; }
+            set { kinectSensor = value; }
+        }
+        public float PlayerHeight
+        {
+            get { return personHeight; }   
+        }
+
+        #endregion
+
+        #region constructor
 
         public KinectData()
         {
+            heightChangeStopWatch = new Stopwatch();
+            heightChangeStopWatch.Reset();
             try
             {
                 kinectSensor = KinectSensor.KinectSensors[0];
-                kinectSensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(kinectSkeletonFrameReady);
-                kinectSensor.SkeletonStream.Enable();
-                kinectSensor.Start();
             }
             catch (Exception e)
             {
-                throw new ArgumentException();
+                isKinectConnected = false;
             }
         }
 
-        private void kinectSkeletonFrameReady(object sender, AllFramesReadyEventArgs imageFrames)
+        #endregion
+
+
+
+        private void CalculatePersonHeight()
         {
-            using (SkeletonFrame skeletonFrame = imageFrames.OpenSkeletonFrame())
-            {
-                if (skeletonFrame != null)
-                {
-                    if ((skeletonData == null) || (this.skeletonData.Length != skeletonFrame.SkeletonArrayLength))
-                    {
-                        this.skeletonData = new Skeleton[skeletonFrame.SkeletonArrayLength];
-                    }
-
-                    skeletonFrame.CopySkeletonDataTo(this.skeletonData);
-                }
-            }
-
-            if (skeletonData != null)
-            {
-                foreach (Skeleton skel in skeletonData)
-                {
-                    if (skel.TrackingState == SkeletonTrackingState.Tracked)
-                    {
-                        skeleton = skel;
-                    }
-                }
-            }
-
+            
         }
 
-        
     }
 }
