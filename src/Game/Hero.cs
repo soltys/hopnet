@@ -36,32 +36,5 @@ namespace Game
             }
         }
 
-        private double timer = 0.0f;
-        public bool jumpReady=true;
-        public void MoveUp(double dTimeBetweenPlatforms, double groundLevel,double platformsSpeed, double gravity)
-        {
-            if(jumpReady)
-            {
-                if (timer*10<dTimeBetweenPlatforms)
-                {
-                    timer += 10;
-                    objectArrangement.Position = new Vector3(objectArrangement.Position.X, (float)(oldArrangement.Position.Y + platformsSpeed * timer - gravity * timer * timer / 2), objectArrangement.Position.Z);
-                }
-                else
-                {
-                    objectArrangement.Position = new Vector3(objectArrangement.Position.X, 0.0f, objectArrangement.Position.Z);
-                    oldArrangement = objectArrangement;
-                    jumpReady = false;
-
-                }
-            }
-
-
-
-
-        }
-
-
-
     }
 }
