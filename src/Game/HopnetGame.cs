@@ -16,13 +16,10 @@ namespace Game
     /// </summary>
     public class HopnetGame : Microsoft.Xna.Framework.Game
     {
-        bool isUserHasKinect = true;
 
         KinectSensor kinect;
         Skeleton[] skeletonData;
         Skeleton skeleton;
-
-        Texture2D jointTexture; 
 
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -32,11 +29,10 @@ namespace Game
         List<Platform> platformList;
         Model platformModel;
         PlatformCollection platformGenerator;
-        Hero player;
-        Model heroModel;
         SpriteFont debugFont;
         Vector3 cameraPosition;
         KinectPlayer kinectPlayer;
+        private KinectData kinectData;
 
         // The aspect ratio determines how to scale 3d to 2d projection.
         float aspectRatio;
@@ -56,9 +52,6 @@ namespace Game
         float spaceBetweenRows = 5f;
         float platformGroundLevel = 0.0f;
         float platformRadius = 1.8f;
-        private const float safeRangeForJump = 0.1f;
-
-        private float PlatformUpdateSpeed;
 
         public HopnetGame()
         {
@@ -81,7 +74,10 @@ namespace Game
             IsMouseVisible = true;
             graphics.ApplyChanges();
 
-            PlatformUpdateSpeed = SpeedOfPlatforms;
+            kinectData = new KinectData();
+            kinectData.KinectSensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(kinect_AllFramesReady);
+            kinectData.KinectSensor.SkeletonStream.Enable();
+            kinectData.KinectSensor.Start();
 
             try
             {
@@ -94,11 +90,10 @@ namespace Game
             }
             catch (Exception e)
             {
-                isUserHasKinect = false;
             }
             
-            //cameraPosition = new Vector3(10.0f, 0.0f, 0.0f); // kamera od boku
-            cameraPosition = new Vector3(0.0f, 5.0f, 10.0f);  // kamera pokazuj¹ca tak, jak ma byæ w grze finalnie
+            cameraPosition = new Vector3(10.0f, 0.0f, 0.0f); // kamera od boku
+            //cameraPosition = new Vector3(0.0f, 5.0f, 10.0f);  // kamera pokazuj¹ca tak, jak ma byæ w grze finalnie
             mainMenu = new MainMenu(graphics,this);
             mainMenu.IsGameInMenuMode = false;
             kinectPlayer = new KinectPlayer(Content,new Vector3(FirstPlatformPosition + (PlatformRow.rowLength/2)*spaceBetweenPlatforms,platformGroundLevel,BeginningOfBoardPositionZ));
@@ -117,7 +112,7 @@ namespace Game
                                           Scale = new Vector3(0.5f, 0.5f, 0.5f),
                                           Rotation = new Vector3(0.0f)
                                       };
-            player = new Hero(heroArrangement);
+            new Hero(heroArrangement);
 
             CreatePlatforms(PlatformRow.rowLength, FirstPlatformPosition, spaceBetweenPlatforms, BeginningOfBoardPositionZ);
             
@@ -207,10 +202,10 @@ namespace Game
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             debugFont = Content.Load<SpriteFont>("myFont");
-            heroModel = Content.Load<Model>(@"Models\hero");
+            Content.Load<Model>(@"Models\hero");
 
             platformModel = Content.Load<Model>(@"Models\platforma");
-            jointTexture = Content.Load<Texture2D>(@"Sprites\cursor_left_normal");
+            Content.Load<Texture2D>(@"Sprites\cursor_left_normal");
 
             aspectRatio = (float)graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height;
             mainMenu.LoadContent(Content);
@@ -263,12 +258,7 @@ namespace Game
             }
         }
 
-        /// <summary>
-        /// Allows the game to run logic such as updating the world,
-        /// checking for collisions, gathering input, and playing audio.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        /// 
+
 
         bool change = true;
         private Stopwatch btnTimer = new Stopwatch();
@@ -297,7 +287,7 @@ namespace Game
                 {
                     speedLevelFactor -= 0.1f;
                     SpeedOfPlatforms = 0.1f * speedLevelFactor;
-                    kinectPlayer.SetPlatformToPlatformMoveTime(SpeedOfPlatforms, spaceBetweenRows, (float)(this.TargetElapsedTime.TotalMilliseconds),spaceBetweenPlatforms);
+                    kinectPlayer.SetPlatformToPlatformMoveTime(SpeedOfPlatforms, spaceBetweenRows, (float)(TargetElapsedTime.TotalMilliseconds),spaceBetweenPlatforms);
                     change = false;
                     btnTimer.Start();
                 }
@@ -309,7 +299,7 @@ namespace Game
                 {   
                     speedLevelFactor += 0.1f;
                     SpeedOfPlatforms = 0.1f * speedLevelFactor;
-                    kinectPlayer.SetPlatformToPlatformMoveTime(SpeedOfPlatforms, spaceBetweenRows, (float)(this.TargetElapsedTime.TotalMilliseconds),spaceBetweenPlatforms);
+                    kinectPlayer.SetPlatformToPlatformMoveTime(SpeedOfPlatforms, spaceBetweenRows, (float)(TargetElapsedTime.TotalMilliseconds),spaceBetweenPlatforms);
                      
                     //MovePlatforms();
                     //RemovePlatformsAtEnd();
@@ -333,7 +323,7 @@ namespace Game
                 break;
                     
                 case true:
-                    if (!isUserHasKinect)
+                    if (!kinectData.IsKinectConnected)
                     {
                         mainMenu.KinectUpdate(null, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
                     }
@@ -366,16 +356,16 @@ namespace Game
                     break;
             }
 
-            drawDebufInfo(spriteBatch, debugFont);
+            DrawDebufInfo(spriteBatch, debugFont);
             base.Draw(gameTime);
         }
 
-        private void drawDebufInfo(SpriteBatch spritebatch, SpriteFont debugFont)
+        private void DrawDebufInfo(SpriteBatch spritebatch, SpriteFont debugFont)
         {
             spriteBatch.Begin();
             spriteBatch.DrawString(debugFont, "kinectPlayer.isBehind :" + kinectPlayer.isFirstPlatformBehindPlayer.ToString(), new Vector2(100, 10), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             spriteBatch.DrawString(debugFont, "platformList.First().Z : "+ platformList.First().objectArrangement.Position.Z.ToString(), new Vector2(100, 30), Color.Red);
-            spriteBatch.DrawString(debugFont, "zegar.ElapsedMS : " + zegar.Elapsed.TotalMilliseconds.ToString(), new Vector2(100, 50), Color.Red);
+            spriteBatch.DrawString(debugFont, "ElapsedMS : " + kinectPlayer.timeLeftToJump.Elapsed.TotalMilliseconds.ToString(), new Vector2(100, 50), Color.Red);
             
             spriteBatch.DrawString(debugFont, "kinectPlayer.timeAmount : " + kinectPlayer.timeAmount.ToString(), new Vector2(100, 90), Color.Red);
             spriteBatch.DrawString(debugFont, "kinectPlayer.distance : " + kinectPlayer.distance.ToString(), new Vector2(100, 110), Color.Red);

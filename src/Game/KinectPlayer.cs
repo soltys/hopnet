@@ -16,7 +16,7 @@ namespace Game
         public enum PlayerStances { Idle = 1, IdleJump = 2, LeftHandUp = 3, RightHandUp = 4, JumpReady=7, Jump=8, SideJump=9, SideJumpReady=10}
         public PlayerStances currentStance { get; set; }
         private PlayerStances lastStance { get; set; }
-        private bool moveEnabled;
+        private bool isMotionCheckEnabled;
         private Hero modelPosition;
         private Model model;
 
@@ -24,7 +24,6 @@ namespace Game
 
         private float spaceRequiredToSideJump = 4.0f;
         private float spaceRequiredToJump = 4.0f;
-        private float spaceRequiredToResetHand = -4f;
 
         private float shoulderMinToChange = 0.005f;
         private float shoulderHeight = 0.3f;
@@ -44,13 +43,20 @@ namespace Game
         public float jumpGravity = 0;
         private float jumpHeightDivider = 20f;
         public float timeAmount;
-        private float jumpDirection = 0;
+        private float jumpDirection;
         private float modelHeight = 1.0f;
         public float platformRadius;
         public float radiusToIdleJump;
 
+        public Stopwatch timeLeftToJump;
+
+
         public KinectPlayer(ContentManager content, Vector3 platformData)
         {
+            timeLeftToJump = new Stopwatch();
+            timeLeftToJump.Reset();
+
+
             heightChangeStopwatch = new Stopwatch();
             heightChangeStopwatch.Reset();
             movementStopwatch = new Stopwatch();
@@ -66,7 +72,7 @@ namespace Game
             model = content.Load<Model>(@"Models\hero");
             currentStance = PlayerStances.Idle;
             lastStance = PlayerStances.Idle;
-            moveEnabled = true;
+            isMotionCheckEnabled = true;
             modelGroundLevel = platformData.Y+modelHeight;
             modelPosition.objectArrangement.Position = new Vector3(platformData.X,modelGroundLevel,platformData.Z);
             modelPosition.oldArrangement = modelPosition.objectArrangement;
@@ -148,11 +154,11 @@ namespace Game
         }
         private void CheckLeftHandUp(Skeleton skeleton)
         {
-            if (moveEnabled)
+            if (isMotionCheckEnabled)
             {
                 if (skeleton.Joints[JointType.HandLeft].Position.Y > spaceRequiredToSideJump)
                 {
-                    moveEnabled = false;
+                    isMotionCheckEnabled = false;
                     jumpDirection = -1;
                     lastStance = currentStance;
                     currentStance = PlayerStances.SideJumpReady;
@@ -161,11 +167,11 @@ namespace Game
         }
         private void CheckRightHandUp(Skeleton skeleton)
         {
-            if (moveEnabled)
+            if (isMotionCheckEnabled)
             {
                 if (skeleton.Joints[JointType.HandRight].Position.Y > spaceRequiredToSideJump)
                 {
-                    moveEnabled = false;
+                    isMotionCheckEnabled = false;
                     jumpDirection = 1;
                     lastStance = currentStance;
                     currentStance = PlayerStances.SideJumpReady;
@@ -177,7 +183,7 @@ namespace Game
             switch (currentStance)
             {
                 case PlayerStances.Idle:
-                    moveEnabled = true;
+                    isMotionCheckEnabled = true;
                     CheckJumpForward(skeleton);
                     if (currentStance == PlayerStances.Idle)
                     {
@@ -208,7 +214,6 @@ namespace Game
                     {
                         idleShoulderHeight = shoulderHeight;
                         spaceRequiredToJump = idleShoulderHeight + 0.15f;
-                        spaceRequiredToResetHand = idleShoulderHeight - 0.3f;
                         spaceRequiredToSideJump = idleShoulderHeight + 0.25f;
                         heightChangeStopwatch.Reset();
                     }
@@ -217,13 +222,13 @@ namespace Game
         }
 
         
-        private void PerformIdleJump(float gravityDivider)
+        private void PerformIdleJump()
         {
             if ((timer < rowToRowIdleMoveTime) & modelPosition.objectArrangement.Position.Y >= modelGroundLevel)
             {
                 timer += timeAmount;
                 modelPosition.objectArrangement.Position = new Vector3(modelPosition.oldArrangement.Position.X,
-                   modelPosition.oldArrangement.Position.Y + (verticalVelocity * timer - idleJumpGravity * timer * timer /gravityDivider) / jumpHeightDivider,
+                   modelPosition.oldArrangement.Position.Y + (verticalVelocity * timer - idleJumpGravity * timer * timer /2) / jumpHeightDivider,
                    modelPosition.oldArrangement.Position.Z);
             }
             else
@@ -245,13 +250,13 @@ namespace Game
             }
         }
 
-        private void PerformJump(float gravityDivider)
+        private void PerformJump()
         {
             if ((timer < rowToRowMoveTime) & modelPosition.objectArrangement.Position.Y >= modelGroundLevel)
             {
                 timer += timeAmount;
                 modelPosition.objectArrangement.Position = new Vector3(modelPosition.oldArrangement.Position.X,
-                   modelPosition.oldArrangement.Position.Y + (verticalVelocity * timer - jumpGravity * timer * timer / gravityDivider) / jumpHeightDivider,
+                   modelPosition.oldArrangement.Position.Y + (verticalVelocity * timer - jumpGravity * timer * timer / 2) / jumpHeightDivider,
                    modelPosition.oldArrangement.Position.Z);
             }
             else
@@ -279,7 +284,7 @@ namespace Game
                 new Vector3(modelPosition.oldArrangement.Position.X + jumpDirection*horizontalVelocity,
                             modelPosition.objectArrangement.Position.Y,
                             modelPosition.objectArrangement.Position.Z);
-    }
+        }
 
 
         public void Update(List <Platform> platformList, float distanceBetweenRows)
@@ -289,13 +294,13 @@ namespace Game
             switch (currentStance)
             {
                 case PlayerStances.IdleJump:
-                    PerformIdleJump(2);
+                    PerformIdleJump();
                     break;
                 case PlayerStances.Jump:
-                    PerformJump(2);
+                    PerformJump();
                     break;
                 case PlayerStances.SideJump:
-                    PerformIdleJump(2);
+                    PerformIdleJump();
                     PerformHorizontalJump();
                     break;
             }

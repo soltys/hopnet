@@ -8,31 +8,51 @@ namespace Game
 {
     public class KinectData
     {
-        public KinectSensor kinectSensor = null;
-        private Skeleton[] skeletonData = null;
-        private Skeleton skeleton = null;
+        private KinectSensor kinectSensor;
+        private Skeleton[] skeletonData;
+        private Skeleton skeleton;
+        private readonly bool isKinectConnected = true;
 
+        #region public properties and accessors
+        public bool IsKinectConnected
+        {
+            get { return isKinectConnected; }
+        }
         public Skeleton Skeleton
         {
             get { return skeleton; }
         }
+        public Skeleton[] SkeletonData
+        {
+            get { return skeletonData; }
+        }
+        public KinectSensor KinectSensor
+        {
+            get { return kinectSensor; }
+            set { kinectSensor = value; }
+        }
+        #endregion
+
+        #region constructor
 
         public KinectData()
         {
             try
             {
                 kinectSensor = KinectSensor.KinectSensors[0];
-                kinectSensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(kinectSkeletonFrameReady);
+                kinectSensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(KinectSkeletonFrameReady);
                 kinectSensor.SkeletonStream.Enable();
                 kinectSensor.Start();
             }
             catch (Exception e)
             {
-                throw new ArgumentException();
+                isKinectConnected = false;
             }
         }
 
-        private void kinectSkeletonFrameReady(object sender, AllFramesReadyEventArgs imageFrames)
+        #endregion
+
+        private void KinectSkeletonFrameReady(object sender, AllFramesReadyEventArgs imageFrames)
         {
             using (SkeletonFrame skeletonFrame = imageFrames.OpenSkeletonFrame())
             {
