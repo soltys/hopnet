@@ -16,11 +16,6 @@ namespace Game
     /// </summary>
     public class HopnetGame : Microsoft.Xna.Framework.Game
     {
-
-        KinectSensor kinect;
-        Skeleton[] skeletonData;
-        Skeleton skeleton;
-
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
         GraphicsDeviceManager graphics;
@@ -75,27 +70,18 @@ namespace Game
             graphics.ApplyChanges();
 
             kinectData = new KinectData();
-            kinectData.KinectSensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(kinect_AllFramesReady);
-            kinectData.KinectSensor.SkeletonStream.Enable();
-            kinectData.KinectSensor.Start();
+            if (kinectData.IsKinectConnected)
+            {
+                kinectData.KinectSensor.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(KinectAllFramesReady);
+                kinectData.KinectSensor.SkeletonStream.Enable();
+                kinectData.KinectSensor.Start();
+            }
 
-            try
-            {
-                kinect = KinectSensor.KinectSensors[0];
-                kinect.ColorStream.Enable(ColorImageFormat.RgbResolution640x480Fps30);
-                kinect.DepthStream.Enable(DepthImageFormat.Resolution320x240Fps30);
-                kinect.AllFramesReady += new EventHandler<AllFramesReadyEventArgs>(kinect_AllFramesReady);
-                kinect.SkeletonStream.Enable();
-                kinect.Start();
-            }
-            catch (Exception e)
-            {
-            }
-            
+
             cameraPosition = new Vector3(10.0f, 0.0f, 0.0f); // kamera od boku
             //cameraPosition = new Vector3(0.0f, 5.0f, 10.0f);  // kamera pokazuj¹ca tak, jak ma byæ w grze finalnie
             mainMenu = new MainMenu(graphics,this);
-            mainMenu.IsGameInMenuMode = false;
+            mainMenu.IsGameInMenuMode = true;
             kinectPlayer = new KinectPlayer(Content,new Vector3(FirstPlatformPosition + (PlatformRow.rowLength/2)*spaceBetweenPlatforms,platformGroundLevel,BeginningOfBoardPositionZ));
             kinectPlayer.SetPlatformRadius(platformRadius);
             kinectPlayer.SetPlatformToPlatformMoveTime(SpeedOfPlatforms, spaceBetweenRows, (float)(this.TargetElapsedTime.TotalMilliseconds),spaceBetweenPlatforms);
@@ -124,51 +110,42 @@ namespace Game
             base.Initialize();
         }
 
-        void kinect_AllFramesReady(object sender, AllFramesReadyEventArgs imageFrames)
+        void KinectAllFramesReady(object sender, AllFramesReadyEventArgs imageFrames)
         {
             using (SkeletonFrame skeletonFrame = imageFrames.OpenSkeletonFrame())
             {
                 if (skeletonFrame != null)
                 {
-                    if ((skeletonData == null) || (this.skeletonData.Length != skeletonFrame.SkeletonArrayLength))
+                    if ((kinectData.SkeletonData == null) || (kinectData.SkeletonData.Length!= skeletonFrame.SkeletonArrayLength))
                     {
-                        skeletonData = new Skeleton[skeletonFrame.SkeletonArrayLength];
+                        kinectData.SkeletonData = new Skeleton[skeletonFrame.SkeletonArrayLength];
                     }
 
-                    skeletonFrame.CopySkeletonDataTo(this.skeletonData);
+                    skeletonFrame.CopySkeletonDataTo(kinectData.SkeletonData);
                 }
             }
 
-            if (skeletonData != null)
+            if (kinectData.SkeletonData != null)
             {
-                foreach (Skeleton skel in skeletonData)
+                foreach (Skeleton skel in kinectData.SkeletonData)
                 {
                     if (skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
-                        skeleton = skel;
+                        kinectData.Skeleton = skel;
                     }
                 }
             }
-            mainMenu.KinectUpdate(skeleton, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
-            kinectPlayer.KinectUpdate(skeleton);
-        }
-
-
-        private void DrawSkeleton(SpriteBatch spriteBatch, Vector2 resolution, Texture2D img)
-        {
-            if (skeleton != null)
+            switch (mainMenu.IsGameInMenuMode)
             {
-                spriteBatch.Begin();
-                foreach (Joint joint in skeleton.Joints)
-                {
-                    Vector2 position = new Vector2((((0.5f * joint.Position.X) +0.3f) * (resolution.X)),
-                        (((-0.5f * joint.Position.Y) + 0.3f) * (resolution.Y)));
-
-                        spriteBatch.Draw(img, new Rectangle(Convert.ToInt32(position.X), Convert.ToInt32(position.Y), 50, 50), Color.Black);
-                }
-                spriteBatch.End();
+                case true:
+                    mainMenu.KinectUpdate(kinectData.Skeleton, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+                    break;
+                case false:
+                    kinectPlayer.KinectUpdate(kinectData.Skeleton);
+                    break;
             }
         }
+
 
 
         void CreatePlatforms(int platformCount, float firstPlatformPosition, float distanceBetweenPlatforms, float zDistance)
@@ -356,11 +333,17 @@ namespace Game
                     break;
             }
 
-            DrawDebufInfo(spriteBatch, debugFont);
+            switch (mainMenu.IsGameInMenuMode)
+            {
+                case false:
+                    DrawDebugInfo(spriteBatch, debugFont);
+                break;
+            }
+            
             base.Draw(gameTime);
         }
 
-        private void DrawDebufInfo(SpriteBatch spritebatch, SpriteFont debugFont)
+        private void DrawDebugInfo(SpriteBatch spritebatch, SpriteFont debugFont)
         {
             spriteBatch.Begin();
             spriteBatch.DrawString(debugFont, "kinectPlayer.isBehind :" + kinectPlayer.isFirstPlatformBehindPlayer.ToString(), new Vector2(100, 10), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
