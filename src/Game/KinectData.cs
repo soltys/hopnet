@@ -11,8 +11,9 @@ namespace Game
         private Skeleton skeleton;
         private readonly bool isKinectConnected = true;
         private Stopwatch heightChangeStopWatch;
-        private float personHeight;
+        private float currentPersonHeight;
         private float lastPersonHeight = 100.0f;
+        private float personIdleHeight = 0.0f;
 
         #region public properties and accessors
         public bool IsKinectConnected
@@ -34,9 +35,9 @@ namespace Game
             get { return kinectSensor; }
             set { kinectSensor = value; }
         }
-        public float PlayerHeight
+        public float PersonIdleHeight
         {
-            get { return personHeight; }   
+            get { return personIdleHeight; }   
         }
 
         #endregion
@@ -47,11 +48,12 @@ namespace Game
         {
             heightChangeStopWatch = new Stopwatch();
             heightChangeStopWatch.Reset();
-            try
+
+            if (KinectSensor.KinectSensors.Count>0)
             {
                 kinectSensor = KinectSensor.KinectSensors[0];
             }
-            catch (Exception e)
+            else
             {
                 isKinectConnected = false;
             }
@@ -59,12 +61,32 @@ namespace Game
 
         #endregion
 
-
-
-        private void CalculatePersonHeight()
+        public void CalculatePersonShoulderHeight()
         {
-            
-        }
+            if (skeleton != null)
+            {
+                if (!heightChangeStopWatch.IsRunning)
+                {
+                    lastPersonHeight = currentPersonHeight;
+                }
+                currentPersonHeight = skeleton.Joints[JointType.ShoulderCenter].Position.Y;
 
+                if (Math.Abs(lastPersonHeight - currentPersonHeight) > GameConstants.HeightChangeThreshold)
+                {
+                    if (!heightChangeStopWatch.IsRunning)
+                    {
+                        heightChangeStopWatch.Start();
+                    }
+                    else
+                    {
+                        if (heightChangeStopWatch.Elapsed.TotalMilliseconds > GameConstants.HeightChangeTimeMiliseconds)
+                        {
+                            personIdleHeight = currentPersonHeight;
+                            heightChangeStopWatch.Reset();
+                        }
+                    }
+                }
+            }
+        }
     }
 }
