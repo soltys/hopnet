@@ -12,13 +12,12 @@ namespace Game
     internal class HighScores : IEnumerable<Score>
     {
         private List<Score> scores;
-        private const int maxCapacity = 10;
         private readonly IsolatedStorageFile storage;
         private const string highScoreFileName = "highscores.xml";
 
         public HighScores()
         {
-            scores = new List<Score>(maxCapacity);
+            scores = new List<Score>(GameConstants.MaxCapacity);
             storage = IsolatedStorageFile.GetStore(IsolatedStorageScope.User | IsolatedStorageScope.Assembly, null, null);
         }
         public void Add(Score score)
@@ -32,7 +31,7 @@ namespace Game
                 throw new ArgumentException();
             }
 
-            if (scores.Count == maxCapacity)
+            if (scores.Count == GameConstants.MaxCapacity)
             {
                 if (scores.Min().Points < score.Points)
                 {
@@ -59,7 +58,7 @@ namespace Game
                     using (var reader = XmlReader.Create(stream))
                     {
                         var tmpScores = new List<Score>((List<Score>)serializer.Deserialize(reader));
-                        if (tmpScores.Count > maxCapacity)
+                        if (tmpScores.Count > GameConstants.MaxCapacity)
                         {
                             throw new InvalidDataException("Amount of scores in file is greater than maxCapacity");
                         }
