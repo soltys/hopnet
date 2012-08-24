@@ -13,10 +13,9 @@ namespace Game
         #region properties and accessors
         private readonly HopnetGame hopNetGame;
         private bool isGameInMenu=true;
-        private float hScale;
-        private float vScale;
-        private int hSpaceFromLeft=100;
-        private int vSpaceBetweenButtons = 20;
+        private readonly float hScale;
+        private readonly float vScale;
+        private HighScores highScores;
       
         private int selectedDifficulty = (int)GameConstants.GameDifficulty.Easy;
 
@@ -24,54 +23,58 @@ namespace Game
         private GameConstants.MenuButton lastButton = GameConstants.MenuButton.None;
         private GameConstants.MenuState state = GameConstants.MenuState.InMainMenu;
 
-        private GameConstants.MenuState MenuState
+        public GameConstants.MenuState MenuState
         {
             get { return state; }
             set { state = value; }
         }
 
-        private Sprite[] newGameSprite;
+        private readonly Sprite[] newGameSprite;
         private int newGameTextureType=(int)GameConstants.TextureType.Normal;
 
-        private Sprite[] scoresSprite;
+        private readonly Sprite[] scoresSprite;
         private int scoresTextureType = (int)GameConstants.TextureType.Normal;
 
-        private Sprite[] goBackSprite;
+        private readonly Sprite[] goBackSprite;
         private int goBackTextureType = (int)GameConstants.TextureType.Normal;
 
-        private Sprite[] exitSprite;
+        private readonly Sprite[] exitSprite;
         private int exitTextureType = (int)GameConstants.TextureType.Normal;
 
-        private Sprite backgroundSprite;
+        private readonly Sprite backgroundSprite;
 
-        private Sprite[] easyDifficulty;
+        private readonly Sprite[] easyDifficulty;
         private int easyDifficultyTextureType=(int)GameConstants.TextureType.Normal;
 
-        private Sprite[] mediumDifficulty;
+        private readonly Sprite[] mediumDifficulty;
         private int mediumDifficultyTextureType=(int)GameConstants.TextureType.Normal;
 
-        private Sprite[] hardDifficulty;
+        private readonly Sprite[] hardDifficulty;
         private int hardDifficultyTextureType=(int)GameConstants.TextureType.Normal;
 
-        private Sprite[,] handSprite;
-        private int[] handTextureType;
+        private readonly Sprite[,] handSprite;
+        private readonly int[] handTextureType;
 
-        private Sprite timeoutProgressBar;
+        private readonly Sprite[] tryAgainSprite;
+        private int tryAgainSpriteTextureType;
+
+        private readonly Sprite timeoutProgressBar;
         private const int buttonTimeDelay = 100;
         private int timeCounter;
-        private int timerStepSize;
+        private readonly int timerStepSize;
 
-        private Sprite []confirmExit;
+        private readonly Sprite []confirmExit;
         private int confirmExitTextureType = (int)GameConstants.TextureType.Normal;
 
-        private Vector2[] kinectHandPosition;
-        private bool[] cursorOnButtonState;
-        private Stopwatch jumpTimer;
+        private readonly Vector2[] kinectHandPosition;
+        private readonly bool[] cursorOnButtonState;
+        private readonly Stopwatch jumpTimer;
         #endregion
 
 
         public MainMenu(HopnetGame hopnetGame)
         {
+            highScores = new HighScores();
             jumpTimer = new Stopwatch();
             jumpTimer.Reset();
 
@@ -86,8 +89,7 @@ namespace Game
             kinectHandPosition[(int)GameConstants.Hand.Left] = Vector2.Zero;
             kinectHandPosition[(int)GameConstants.Hand.Right] = Vector2.Zero;
 
-            handSprite = new Sprite[2, GameConstants.MenuTextureNumber];
-
+            
 
             timerStepSize = (GameConstants.HorizontalGameResolution) / buttonTimeDelay;
             hScale = (GameConstants.HorizontalGameResolution/ GameConstants.DefaultHorizontalResolutionToScaleInto);
@@ -103,6 +105,8 @@ namespace Game
             mediumDifficulty = new Sprite[GameConstants.MenuTextureNumber];
             hardDifficulty = new Sprite[GameConstants.MenuTextureNumber];
             confirmExit = new Sprite[GameConstants.MenuTextureNumber];
+            handSprite = new Sprite[2, GameConstants.MenuTextureNumber];
+            tryAgainSprite = new Sprite[GameConstants.MenuTextureNumber];
 
             #region initialization of every sprite's properties
             for (int i = 0; i < GameConstants.MenuTextureNumber; i++)
@@ -116,11 +120,21 @@ namespace Game
                 };
 
 
+                tryAgainSprite[i] = new Sprite
+                {
+                    Rectangle = new Rectangle(
+                                                (int)(GameConstants.HorizontalGameResolution/2 -GameConstants.DefaultMenuBtnWidth*hScale/2),
+                                                (int)(GameConstants.VerticalGameResolution/2 -GameConstants.DefaultMenuBtnHeight*vScale/2),
+                                                (int) (GameConstants.DefaultMenuBtnWidth*hScale),(int) (GameConstants.DefaultMenuBtnHeight*vScale))
+                };
+
+
+
                 goBackSprite[i] = new Sprite
                 {
-                    Rectangle = new Rectangle((int)(hSpaceFromLeft * hScale),
+                    Rectangle = new Rectangle((int)(GameConstants.HorizontalSpaceFromLeft * hScale),
                                               (int)
-                                              ((3 * vSpaceBetweenButtons + 2 * GameConstants.DefaultMenuBtnHeight) *
+                                              ((3 * GameConstants.VerticalSpaceBetweenButtons + 2 * GameConstants.DefaultMenuBtnHeight) *
                                                (vScale)),
                                               (int)(GameConstants.DefaultMenuBtnWidth / 2 * hScale),
                                               (int)(GameConstants.DefaultMenuBtnHeight / 2 * vScale))
@@ -130,7 +144,7 @@ namespace Game
                 {
                     Rectangle = new Rectangle(
                         (int)(GameConstants.HorizontalGameResolution / 2 - GameConstants.DefaultMenuBtnWidth * hScale / 2),
-                        (int)(vSpaceBetweenButtons * vScale),
+                        (int)(GameConstants.VerticalSpaceBetweenButtons * vScale),
                         (int)(GameConstants.DefaultMenuBtnWidth * hScale),
                         (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
@@ -139,7 +153,7 @@ namespace Game
                 {
                     Rectangle = new Rectangle(
                         (int)(GameConstants.HorizontalGameResolution / 2 - GameConstants.DefaultMenuBtnWidth * hScale / 2),
-                        (int)((2 * vSpaceBetweenButtons + GameConstants.DefaultMenuBtnHeight) * (vScale)),
+                        (int)((2 * GameConstants.VerticalSpaceBetweenButtons + GameConstants.DefaultMenuBtnHeight) * (vScale)),
                         (int)(GameConstants.DefaultMenuBtnWidth * hScale),
                         (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
@@ -148,7 +162,7 @@ namespace Game
                 {
                     Rectangle = new Rectangle(
                         (int)(GameConstants.HorizontalGameResolution / 2 - GameConstants.DefaultMenuBtnWidth * hScale / 2),
-                        (int)((3 * vSpaceBetweenButtons + 2 * GameConstants.DefaultMenuBtnHeight) * (vScale)),
+                        (int)((3 * GameConstants.VerticalSpaceBetweenButtons + 2 * GameConstants.DefaultMenuBtnHeight) * (vScale)),
                         (int)(GameConstants.DefaultMenuBtnWidth * hScale),
                         (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
@@ -168,28 +182,28 @@ namespace Game
                 newGameSprite[i] = new Sprite
                 {
                     Rectangle = new Rectangle(
-                        (int)(hSpaceFromLeft * hScale),
-                        (int)(vSpaceBetweenButtons * vScale), (int)(GameConstants.DefaultMenuBtnWidth * hScale),
+                        (int)(GameConstants.HorizontalSpaceFromLeft * hScale),
+                        (int)(GameConstants.VerticalSpaceBetweenButtons * vScale), (int)(GameConstants.DefaultMenuBtnWidth * hScale),
                         (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
 
                 scoresSprite[i] = new Sprite
                 {
                     Rectangle = new Rectangle(
-                        (int)(hSpaceFromLeft * hScale),
-                        (int)((2 * vSpaceBetweenButtons + GameConstants.DefaultMenuBtnHeight) * (vScale)),
+                        (int)(GameConstants.HorizontalSpaceFromLeft * hScale),
+                        (int)((2 * GameConstants.VerticalSpaceBetweenButtons + GameConstants.DefaultMenuBtnHeight) * (vScale)),
                         (int)(GameConstants.DefaultMenuBtnWidth * hScale), (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
 
                 exitSprite[i] = new Sprite
                 {
                     Rectangle = new Rectangle(
-                        (int)(hSpaceFromLeft * hScale),
-                        (int)((3 * vSpaceBetweenButtons + 2 * GameConstants.DefaultMenuBtnHeight) * (vScale)),
+                        (int)(GameConstants.HorizontalSpaceFromLeft * hScale),
+                        (int)((3 * GameConstants.VerticalSpaceBetweenButtons + 2 * GameConstants.DefaultMenuBtnHeight) * (vScale)),
                         (int)(GameConstants.DefaultMenuBtnWidth * hScale), (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
             }
-            backgroundSprite.Rectangle = new Rectangle(0, 0, (int)GameConstants.HorizontalGameResolution, (int)GameConstants.VerticalGameResolution);
+            backgroundSprite.Rectangle = new Rectangle(0, 0, GameConstants.HorizontalGameResolution, GameConstants.VerticalGameResolution);
             #endregion
         }
 
@@ -291,8 +305,6 @@ namespace Game
             cursorOnButtonState[(int)GameConstants.Hand.Left] = false;
             cursorOnButtonState[(int)GameConstants.Hand.Right] = false;
 
-            var isCursorInsideButton = new bool[2];
-
             switch(state)
             {
                 case GameConstants.MenuState.InMainMenu:
@@ -316,8 +328,14 @@ namespace Game
                     buttonState = CheckCurrentButton(goBackSprite[goBackTextureType].Rectangle, ref goBackTextureType, GameConstants.MenuButton.GoBack, ref buttonState);
                     buttonState = CheckCurrentButton(confirmExit[confirmExitTextureType].Rectangle, ref confirmExitTextureType, GameConstants.MenuButton.ConfirmExit, ref buttonState);
                     break;
+
                 case GameConstants.MenuState.ExitConfirmed:
                     hopNetGame.Exit();
+                    break;
+
+                case GameConstants.MenuState.AfterGameLoss:
+                    buttonState = CheckCurrentButton(goBackSprite[goBackTextureType].Rectangle, ref goBackTextureType, GameConstants.MenuButton.GoBack, ref buttonState);
+                    buttonState = CheckCurrentButton(tryAgainSprite[tryAgainSpriteTextureType].Rectangle, ref tryAgainSpriteTextureType, GameConstants.MenuButton.PlayAgain, ref buttonState);
                     break;
             }
             ChangeCursorTexture(cursorOnButtonState);
@@ -423,6 +441,10 @@ namespace Game
                     case GameConstants.MenuButton.ConfirmExit:
                         if (timeCounter > buttonTimeDelay) { state = GameConstants.MenuState.ExitConfirmed; timeCounter = 0; timeoutProgressBar.rectangle.Width = 0;}
                         break;
+
+                    case  GameConstants.MenuButton.PlayAgain:
+                        if (timeCounter > buttonTimeDelay) { state = GameConstants.MenuState.Playing; isGameInMenu = false; timeCounter = 0; timeoutProgressBar.rectangle.Width = 0; }
+                        break;
                 }
 
                 lastButton = selectedButton;
@@ -458,39 +480,49 @@ namespace Game
             hardDifficulty[1].LoadSprite(content, @"Sprites\testsprite2");
             confirmExit[0].LoadSprite(content, @"Sprites\testsprite1");
             confirmExit[1].LoadSprite(content, @"Sprites\testsprite2");
+            tryAgainSprite[0].LoadSprite(content, @"Sprites\testsprite1");
+            tryAgainSprite[1].LoadSprite(content, @"Sprites\testsprite2");
         }
-        public void Draw(SpriteBatch spriteBatch,SpriteFont font)
+        public void Draw(SpriteBatch spriteBatch, SpriteFont font)
         {
-            backgroundSprite.DrawByRectangle(spriteBatch);
-            
             switch(state)
             {
                 case GameConstants.MenuState.InMainMenu:
-                    {
+                        backgroundSprite.DrawByRectangle(spriteBatch);
                         newGameSprite[newGameTextureType].DrawByRectangle(spriteBatch);
                         scoresSprite[scoresTextureType].DrawByRectangle(spriteBatch);
                         exitSprite[exitTextureType].DrawByRectangle(spriteBatch);
                         break;
-                    }
+
                 case GameConstants.MenuState.InScores:
-                    {
+                        backgroundSprite.DrawByRectangle(spriteBatch);
                         goBackSprite[goBackTextureType].DrawByRectangle(spriteBatch);
                         break;
-                    }
+
                 case GameConstants.MenuState.OnDifficultySelect:
-                    {
+                        backgroundSprite.DrawByRectangle(spriteBatch);
                         easyDifficulty[easyDifficultyTextureType].DrawByRectangle(spriteBatch);
                         mediumDifficulty[mediumDifficultyTextureType].DrawByRectangle(spriteBatch);
                         hardDifficulty[hardDifficultyTextureType].DrawByRectangle(spriteBatch);
                         goBackSprite[goBackTextureType].DrawByRectangle(spriteBatch);
                         break;
-                    }
+
                 case GameConstants.MenuState.OnExit:
-                    {
+                        backgroundSprite.DrawByRectangle(spriteBatch);
                         confirmExit[confirmExitTextureType].DrawByRectangle(spriteBatch);
                         goBackSprite[goBackTextureType].DrawByRectangle(spriteBatch);
                         break;
-                    }
+
+                case GameConstants.MenuState.AfterGameLoss:
+                        spriteBatch.Begin();
+                        spriteBatch.DrawString(font, "Przegrales!",
+                                           new Vector2(GameConstants.HorizontalGameResolution/2,
+                                                       GameConstants.VerticalGameResolution/10), Color.Red, 0,
+                                           Vector2.Zero, 2, SpriteEffects.None, 1.0f);
+                        spriteBatch.End();
+                        tryAgainSprite[tryAgainSpriteTextureType].DrawByRectangle(spriteBatch);
+                        goBackSprite[goBackTextureType].DrawByRectangle(spriteBatch);
+                        break;
             }
 
             timeoutProgressBar.DrawByRectangle(spriteBatch);

@@ -6,35 +6,22 @@ namespace Game
 {
     public class KinectData
     {
-        private KinectSensor kinectSensor;
-        private Skeleton[] skeletonData;
-        private Skeleton skeleton;
         private readonly bool isKinectConnected = true;
-        private Stopwatch heightChangeStopWatch;
+        private readonly Stopwatch heightChangeStopWatch;
         private float currentPersonHeight;
         private float lastPersonHeight = 100.0f;
-        private float personIdleHeight = 0.0f;
+        private float personIdleHeight;
 
         #region public properties and accessors
         public bool IsKinectConnected
         {
             get { return isKinectConnected; }
         }
-        public Skeleton Skeleton
-        {
-            get { return skeleton; }
-            set { skeleton = value; }
-        }
-        public Skeleton[] SkeletonData
-        {
-            get { return skeletonData; }
-            set { skeletonData = value; }
-        }
-        public KinectSensor KinectSensor
-        {
-            get { return kinectSensor; }
-            set { kinectSensor = value; }
-        }
+
+        public Skeleton Skeleton { get; set; }
+        public Skeleton[] SkeletonData { get; set; }
+        public KinectSensor KinectSensor { get; set; }
+
         public float PersonIdleHeight
         {
             get { return personIdleHeight; }   
@@ -51,7 +38,7 @@ namespace Game
 
             if (KinectSensor.KinectSensors.Count>0)
             {
-                kinectSensor = KinectSensor.KinectSensors[0];
+                KinectSensor = KinectSensor.KinectSensors[0];
             }
             else
             {
@@ -63,27 +50,26 @@ namespace Game
 
         public void CalculatePersonShoulderHeight()
         {
-            if (skeleton != null)
+            if (Skeleton == null){return;}
+
+            if (!heightChangeStopWatch.IsRunning)
+            {
+                lastPersonHeight = currentPersonHeight;
+            }
+            currentPersonHeight = Skeleton.Joints[JointType.ShoulderCenter].Position.Y;
+
+            if (Math.Abs(lastPersonHeight - currentPersonHeight) > GameConstants.HeightChangeThreshold)
             {
                 if (!heightChangeStopWatch.IsRunning)
                 {
-                    lastPersonHeight = currentPersonHeight;
+                    heightChangeStopWatch.Start();
                 }
-                currentPersonHeight = skeleton.Joints[JointType.ShoulderCenter].Position.Y;
-
-                if (Math.Abs(lastPersonHeight - currentPersonHeight) > GameConstants.HeightChangeThreshold)
+                else
                 {
-                    if (!heightChangeStopWatch.IsRunning)
+                    if (heightChangeStopWatch.Elapsed.TotalMilliseconds > GameConstants.HeightChangeTimeMiliseconds)
                     {
-                        heightChangeStopWatch.Start();
-                    }
-                    else
-                    {
-                        if (heightChangeStopWatch.Elapsed.TotalMilliseconds > GameConstants.HeightChangeTimeMiliseconds)
-                        {
-                            personIdleHeight = currentPersonHeight;
-                            heightChangeStopWatch.Reset();
-                        }
+                        personIdleHeight = currentPersonHeight;
+                        heightChangeStopWatch.Reset();
                     }
                 }
             }

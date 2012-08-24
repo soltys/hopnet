@@ -44,7 +44,6 @@ namespace Game
         public float distance = 0;
         public float tdistance = 0;
         public bool isFirstPlatformBehindPlayer = false;
-        public bool isPlayerOnPlatform = true;
 
         public KinectPlayer(ContentManager content, Vector3 platformData)
         {
@@ -251,7 +250,7 @@ namespace Game
         }
 
 
-        public void Update(List <Platform> platformList, float distanceBetweenRows)
+        public void Update(List <Platform> platformList)
         {
             WaitForPlatformEnd(platformList);
 
@@ -300,14 +299,15 @@ namespace Game
             var zPlatformDistance = Math.Sqrt((modelPosition.objectArrangement.Position.Z - platformList.First().objectArrangement.Position.Z)
                 * (modelPosition.objectArrangement.Position.Z - platformList.First().objectArrangement.Position.Z));
 
-            isPlayerOnPlatform = true;
             if (xPlatformDistance > platformRadius)
             {
-                 isPlayerOnPlatform=false;
+                lastStance = currentStance;
+                currentStance = GameConstants.PlayerStance.GameEnded;
             }
             else if (zPlatformDistance > platformRadius)
             {
-                isPlayerOnPlatform = false;
+                lastStance = currentStance;
+                currentStance = GameConstants.PlayerStance.GameEnded;
             }
         }
         
@@ -328,17 +328,12 @@ namespace Game
         {
             modelPosition.Draw(aspectRatio, cameraPosition, model);
 
-            
             switch (currentStance)
             {
                 case GameConstants.PlayerStance.GameStartCountDown:
                     spriteBatch.Begin();
+                    spriteBatch.DrawString(font, "Stan swobodnie i opusc rece", new Vector2(100, 50), Color.Red, 0, Vector2.Zero, 2, SpriteEffects.None, 1);
                     spriteBatch.DrawString(font, (GameConstants.NewGameCountdownTime - newGameCounter.Elapsed.Seconds).ToString(), new Vector2(100, 100), Color.Red, 0, Vector2.Zero, 3, SpriteEffects.None, 1);
-                    spriteBatch.End();
-                    break;
-                case  GameConstants.PlayerStance.GameEnded:
-                    spriteBatch.Begin();
-                    spriteBatch.DrawString(font, "Przegrales!", new Vector2(0.5f*GameConstants.HorizontalGameResolution, 0.1f*GameConstants.VerticalGameResolution), Color.Orange, 0, Vector2.Zero, 3, SpriteEffects.None, 1);
                     spriteBatch.End();
                     break;
             }

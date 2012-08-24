@@ -7,16 +7,16 @@ namespace Game
     class PlatformCollection : IEnumerable<PlatformRow>
     {
         private readonly LinkedList<PlatformRow> platformRows = new LinkedList<PlatformRow>();
-        public const int lanesNumber = 5;
+        
         
 
         private PlatformRow lastRow = new PlatformRow();
         private int platformsRequiredToChangeDirection;
-        private int platformsGeneratedAfterDirectionChange = 0;
+        private int platformsGeneratedAfterDirectionChange;
         private const int maxPlatformsRequiredToChangeDirection = 2;
         private const int minPlatformsRequiredToChangeDirection = 0;
         private int lastInsertedPlatformIndex;
-        private enum Direction : int { Left, Right };
+
 
         private void GenerateNextRow()
         {
@@ -30,13 +30,13 @@ namespace Game
 
         public PlatformCollection()
         {
-            for (int i = 0; i < lanesNumber; i++)
+            for (int i = 0; i < GameConstants.LanesNumber; i++)
             {
                 GenerateNextRow();
             }
             lastRow = platformRows.Last();
             platformsRequiredToChangeDirection = maxPlatformsRequiredToChangeDirection;
-            for (int i = 0; i < PlatformRow.rowLength; i++)
+            for (int i = 0; i < GameConstants.RowLength; i++)
             {
                 if (lastRow.PlatformValues[i]) 
                 { 
@@ -61,7 +61,7 @@ namespace Game
 
         private void CalculatePlatformsForNewRow()
         {
-            var valuesForNewRow = new bool[PlatformRow.rowLength];
+            var valuesForNewRow = new bool[GameConstants.RowLength];
 
                 if (platformsGeneratedAfterDirectionChange >= platformsRequiredToChangeDirection)
                 {
@@ -77,17 +77,17 @@ namespace Game
                     switch (lastInsertedPlatformIndex)
                     {
                         case 0:
-                            randomValue = (int)Direction.Right;
+                            randomValue = (int)GameConstants.Direction.Right;
                             break;
-                        case (PlatformRow.rowLength - 1):
-                            randomValue = (int)Direction.Left;
+                        case (GameConstants.RowLength - 1):
+                            randomValue = (int)GameConstants.Direction.Left;
                             break;
                         default:
-                            randomValue = randomGenerator.Next((int)Direction.Left,(int)Direction.Right+1);
+                            randomValue = randomGenerator.Next((int)GameConstants.Direction.Left,(int)GameConstants.Direction.Right+1);
                             break;
                     }
 
-                    if (randomValue == (int)Direction.Left)
+                    if (randomValue == (int)GameConstants.Direction.Left)
                     {
                         valuesForNewRow[lastInsertedPlatformIndex - 1] = true;
                         lastInsertedPlatformIndex--;
@@ -103,8 +103,6 @@ namespace Game
                 {
                     platformsGeneratedAfterDirectionChange++;
                 }
-
-            
         }
 
         public IEnumerator<PlatformRow> GetEnumerator()
