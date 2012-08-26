@@ -9,12 +9,12 @@ namespace Game
         public Hero(ObjectData3D heroArrangement)
         {
             ArrangeObjectOnScene(heroArrangement);
-            CurrentPlatformPosition = PlatformRow.rowLength/2;
+            CurrentPlatformPosition = GameConstants.RowLength/2;
         }
 
         public void MoveRight()
         {
-            if (CurrentPlatformPosition < PlatformRow.rowLength-1)
+            if (CurrentPlatformPosition < GameConstants.RowLength-1)
             {
                 objectArrangement.Position = new Vector3(
                     objectArrangement.Position.X + 4.0f,

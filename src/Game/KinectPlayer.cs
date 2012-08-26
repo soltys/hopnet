@@ -71,7 +71,17 @@ namespace Game
         #endregion
 
 
+        public void NewGameDataReset()
+        {
 
+            lastStance = currentStance;
+            currentStance = GameConstants.PlayerStance.GameStartCountDown;
+            newGameCounter.Reset();
+            modelPosition.objectArrangement.Position= new Vector3(GameConstants.FirstPlatformPosition + (GameConstants.RowLength/2)*GameConstants.SpaceBetweenPlatforms
+                ,modelGroundLevel,
+                modelPosition.objectArrangement.Position.Z);
+            modelPosition.oldArrangement.Position = modelPosition.objectArrangement.Position;
+        }
 
 
         private void IsBehindFirstPlatform(List<Platform> platformList)
@@ -85,6 +95,7 @@ namespace Game
                 isFirstPlatformBehindPlayer = true;
             }
         }
+
         public void WaitForPlatformEnd(List<Platform> platformList)
         {
             distance = (float)(Math.Sqrt((Math.Pow( modelPosition.objectArrangement.Position.Z - platformList.First().objectArrangement.Position.Z,2))));
@@ -250,7 +261,7 @@ namespace Game
         }
 
 
-        public void Update(List <Platform> platformList)
+        public void Update(List <Platform> platformList,ref Vector3 cameraPosition)
         {
             WaitForPlatformEnd(platformList);
 
@@ -286,6 +297,7 @@ namespace Game
                 case GameConstants.PlayerStance.SideJump:
                     PerformIdleJump();
                     PerformHorizontalJump();
+                    cameraPosition.X = modelPosition.objectArrangement.Position.X;
                     break;
             }
         }

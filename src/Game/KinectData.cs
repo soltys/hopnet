@@ -36,11 +36,11 @@ namespace Game
             heightChangeStopWatch = new Stopwatch();
             heightChangeStopWatch.Reset();
 
-            if (KinectSensor.KinectSensors.Count>0)
+            try
             {
                 KinectSensor = KinectSensor.KinectSensors[0];
             }
-            else
+            catch (Exception)
             {
                 isKinectConnected = false;
             }

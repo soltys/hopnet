@@ -68,7 +68,7 @@ namespace Game
             platformGenerator=new PlatformCollection();
 
 
-            //TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 10.0f); // zmniejszenie Update'u do 10/s
+            TargetElapsedTime = TimeSpan.FromSeconds(1.0f / GameConstants.GameUpdatesPerSecond); // zmniejszenie Update'u do 10/s
 
             PreparePlatformsForNewGame();
             
@@ -227,8 +227,8 @@ namespace Game
 
             switch (mainMenu.IsGameInMenuMode)
             {
-                case false:
-                    kinectPlayer.Update(platformList);
+                case false: 
+                    kinectPlayer.Update(platformList, ref GameConstants.CameraPosition);
                     if (kinectPlayer.currentStance != GameConstants.PlayerStance.GameStartCountDown && kinectPlayer.currentStance != GameConstants.PlayerStance.GameEnded)
                     {
                         MovePlatforms();
@@ -239,9 +239,8 @@ namespace Game
                         switch (kinectPlayer.currentStance)
                         {
                             case GameConstants.PlayerStance.GameEnded:
-                                kinectPlayer.lastStance = kinectPlayer.currentStance;
-                                kinectPlayer.currentStance = GameConstants.PlayerStance.GameStartCountDown;
-                                kinectPlayer.newGameCounter.Reset();
+                                kinectPlayer.NewGameDataReset();
+                                GameConstants.CameraPosition.X = GameConstants.FirstPlatformPosition + (GameConstants.RowLength/2)*GameConstants.SpaceBetweenPlatforms;
                                 mainMenu.IsGameInMenuMode = true;
                                 mainMenu.MenuState = GameConstants.MenuState.AfterGameLoss;// zrobic nowy stan - w ktorym do wyboru jest nowa gra lub wyjscie do menu
                                 platformList.Clear();
@@ -250,7 +249,10 @@ namespace Game
                         }
                     }
                 break;
-                     
+                case true:
+                    mainMenu.Update();
+                    break;
+
             }
          
             base.Update(gameTime);

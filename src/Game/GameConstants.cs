@@ -18,6 +18,9 @@ namespace Game
         public const float EndOfBoardPositionZ = 11.0f;
         public const float BeginningOfBoardPositionZ = 8.0f;
         public const float SpeedOfPlatforms = 0.05f;
+        public const float GameUpdatesPerSecond = 60.0f;
+
+
         public static Vector3 CameraPosition = new Vector3(0.0f, 5.0f, 10.0f);
         //public static Vector3 CameraPosition = new Vector3(10.0f, 0.0f, 0.0f); //debug camera
 
@@ -33,6 +36,8 @@ namespace Game
         public enum MenuState { InMainMenu = 0, InNewGame = 1, InScores = 2, OnExit = 3, Playing = 4, OnDifficultySelect = 5, ExitConfirmed = 6, AfterGameLoss=7 }
         public enum MenuButton { Scores = 0, Exit = 1, GoBack = 2, None = 3, NewGame = 4, EasyDifficulty = 5, MediumDifficulty = 6, HardDifficulty = 7, ConfirmExit = 8, PlayAgain=9 }
         public enum GameDifficulty { Easy = 1, Medium = 2, Hard = 3 }
+        public const int ButtonTimeDelayInSeconds = 2;
+
 
         //KinectPlayer
         public const float JumpHeightDivider = 20f;
