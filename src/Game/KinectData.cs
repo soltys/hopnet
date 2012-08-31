@@ -8,7 +8,7 @@ namespace Game
     {
         private readonly bool isKinectConnected = true;
         private readonly Stopwatch heightChangeStopWatch;
-        private float currentPersonHeight;
+        private float currentPersonHeight=80.0f;
         private float lastPersonHeight = 100.0f;
         private float personIdleHeight;
 
@@ -36,11 +36,11 @@ namespace Game
             heightChangeStopWatch = new Stopwatch();
             heightChangeStopWatch.Reset();
 
-            if (KinectSensor.KinectSensors.Count>0)
+            try
             {
                 KinectSensor = KinectSensor.KinectSensors[0];
             }
-            else
+            catch (Exception)
             {
                 isKinectConnected = false;
             }

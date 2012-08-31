@@ -16,45 +16,74 @@ namespace Game
         public GameConstants.PlayerStance currentStance { get; set; }
         public GameConstants.PlayerStance lastStance { get; set; }
         private bool isMotionCheckEnabled;
-        private readonly Hero modelPosition;
+        public Hero modelPosition;
         private readonly Model model;
 
         private float modelGroundLevel;
 
-        private float spaceRequiredToSideJump = 4.0f;
-        private float spaceRequiredToJump = 4.0f;
+        private Texture2D []progressBarTextures;
+        private int progressBarTextureType;
+        private Rectangle progressBarRectangle;
+        private int expectedFunctionCallsOnPlatform;
+        private int functionCallOnPlatformCounter;
+        private int progressBarStep;
 
-        private float idleShoulderHeight = 2.0f;
+        private Sprite progressBarFrame;
+        private Sprite progressBarBackground;
 
-        public float rowToRowIdleMoveTime=0;
-        public float rowToRowMoveTime = 0;
-        public float verticalVelocity=0;
-        public float horizontalVelocity=0;
-        public float currentJumpTime = 0;
-        public float idleJumpGravity = 0;
-        public float jumpGravity = 0;
-        public float timeAmount;
+
+
+        private float spaceRequiredToSideJump = 100.0f;
+        private float spaceRequiredToJump = 100.0f;
+
+        private float idleShoulderHeight = 80.0f;
+
         private float jumpDirection;
         public float platformRadius;
         public float idleJumpPlatformRadius;
 
-        public Stopwatch timeLeftToJump;
         public Stopwatch newGameCounter;
 
-        public float distance = 0;
-        public float tdistance = 0;
         public bool isFirstPlatformBehindPlayer = false;
+
+        private float playerToPlatformDistance;
+        private int timeCounter;
+
+        private int idleJumpExpectedFunctionCalls;
+        private float idleJumpVelocity;
+        private float idleJumpGravity;
+        private float idleJumpHeightDivider;
+
+        private float jumpExpectedFunctionCalls;
+        private float jumpVelocity;
+        private float jumpGravity ;
+        private float jumpHeightDivider;
+
+        private float horizontalJumpMovementStep;
+        
+
+
+        public void LoadContent(ContentManager content)
+        {
+            progressBarFrame.LoadSprite(content, @"Sprites\player_progressbar_frame");
+            progressBarTextures[0] = content.Load<Texture2D>(@"Sprites\player_progressbar_high");
+            progressBarTextures[1] = content.Load<Texture2D>(@"Sprites\player_progressbar_medium");
+            progressBarTextures[2] = content.Load<Texture2D>(@"Sprites\player_progressbar_low");
+            progressBarBackground.LoadSprite(content,@"Sprites\player_progressbar_background");
+        }
 
         public KinectPlayer(ContentManager content, Vector3 platformData)
         {
-            timeLeftToJump = new Stopwatch();
-            timeLeftToJump.Reset();
-
-            
+            progressBarBackground = new Sprite();
+            progressBarBackground.Rectangle = new Rectangle(0,0,GameConstants.HorizontalGameResolution,GameConstants.VerticalGameResolution/80);
+            progressBarFrame = new Sprite();
+            progressBarFrame.Rectangle = new Rectangle(0,0,GameConstants.HorizontalGameResolution,GameConstants.VerticalGameResolution/80);
             newGameCounter = new Stopwatch();
             newGameCounter.Reset();
             
-            modelPosition= new Hero(new ObjectData3D
+            progressBarRectangle=new Rectangle(0,0,GameConstants.HorizontalGameResolution,GameConstants.VerticalGameResolution/80);
+            progressBarTextures = new Texture2D[3];
+            modelPosition = new Hero(new ObjectData3D
                                       {
                                           Position = new Vector3(0.0f, 0, 0.0f),
                                           Scale = new Vector3(0.5f, 0.5f, 0.5f),
@@ -71,7 +100,16 @@ namespace Game
         #endregion
 
 
-
+        public void NewGameDataReset()
+        {
+            lastStance = currentStance;
+            currentStance = GameConstants.PlayerStance.GameStartCountDown;
+            newGameCounter.Reset();
+            modelPosition.objectArrangement.Position= new Vector3(GameConstants.FirstPlatformPosition + (GameConstants.RowLength/2)*GameConstants.SpaceBetweenPlatforms
+                ,modelGroundLevel,
+                modelPosition.objectArrangement.Position.Z);
+            modelPosition.oldArrangement.Position = modelPosition.objectArrangement.Position;
+        }
 
 
         private void IsBehindFirstPlatform(List<Platform> platformList)
@@ -85,13 +123,14 @@ namespace Game
                 isFirstPlatformBehindPlayer = true;
             }
         }
+
         public void WaitForPlatformEnd(List<Platform> platformList)
         {
-            distance = (float)(Math.Sqrt((Math.Pow( modelPosition.objectArrangement.Position.Z - platformList.First().objectArrangement.Position.Z,2))));
+            playerToPlatformDistance = (float)(Math.Sqrt((Math.Pow( modelPosition.objectArrangement.Position.Z - platformList.First().objectArrangement.Position.Z,2))));
 
             IsBehindFirstPlatform(platformList);
 
-            if ((distance >= idleJumpPlatformRadius) && (distance < platformRadius))
+            if ((playerToPlatformDistance >= idleJumpPlatformRadius) && (playerToPlatformDistance < platformRadius))
             {
                 if (isFirstPlatformBehindPlayer)
                 {
@@ -117,24 +156,55 @@ namespace Game
                             currentStance=GameConstants.PlayerStance.SideJump;
                             break;
                     }
+                    progressBarRectangle.Width = 0;
+                    functionCallOnPlatformCounter = 0;
                 }
             }
         }
 
+
+
         public void SetPlatformToPlatformMoveTime(float platformSpeed, float distanceBetweenRows, float timerUpdate, float distanceBetweenPlatforms)
         {
-            rowToRowIdleMoveTime =  (((distanceBetweenRows-2*idleJumpPlatformRadius) / platformSpeed)/60)*1000;
-            rowToRowMoveTime = (((2*distanceBetweenRows -2*idleJumpPlatformRadius) / platformSpeed) / 60) * 1000;
-            verticalVelocity = platformSpeed;
-            horizontalVelocity = (distanceBetweenRows/distanceBetweenPlatforms) * platformSpeed;
-            idleJumpGravity = ((((2 * verticalVelocity) / (rowToRowIdleMoveTime)))/60)*1000;
-            jumpGravity = ((((2 * verticalVelocity) / (rowToRowMoveTime))) / 60) * 1000;
-            timeAmount = timerUpdate/10;
+            idleJumpHeightDivider = 1;
+            var idleJumpDistanceRatio = (GameConstants.SpaceBetweenRows-2*idleJumpPlatformRadius) / GameConstants.DefaultSpaceBetweenRows;
+            var idleJumpGravityMultiplier = (GameConstants.SpeedOfPlatformsOneUpdate / GameConstants.DefaultSpeedBetweenPlatforms) * 10;
+
+            idleJumpExpectedFunctionCalls = (int)Math.Round((GameConstants.SpaceBetweenRows - 2 * idleJumpPlatformRadius) / GameConstants.SpeedOfPlatformsOneUpdate);
+            idleJumpVelocity = GameConstants.DefaultTimerMultiplier * idleJumpDistanceRatio;
+            idleJumpGravity = GameConstants.DefaultJumpGravity * idleJumpGravityMultiplier;
+
+            var maxIdleJumpBallHeight = (((idleJumpGravity * (idleJumpExpectedFunctionCalls / 2) * (idleJumpExpectedFunctionCalls / 2)) / 2) / idleJumpHeightDivider) * 20;
+            while (maxIdleJumpBallHeight / idleJumpHeightDivider > GameConstants.MaxiumumJumpHeight)
+            {
+                idleJumpHeightDivider *= 2;
+            }
+
+            jumpHeightDivider = 1;
+            var jumpDistanceRatio = (2*GameConstants.SpaceBetweenRows - 2 * idleJumpPlatformRadius) / GameConstants.DefaultSpaceBetweenRows;
+            var jumpGravityMultiplier = (GameConstants.SpeedOfPlatformsOneUpdate / GameConstants.DefaultSpeedBetweenPlatforms) * 10;
+
+            jumpExpectedFunctionCalls = (int)Math.Round((2*GameConstants.SpaceBetweenRows - 2 * idleJumpPlatformRadius) / GameConstants.SpeedOfPlatformsOneUpdate);
+            jumpVelocity = GameConstants.DefaultTimerMultiplier * jumpDistanceRatio;
+            jumpGravity = GameConstants.DefaultJumpGravity * jumpGravityMultiplier;
+
+            var maxJumpBallHeight = (((jumpGravity * (jumpExpectedFunctionCalls / 2) * (jumpExpectedFunctionCalls / 2)) / 2) / jumpHeightDivider) * 20;
+            while (maxJumpBallHeight / jumpHeightDivider > GameConstants.MaxiumumJumpHeight)
+            {
+                jumpHeightDivider *= 2;
+            }
+
+            horizontalJumpMovementStep = GameConstants.SpaceBetweenPlatforms/idleJumpExpectedFunctionCalls;
+
+
         }
         public void SetPlatformRadius(float singlePlatformRadius)
         {
             platformRadius = singlePlatformRadius;
-            idleJumpPlatformRadius = 0.6f * singlePlatformRadius;
+            idleJumpPlatformRadius = 0.9f * singlePlatformRadius;
+
+            expectedFunctionCallsOnPlatform = (int)Math.Round((platformRadius + idleJumpPlatformRadius) / GameConstants.SpeedOfPlatformsOneUpdate);
+            progressBarStep = (int)Math.Round((double)GameConstants.HorizontalGameResolution / expectedFunctionCallsOnPlatform);
         }
 
         private void CheckJumpForward(Skeleton skeleton)
@@ -189,17 +259,16 @@ namespace Game
 
         private void PerformIdleJump()
         {
-            if ((currentJumpTime < rowToRowIdleMoveTime) & modelPosition.objectArrangement.Position.Y >= modelGroundLevel)
+            if (timeCounter<idleJumpExpectedFunctionCalls)
             {
-                currentJumpTime += timeAmount;
+                timeCounter++;
                 modelPosition.objectArrangement.Position = new Vector3(modelPosition.oldArrangement.Position.X,
-                   modelPosition.oldArrangement.Position.Y + (verticalVelocity * currentJumpTime - idleJumpGravity * currentJumpTime * currentJumpTime /2) / GameConstants.JumpHeightDivider,
+                   modelPosition.oldArrangement.Position.Y + (idleJumpVelocity*timeCounter - idleJumpGravity * timeCounter * timeCounter / 2) / idleJumpHeightDivider,
                    modelPosition.oldArrangement.Position.Z);
             }
             else
             {
-                currentJumpTime = 0;
-
+                timeCounter = 0;
                 modelPosition.objectArrangement.Position = new Vector3(
                     modelPosition.objectArrangement.Position.X,
                     modelGroundLevel,
@@ -213,20 +282,20 @@ namespace Game
                 lastStance = currentStance;
                 currentStance = GameConstants.PlayerStance.Idle;
             }
+            
         }
         private void PerformJump()
         {
-            if ((currentJumpTime < rowToRowMoveTime) & modelPosition.objectArrangement.Position.Y >= modelGroundLevel)
+            if (timeCounter < jumpExpectedFunctionCalls)
             {
-                currentJumpTime += timeAmount;
+                timeCounter++;
                 modelPosition.objectArrangement.Position = new Vector3(modelPosition.oldArrangement.Position.X,
-                   modelPosition.oldArrangement.Position.Y + (verticalVelocity * currentJumpTime - jumpGravity * currentJumpTime * currentJumpTime / 2) / GameConstants.JumpHeightDivider,
+                   modelPosition.oldArrangement.Position.Y + (timeCounter * jumpVelocity - jumpGravity * timeCounter * timeCounter / 2) / jumpHeightDivider,
                    modelPosition.oldArrangement.Position.Z);
             }
             else
             {
-                currentJumpTime = 0;
-
+                timeCounter=0;
                 modelPosition.objectArrangement.Position = new Vector3(
                     modelPosition.objectArrangement.Position.X,
                     modelGroundLevel,
@@ -244,19 +313,43 @@ namespace Game
         private void PerformHorizontalJump()
         {
             modelPosition.objectArrangement.Position =
-                new Vector3(modelPosition.oldArrangement.Position.X + jumpDirection*horizontalVelocity,
+                new Vector3(modelPosition.objectArrangement.Position.X + jumpDirection*horizontalJumpMovementStep,
                             modelPosition.objectArrangement.Position.Y,
                             modelPosition.objectArrangement.Position.Z);
         }
 
+        private void UpdateProgressBarWidth()
+        {
+            progressBarRectangle.Width = expectedFunctionCallsOnPlatform * progressBarStep - functionCallOnPlatformCounter * progressBarStep;
+            functionCallOnPlatformCounter++;
+            UpdateProgressBarColor();
+            
+        }
 
-        public void Update(List <Platform> platformList)
+        private void UpdateProgressBarColor()
+        {
+            if (progressBarRectangle.Width >= 2 * GameConstants.HorizontalGameResolution / 3)
+            {
+                progressBarTextureType = 0;
+            }
+            if (progressBarRectangle.Width <= 2 * GameConstants.HorizontalGameResolution / 3)
+            {
+                progressBarTextureType = 1;
+            }
+            if (progressBarRectangle.Width <= GameConstants.HorizontalGameResolution / 3)
+            {
+                progressBarTextureType = 2;
+            }
+        }
+
+
+
+        public void Update(List <Platform> platformList, Camera camera)
         {
             WaitForPlatformEnd(platformList);
 
             switch (currentStance)
             {
-                    
                 case GameConstants.PlayerStance.GameStartCountDown:
                     if (!newGameCounter.IsRunning)
                     {
@@ -264,7 +357,6 @@ namespace Game
                     }
                     else
                     {
-
                         if (GameConstants.NewGameCountdownTime - newGameCounter.Elapsed.Seconds <= 0)
                         {
                             lastStance = GameConstants.PlayerStance.Idle;
@@ -275,18 +367,31 @@ namespace Game
                     break;
                     
                 case GameConstants.PlayerStance.Idle:
+                    UpdateProgressBarWidth();
                     CheckPlayerOnPlatformPosition(platformList);
                     break;
+
                 case GameConstants.PlayerStance.IdleJump:
                     PerformIdleJump();
                     break;
+
                 case GameConstants.PlayerStance.Jump:
                     PerformJump();
                     break;
+
                 case GameConstants.PlayerStance.SideJump:
                     PerformIdleJump();
                     PerformHorizontalJump();
                     break;
+
+                case GameConstants.PlayerStance.JumpReady:
+                    UpdateProgressBarWidth();
+                    break;
+
+                case GameConstants.PlayerStance.SideJumpReady:
+                    UpdateProgressBarWidth();
+                    break;
+
             }
         }
 
@@ -298,7 +403,7 @@ namespace Game
 
             var zPlatformDistance = Math.Sqrt((modelPosition.objectArrangement.Position.Z - platformList.First().objectArrangement.Position.Z)
                 * (modelPosition.objectArrangement.Position.Z - platformList.First().objectArrangement.Position.Z));
-
+            
             if (xPlatformDistance > platformRadius)
             {
                 lastStance = currentStance;
@@ -324,9 +429,17 @@ namespace Game
             }
         }
 
-        public void Draw(SpriteBatch spriteBatch, SpriteFont font,float aspectRatio, Vector3 cameraPosition)
+        public void Draw(SpriteBatch spriteBatch, SpriteFont font,float aspectRatio,Camera camera)
         {
-            modelPosition.Draw(aspectRatio, cameraPosition, model);
+            progressBarBackground.DrawByRectangle(spriteBatch);
+
+            modelPosition.Draw(aspectRatio, camera, model);
+            spriteBatch.Begin();
+            spriteBatch.Draw(progressBarTextures[progressBarTextureType],progressBarRectangle,Color.White);
+            spriteBatch.End();
+
+            progressBarFrame.DrawByRectangle(spriteBatch);
+
 
             switch (currentStance)
             {

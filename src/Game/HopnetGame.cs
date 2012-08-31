@@ -27,7 +27,7 @@ namespace Game
         private KinectPlayer kinectPlayer;
         private KinectData kinectData;
         private float aspectRatio;
-
+        private Camera camera;
 
         public HopnetGame()
         {
@@ -48,11 +48,14 @@ namespace Game
             graphics.PreferredBackBufferHeight = GameConstants.VerticalGameResolution;
             aspectRatio = (float)graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height;
 
-            graphics.IsFullScreen = false;
+            graphics.IsFullScreen = GameConstants.IsGameInFullScreen;
             IsMouseVisible = true;
             graphics.ApplyChanges();
 
             kinectData = new KinectData();
+            camera = new Camera(graphics);
+
+
             if (kinectData.IsKinectConnected)
             {
                 kinectData.KinectSensor.AllFramesReady += KinectAllFramesReady;
@@ -62,17 +65,18 @@ namespace Game
 
             mainMenu = new MainMenu(this) {IsGameInMenuMode = true};
             kinectPlayer = new KinectPlayer(Content,new Vector3(GameConstants.FirstPlatformPosition + (GameConstants.RowLength/2)*GameConstants.SpaceBetweenPlatforms,GameConstants.PlatformGroundLevel,GameConstants.BeginningOfBoardPositionZ));
+            kinectPlayer.LoadContent(Content);
             kinectPlayer.SetPlatformRadius(GameConstants.PlatformRadius);
-            kinectPlayer.SetPlatformToPlatformMoveTime(GameConstants.SpeedOfPlatforms, GameConstants.SpaceBetweenRows, (float)(TargetElapsedTime.TotalMilliseconds), GameConstants.SpaceBetweenPlatforms);
+            kinectPlayer.SetPlatformToPlatformMoveTime(GameConstants.SpeedOfPlatformsOneUpdate, GameConstants.SpaceBetweenRows, (float)(TargetElapsedTime.TotalMilliseconds), GameConstants.SpaceBetweenPlatforms);
             platformList = new List<Platform>();
             platformGenerator=new PlatformCollection();
 
 
-            //TargetElapsedTime = TimeSpan.FromSeconds(1.0f / 10.0f); // zmniejszenie Update'u do 10/s
+            TargetElapsedTime = TimeSpan.FromSeconds(1.0f / GameConstants.GameUpdatesPerSecond); // zmniejszenie Update'u do 10/s
 
             PreparePlatformsForNewGame();
             
-            
+
             base.Initialize();
         }
 
@@ -82,7 +86,7 @@ namespace Game
 
             newGamePlatforms[GameConstants.RowLength/2] = true;
 
-            CreatePlatforms(GameConstants.RowLength, GameConstants.FirstPlatformPosition, GameConstants.SpaceBetweenPlatforms, GameConstants.BeginningOfBoardPositionZ,newGamePlatforms);
+            CreatePlatforms(GameConstants.RowLength, GameConstants.FirstPlatformPosition, GameConstants.SpaceBetweenPlatforms, GameConstants.BeginningOfBoardPositionZ-GameConstants.PlatformRadius,newGamePlatforms);
 
             for (int i = 0; i < GameConstants.LanesNumber; i++)
             {
@@ -190,30 +194,17 @@ namespace Game
         {
             foreach (var platform in platformList)
             {
-                platform.MoveInAxisZ(GameConstants.SpeedOfPlatforms);
+                platform.MoveInAxisZ(GameConstants.SpeedOfPlatformsOneUpdate);
             }
         }
 
-
-
-        private readonly Stopwatch zegar = new Stopwatch();
-
+        private int ctr = 0;
         private void RemovePlatformsAtEnd()
         {
             if (platformList.Count>0)
             {
                 if (platformList[0].objectArrangement.Position.Z > GameConstants.EndOfBoardPositionZ)
                 {
-                    if (!zegar.IsRunning)
-                    {
-                        zegar.Reset();
-                        zegar.Start();
-                    }
-                    else
-                    {
-                        zegar.Stop();
-                    }
-
                     platformList.RemoveAt(0);
                     platformGenerator.UpdatePlatforms();
                     CreatePlatforms(GameConstants.RowLength, GameConstants.FirstPlatformPosition, GameConstants.SpaceBetweenPlatforms, platformList.Last().objectArrangement.Position.Z - GameConstants.SpaceBetweenRows,platformGenerator.GetLastAddedRowValues);
@@ -221,14 +212,16 @@ namespace Game
             }
         }
 
+        
         protected override void Update(GameTime gameTime)
         {
             if (Keyboard.GetState().IsKeyDown(Keys.P)) { UnloadContent(); Exit(); }
 
+            
             switch (mainMenu.IsGameInMenuMode)
             {
-                case false:
-                    kinectPlayer.Update(platformList);
+                case false: 
+                    kinectPlayer.Update(platformList, camera);
                     if (kinectPlayer.currentStance != GameConstants.PlayerStance.GameStartCountDown && kinectPlayer.currentStance != GameConstants.PlayerStance.GameEnded)
                     {
                         MovePlatforms();
@@ -239,9 +232,9 @@ namespace Game
                         switch (kinectPlayer.currentStance)
                         {
                             case GameConstants.PlayerStance.GameEnded:
-                                kinectPlayer.lastStance = kinectPlayer.currentStance;
-                                kinectPlayer.currentStance = GameConstants.PlayerStance.GameStartCountDown;
-                                kinectPlayer.newGameCounter.Reset();
+                                kinectPlayer.NewGameDataReset();
+                                camera.Position = new Vector3( GameConstants.FirstPlatformPosition + (GameConstants.RowLength / 2) * GameConstants.SpaceBetweenPlatforms,camera.Position.Y,camera.Position.Z);
+                                camera.LookAtPoint = new Vector3(GameConstants.FirstPlatformPosition + (GameConstants.RowLength / 2) * GameConstants.SpaceBetweenPlatforms,camera.LookAtPoint.Y,camera.LookAtPoint.Z);
                                 mainMenu.IsGameInMenuMode = true;
                                 mainMenu.MenuState = GameConstants.MenuState.AfterGameLoss;// zrobic nowy stan - w ktorym do wyboru jest nowa gra lub wyjscie do menu
                                 platformList.Clear();
@@ -250,7 +243,10 @@ namespace Game
                         }
                     }
                 break;
-                     
+                case true:
+                    mainMenu.Update();
+                    break;
+
             }
          
             base.Update(gameTime);
@@ -263,7 +259,7 @@ namespace Game
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-
+            
             switch(mainMenu.IsGameInMenuMode)
             {
                 case true:
@@ -272,19 +268,12 @@ namespace Game
                 case false:
                     for (int i = platformList.Count-1; i >= 0; i--)
                     {
-                        platformList[i].Draw(aspectRatio, GameConstants.CameraPosition, platformModel);
+                        platformList[i].Draw(aspectRatio, camera, platformModel);
                     }
-                    kinectPlayer.Draw(spriteBatch, debugFont, aspectRatio, GameConstants.CameraPosition);
+                    kinectPlayer.Draw(spriteBatch, debugFont, aspectRatio, camera);
+                    DrawDebugInfo(spriteBatch,debugFont);
                     break;
             }
-            
-            switch (mainMenu.IsGameInMenuMode)
-            {
-                case false:
-                    DrawDebugInfo(spriteBatch, debugFont);
-                break;
-            }
-            
             
             base.Draw(gameTime);
         }
@@ -310,7 +299,16 @@ namespace Game
             spriteBatch.DrawString(font, "kinectPlayer.platformRadius :" + kinectPlayer.platformRadius.ToString(), new Vector2(100, 290), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             spriteBatch.DrawString(font, "kinectPlayer.radiusToIdleJump :" + kinectPlayer.radiusToIdleJump.ToString(), new Vector2(100, 310), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             */
+            //spriteBatch.DrawString(font, kinectPlayer.idleJumpExpectedFunctionCalls.ToString(), new Vector2(50, 350), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
             spriteBatch.DrawString(font, kinectPlayer.currentStance.ToString(), new Vector2(50, 450), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
+            /*
+            spriteBatch.DrawString(font, kinectPlayer.verticalVelocity.ToString(), new Vector2(50, 150), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
+            spriteBatch.DrawString(font, kinectPlayer.timeCounter.ToString(), new Vector2(50, 250), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
+            spriteBatch.DrawString(font, kinectPlayer.currentJumpTime.ToString(), new Vector2(50, 320), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
+            spriteBatch.DrawString(font, kinectPlayer.idleJumpTime.ToString(), new Vector2(50, 390), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
+             */
+            //spriteBatch.DrawString(font, kinectPlayer.timeAmount.ToString(), new Vector2(50, 550), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
+            
             spriteBatch.End();
         }
 

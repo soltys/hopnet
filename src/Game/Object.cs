@@ -30,7 +30,7 @@ namespace Game
             oldArrangement = objectArrangementOnScene;
         }
 
-        public void Draw(float aspectRatio, Vector3 cameraPosition,Model mesh)
+        public void Draw(float aspectRatio, Camera camera, Model mesh)
         {
             transforms = new Matrix[mesh.Bones.Count];
             mesh.CopyAbsoluteBoneTransformsTo(transforms);
@@ -45,11 +45,8 @@ namespace Game
                     effect.World = transforms[singleMesh.ParentBone.Index] * Matrix.CreateRotationY(objectArrangement.Rotation.Y)
                         * Matrix.CreateTranslation(objectArrangement.Position) * Matrix.CreateScale(objectArrangement.Scale);
 
-                    effect.View = Matrix.CreateLookAt(cameraPosition, Vector3.Zero, Vector3.Up);
-
-                    effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45.0f),
-                        aspectRatio, 1.0f, 10000.0f);
-
+                    effect.View = camera.ViewMatrix;
+                    effect.Projection = camera.ProjectionMatrix;
                 }
 
                 singleMesh.Draw();
