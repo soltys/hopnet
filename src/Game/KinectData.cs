@@ -8,7 +8,7 @@ namespace Game
     {
         private readonly bool isKinectConnected = true;
         private readonly Stopwatch heightChangeStopWatch;
-        private float currentPersonHeight;
+        private float currentPersonHeight=80.0f;
         private float lastPersonHeight = 100.0f;
         private float personIdleHeight;
 

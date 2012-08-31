@@ -88,12 +88,12 @@ namespace Game
             kinectHandPosition[(int)GameConstants.Hand.Left] = Vector2.Zero;
             kinectHandPosition[(int)GameConstants.Hand.Right] = Vector2.Zero;
 
-            timerStepSizePerSecond = GameConstants.HorizontalGameResolution / GameConstants.ButtonTimeDelayInSeconds;//FIX!
+            timerStepSizePerSecond = GameConstants.HorizontalGameResolution / GameConstants.ButtonTimeDelayInSeconds;
             hScale = (GameConstants.HorizontalGameResolution/ GameConstants.DefaultHorizontalResolutionToScaleInto);
             vScale = (GameConstants.VerticalGameResolution / GameConstants.DefaultVerticalResolutionToScaleInto);
 
             backgroundSprite = new Sprite();
-            timeoutProgressBar = new Sprite { rectangle = new Rectangle(0, 0, 0, 30) };
+            timeoutProgressBar = new Sprite { rectangle = new Rectangle(0, 0, 0, GameConstants.VerticalGameResolution/80) };
             newGameSprite = new Sprite[GameConstants.MenuTextureNumber];
             scoresSprite = new Sprite[GameConstants.MenuTextureNumber];
             goBackSprite = new Sprite[GameConstants.MenuTextureNumber];
@@ -474,7 +474,7 @@ namespace Game
             handSprite[0, 1].LoadSprite(content, @"Sprites\cursor_left_border");
             handSprite[1, 0].LoadSprite(content, @"Sprites\cursor_right_normal");
             handSprite[1, 1].LoadSprite(content, @"Sprites\cursor_right_border");
-            timeoutProgressBar.LoadSprite(content, @"Sprites\progress_bar");
+            timeoutProgressBar.LoadSprite(content, @"Sprites\menu_progressbar");
             easyDifficulty[0].LoadSprite(content, @"Sprites\testsprite1");
             easyDifficulty[1].LoadSprite(content, @"Sprites\testsprite2");
             mediumDifficulty[0].LoadSprite(content, @"Sprites\testsprite1");

@@ -63,9 +63,9 @@ namespace Game
                 kinectData.KinectSensor.Start();
             }
 
-
-            mainMenu = new MainMenu(this) {IsGameInMenuMode = false};
+            mainMenu = new MainMenu(this) {IsGameInMenuMode = true};
             kinectPlayer = new KinectPlayer(Content,new Vector3(GameConstants.FirstPlatformPosition + (GameConstants.RowLength/2)*GameConstants.SpaceBetweenPlatforms,GameConstants.PlatformGroundLevel,GameConstants.BeginningOfBoardPositionZ));
+            kinectPlayer.LoadContent(Content);
             kinectPlayer.SetPlatformRadius(GameConstants.PlatformRadius);
             kinectPlayer.SetPlatformToPlatformMoveTime(GameConstants.SpeedOfPlatformsOneUpdate, GameConstants.SpaceBetweenRows, (float)(TargetElapsedTime.TotalMilliseconds), GameConstants.SpaceBetweenPlatforms);
             platformList = new List<Platform>();
@@ -86,7 +86,7 @@ namespace Game
 
             newGamePlatforms[GameConstants.RowLength/2] = true;
 
-            CreatePlatforms(GameConstants.RowLength, GameConstants.FirstPlatformPosition, GameConstants.SpaceBetweenPlatforms, GameConstants.BeginningOfBoardPositionZ,newGamePlatforms);
+            CreatePlatforms(GameConstants.RowLength, GameConstants.FirstPlatformPosition, GameConstants.SpaceBetweenPlatforms, GameConstants.BeginningOfBoardPositionZ-GameConstants.PlatformRadius,newGamePlatforms);
 
             for (int i = 0; i < GameConstants.LanesNumber; i++)
             {
@@ -299,14 +299,16 @@ namespace Game
             spriteBatch.DrawString(font, "kinectPlayer.platformRadius :" + kinectPlayer.platformRadius.ToString(), new Vector2(100, 290), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             spriteBatch.DrawString(font, "kinectPlayer.radiusToIdleJump :" + kinectPlayer.radiusToIdleJump.ToString(), new Vector2(100, 310), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             */
+            //spriteBatch.DrawString(font, kinectPlayer.idleJumpExpectedFunctionCalls.ToString(), new Vector2(50, 350), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
             spriteBatch.DrawString(font, kinectPlayer.currentStance.ToString(), new Vector2(50, 450), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, kinectPlayer.modelPosition.objectArrangement.Position.X.ToString(), new Vector2(50, 50), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
+            /*
             spriteBatch.DrawString(font, kinectPlayer.verticalVelocity.ToString(), new Vector2(50, 150), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
             spriteBatch.DrawString(font, kinectPlayer.timeCounter.ToString(), new Vector2(50, 250), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
             spriteBatch.DrawString(font, kinectPlayer.currentJumpTime.ToString(), new Vector2(50, 320), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
             spriteBatch.DrawString(font, kinectPlayer.idleJumpTime.ToString(), new Vector2(50, 390), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
+             */
             //spriteBatch.DrawString(font, kinectPlayer.timeAmount.ToString(), new Vector2(50, 550), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, GameConstants.zegar.Elapsed.TotalMilliseconds.ToString(), new Vector2(50, 550), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
+            
             spriteBatch.End();
         }
 
