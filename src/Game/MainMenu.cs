@@ -15,7 +15,7 @@ namespace Game
         private bool isGameInMenu=true;
         private readonly float hScale;
         private readonly float vScale;
-        private HighScores highScores;
+        public HighScores highScores;
       
         private int selectedDifficulty = (int)GameConstants.GameDifficulty.Easy;
 
@@ -68,12 +68,16 @@ namespace Game
         private readonly Vector2[] kinectHandPosition;
         private readonly bool[] cursorOnButtonState;
         private readonly Stopwatch buttonTimeoutStopwatch;
+
+        public int scoreInCurrentGame;
+
         #endregion
 
 
         public MainMenu(HopnetGame hopnetGame)
         {
             highScores = new HighScores();
+            highScores.Load();
             buttonTimeoutStopwatch = new Stopwatch();
             buttonTimeoutStopwatch.Reset();
 
@@ -511,6 +515,7 @@ namespace Game
                 case GameConstants.MenuState.InScores:
                         backgroundSprite.DrawByRectangle(spriteBatch);
                         goBackSprite[goBackTextureType].DrawByRectangle(spriteBatch);
+                        DrawHighScores(spriteBatch,font);
                         break;
 
                 case GameConstants.MenuState.OnDifficultySelect:
@@ -529,10 +534,11 @@ namespace Game
 
                 case GameConstants.MenuState.AfterGameLoss:
                         spriteBatch.Begin();
-                        spriteBatch.DrawString(font, "Przegrales!",
+                        spriteBatch.DrawString(font, "Przegrales!\n Twoj wynik to "+ scoreInCurrentGame.ToString(),
                                            new Vector2(GameConstants.HorizontalGameResolution/2,
                                                        GameConstants.VerticalGameResolution/10), Color.Red, 0,
                                            Vector2.Zero, 2, SpriteEffects.None, 1.0f);
+
                         spriteBatch.End();
                         tryAgainSprite[tryAgainSpriteTextureType].DrawByRectangle(spriteBatch);
                         goBackSprite[goBackTextureType].DrawByRectangle(spriteBatch);
@@ -542,6 +548,19 @@ namespace Game
             timeoutProgressBar.DrawByRectangle(spriteBatch);
             handSprite[(int)GameConstants.Hand.Left, handTextureType[(int)GameConstants.Hand.Left]].DrawByRectangle(spriteBatch);
             handSprite[(int)GameConstants.Hand.Right, handTextureType[(int)GameConstants.Hand.Right]].DrawByRectangle(spriteBatch);
+        }
+        void DrawHighScores(SpriteBatch spriteBatch, SpriteFont font)
+        {
+            int Place = 1;
+            spriteBatch.Begin();
+            foreach (var Wynik in highScores)
+            {
+                spriteBatch.DrawString(font, Place.ToString()+"."+Wynik.Time.ToString()+"     "+Wynik.Points.ToString(),
+                                   new Vector2(250,200 + Place*20), Color.Red, 0,
+                                   Vector2.Zero, 1, SpriteEffects.None, 1.0f);
+                ++Place;
+            }
+            spriteBatch.End();
         }
     }
 }

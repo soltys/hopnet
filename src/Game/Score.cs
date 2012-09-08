@@ -8,17 +8,15 @@ namespace Game
     [Serializable]
     public class Score : IComparable<Score>
     {
-        public string Name { get; set; }
         public DateTime Time { get; set; }
         public int Points { get; set; }
         private Score()
         {
         }
-        public Score(string name, int points)
+        public Score(int points)
         {
-            Name = name;
             Points = points;
-            Time = DateTime.Now.Date;
+            Time = DateTime.Now;
         }
         public int CompareTo(Score other)
         {
@@ -26,9 +24,9 @@ namespace Game
             {
                 return 1;
             }
-            if (Points == other.Points)
+            if (Points == other.Points)  // ?
             {
-                return Name.CompareTo(other.Name);
+                //return Name.CompareTo(other.Name);
             }
             return Points.CompareTo(other.Points);
         }

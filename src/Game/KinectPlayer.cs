@@ -11,7 +11,7 @@ namespace Game
 {
     class KinectPlayer
     {
-        #region Public properties
+        #region Properties
 
         public GameConstants.PlayerStance currentStance { get; set; }
         public GameConstants.PlayerStance lastStance { get; set; }
@@ -60,7 +60,9 @@ namespace Game
         private float jumpHeightDivider;
 
         private float horizontalJumpMovementStep;
-        
+
+
+        public int ScoreInCurrentGame;
 
 
         public void LoadContent(ContentManager content)
@@ -102,6 +104,7 @@ namespace Game
 
         public void NewGameDataReset()
         {
+            this.ScoreInCurrentGame = 0;
             lastStance = currentStance;
             currentStance = GameConstants.PlayerStance.GameStartCountDown;
             newGameCounter.Reset();
