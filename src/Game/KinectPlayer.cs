@@ -432,11 +432,11 @@ namespace Game
             }
         }
 
-        public void Draw(SpriteBatch spriteBatch, SpriteFont font,float aspectRatio,Camera camera)
+        public void Draw(SpriteBatch spriteBatch, SpriteFont font,Camera camera)
         {
             progressBarBackground.DrawByRectangle(spriteBatch);
 
-            modelPosition.Draw(aspectRatio, camera, model);
+            modelPosition.Draw(camera, model);
             spriteBatch.Begin();
             spriteBatch.Draw(progressBarTextures[progressBarTextureType],progressBarRectangle,Color.White);
             spriteBatch.End();

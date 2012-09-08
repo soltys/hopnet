@@ -30,7 +30,7 @@ namespace Game
             oldArrangement = objectArrangementOnScene;
         }
 
-        public void Draw(float aspectRatio, Camera camera, Model mesh)
+        public void Draw(Camera camera, Model mesh)
         {
             transforms = new Matrix[mesh.Bones.Count];
             mesh.CopyAbsoluteBoneTransformsTo(transforms);

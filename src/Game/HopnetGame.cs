@@ -6,8 +6,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using NLog;
 using Microsoft.Kinect;
-using System.Diagnostics;
-
 
 namespace Game
 {
@@ -26,7 +24,6 @@ namespace Game
         private SpriteFont debugFont;
         private KinectPlayer kinectPlayer;
         private KinectData kinectData;
-        private float aspectRatio;
         private Camera camera;
 
         public HopnetGame()
@@ -46,7 +43,6 @@ namespace Game
         {         
             graphics.PreferredBackBufferWidth = GameConstants.HorizontalGameResolution;
             graphics.PreferredBackBufferHeight = GameConstants.VerticalGameResolution;
-            aspectRatio = (float)graphics.GraphicsDevice.Viewport.Width / graphics.GraphicsDevice.Viewport.Height;
 
             graphics.IsFullScreen = GameConstants.IsGameInFullScreen;
             IsMouseVisible = true;
@@ -76,13 +72,12 @@ namespace Game
 
             PreparePlatformsForNewGame();
 
-
-
             base.Initialize();
         }
 
         private void PreparePlatformsForNewGame()
         {
+            platformList.Clear();
             var newGamePlatforms = new bool[GameConstants.RowLength];
 
             newGamePlatforms[GameConstants.RowLength/2] = true;
@@ -138,9 +133,6 @@ namespace Game
 
         void CreatePlatforms(int platformCount, float firstPlatformPosition, float distanceBetweenPlatforms, float zDistance, bool[] platformSettings)
         {
-            //rowFromGenerator = platformGenerator.GetLastAddedRowValues;
-            
-
             for (int i = 0; i < platformCount; i++)
             {
                 if (platformSettings != null && platformSettings[i])
@@ -199,7 +191,6 @@ namespace Game
             }
         }
 
-        private int ctr = 0;
         private void RemovePlatformsAtEnd()
         {
             if (platformList.Count>0)
@@ -246,8 +237,7 @@ namespace Game
                                 camera.Position = new Vector3( GameConstants.FirstPlatformPosition + (GameConstants.RowLength / 2) * GameConstants.SpaceBetweenPlatforms,camera.Position.Y,camera.Position.Z);
                                 camera.LookAtPoint = new Vector3(GameConstants.FirstPlatformPosition + (GameConstants.RowLength / 2) * GameConstants.SpaceBetweenPlatforms,camera.LookAtPoint.Y,camera.LookAtPoint.Z);
                                 mainMenu.IsGameInMenuMode = true;
-                                mainMenu.MenuState = GameConstants.MenuState.AfterGameLoss;// zrobic nowy stan - w ktorym do wyboru jest nowa gra lub wyjscie do menu
-                                platformList.Clear();
+                                mainMenu.MenuState = GameConstants.MenuState.AfterGameLoss;
                                 PreparePlatformsForNewGame();
                                 break;
                         }
@@ -278,9 +268,9 @@ namespace Game
                 case false:
                     for (int i = platformList.Count-1; i >= 0; i--)
                     {
-                        platformList[i].Draw(aspectRatio, camera, platformModel);
+                        platformList[i].Draw(camera, platformModel);
                     }
-                    kinectPlayer.Draw(spriteBatch, debugFont, aspectRatio, camera);
+                    kinectPlayer.Draw(spriteBatch, debugFont,camera);
                     DrawDebugInfo(spriteBatch,debugFont);
                     break;
             }
