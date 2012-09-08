@@ -21,7 +21,7 @@ namespace Game.Test
         public void add_one_score_results_one_score_in_highscores()
         {
             var highScores = new HighScores();
-            highScores.Add(new Score("hopnet", 777));
+            highScores.Add(new Score(777));
             Assert.AreEqual(1, highScores.Count());
         }
 
@@ -31,7 +31,7 @@ namespace Game.Test
             var highScores = new HighScores();
             for (int i = 0; i < 20; i++)
             {
-                highScores.Add(new Score(i.ToString(CultureInfo.InvariantCulture), i));
+                highScores.Add(new Score(i));
             }
             Assert.AreEqual(10, highScores.Count());
         }
@@ -45,7 +45,7 @@ namespace Game.Test
             for (int i = 0; i < 20; i++)
             {
                 var number = randomGenerator.Next();
-                highScores.Add(new Score(i.ToString(CultureInfo.InvariantCulture), number));
+                highScores.Add(new Score(number));
                 generatedNumbers.Add(number);
             }
 
@@ -56,7 +56,7 @@ namespace Game.Test
         public void when_score_added_is_lower_than_zero_throws_argument_exception()
         {
             var highScores = new HighScores();
-            var score = new Score("hopnet", -1);
+            var score = new Score(-1);
             Assert.Throws<ArgumentException>(() => highScores.Add(score));
         }
 
@@ -74,7 +74,7 @@ namespace Game.Test
             var highScores = new HighScores();
             for (int i = 0; i < 20; i++)
             {
-                highScores.Add(new Score(i.ToString(CultureInfo.InvariantCulture), i));
+                highScores.Add(new Score(i));
             }
             highScores.Clear();
 

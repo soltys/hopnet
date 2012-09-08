@@ -75,7 +75,8 @@ namespace Game
             TargetElapsedTime = TimeSpan.FromSeconds(1.0f / GameConstants.GameUpdatesPerSecond); // zmniejszenie Update'u do 10/s
 
             PreparePlatformsForNewGame();
-            
+
+
 
             base.Initialize();
         }
@@ -215,15 +216,19 @@ namespace Game
         
         protected override void Update(GameTime gameTime)
         {
+            
+
             if (Keyboard.GetState().IsKeyDown(Keys.P)) { UnloadContent(); Exit(); }
 
             
             switch (mainMenu.IsGameInMenuMode)
             {
-                case false: 
+                case false:
+                    
                     kinectPlayer.Update(platformList, camera);
                     if (kinectPlayer.currentStance != GameConstants.PlayerStance.GameStartCountDown && kinectPlayer.currentStance != GameConstants.PlayerStance.GameEnded)
                     {
+                        ++kinectPlayer.ScoreInCurrentGame;
                         MovePlatforms();
                         RemovePlatformsAtEnd();
                     }
@@ -232,6 +237,11 @@ namespace Game
                         switch (kinectPlayer.currentStance)
                         {
                             case GameConstants.PlayerStance.GameEnded:
+                                mainMenu.scoreInCurrentGame = kinectPlayer.ScoreInCurrentGame;
+
+                                mainMenu.highScores.Add(new Score(kinectPlayer.ScoreInCurrentGame));
+                                mainMenu.highScores.Save();
+
                                 kinectPlayer.NewGameDataReset();
                                 camera.Position = new Vector3( GameConstants.FirstPlatformPosition + (GameConstants.RowLength / 2) * GameConstants.SpaceBetweenPlatforms,camera.Position.Y,camera.Position.Z);
                                 camera.LookAtPoint = new Vector3(GameConstants.FirstPlatformPosition + (GameConstants.RowLength / 2) * GameConstants.SpaceBetweenPlatforms,camera.LookAtPoint.Y,camera.LookAtPoint.Z);
@@ -281,7 +291,8 @@ namespace Game
         private void DrawDebugInfo(SpriteBatch spriteBatch, SpriteFont font)
         {
             spriteBatch.Begin();
-            /*
+            spriteBatch.DrawString(font, "Points :" + kinectPlayer.ScoreInCurrentGame.ToString(), new Vector2(100, 10), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+            /* 
             spriteBatch.DrawString(font, "kinectPlayer.isBehind :" + kinectPlayer.isFirstPlatformBehindPlayer.ToString(), new Vector2(100, 10), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             spriteBatch.DrawString(font, "platformList.First().Z : "+ platformList.First().objectArrangement.Position.Z.ToString(), new Vector2(100, 30), Color.Red);
             spriteBatch.DrawString(font, "ElapsedMS : " + kinectPlayer.timeLeftToJump.Elapsed.TotalMilliseconds.ToString(), new Vector2(100, 50), Color.Red);
