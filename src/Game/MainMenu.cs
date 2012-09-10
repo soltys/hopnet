@@ -553,8 +553,8 @@ namespace Game
 
         void DrawHighScores(SpriteBatch spriteBatch, SpriteFont font)
         {
-            HighScoreDrawing highScoreDrawing = new HighScoreDrawing(hopNetGame, highScores, spriteBatch);
-            highScoreDrawing.DrawHighScores();
+            HighScoreDraw highScoreDraw = new HighScoreDraw(hopNetGame, highScores, spriteBatch);
+            highScoreDraw.DrawHighScores();
         }
     }
 }
