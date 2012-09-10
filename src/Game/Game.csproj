@@ -85,6 +85,7 @@
     <Compile Include="Camera.cs" />
     <Compile Include="GameConstants.cs" />
     <Compile Include="Hero.cs" />
+    <Compile Include="HighScoreDrawing.cs" />
     <Compile Include="HighScores.cs" />
     <Compile Include="KinectData.cs" />
     <Compile Include="KinectPlayer.cs" />

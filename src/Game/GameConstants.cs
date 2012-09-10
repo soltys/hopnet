@@ -78,6 +78,11 @@ namespace Game
         //HighScores
         public const int MaxCapacity = 10;
 
-        
+
+        // HighScoreDrawing
+        public const int HighScoreDrawingLeftMargin = 300;
+        public const int HighScoreDrawingTopMargin = 50;
+        public const int HighScoreDrawingCharWidth = 25;
+        public const int HighScoreDrawingNewlineHeight = 50;
     }
 }

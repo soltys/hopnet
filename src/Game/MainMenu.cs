@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Kinect;
 using System.Diagnostics;
+using System.Text;
 
 
 namespace Game
@@ -549,18 +550,11 @@ namespace Game
             handSprite[(int)GameConstants.Hand.Left, handTextureType[(int)GameConstants.Hand.Left]].DrawByRectangle(spriteBatch);
             handSprite[(int)GameConstants.Hand.Right, handTextureType[(int)GameConstants.Hand.Right]].DrawByRectangle(spriteBatch);
         }
+
         void DrawHighScores(SpriteBatch spriteBatch, SpriteFont font)
         {
-            int Place = 1;
-            spriteBatch.Begin();
-            foreach (var Wynik in highScores)
-            {
-                spriteBatch.DrawString(font, Place.ToString()+"."+Wynik.Time.ToString()+"     "+Wynik.Points.ToString(),
-                                   new Vector2(250,200 + Place*20), Color.Red, 0,
-                                   Vector2.Zero, 1, SpriteEffects.None, 1.0f);
-                ++Place;
-            }
-            spriteBatch.End();
+            HighScoreDrawing highScoreDrawing = new HighScoreDrawing(hopNetGame, highScores, spriteBatch);
+            highScoreDrawing.DrawHighScores();
         }
     }
 }
