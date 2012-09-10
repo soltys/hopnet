@@ -31,8 +31,6 @@ namespace Game
         private Sprite progressBarFrame;
         private Sprite progressBarBackground;
 
-
-
         private float spaceRequiredToSideJump = 100.0f;
         private float spaceRequiredToJump = 100.0f;
 
@@ -60,7 +58,6 @@ namespace Game
         private float jumpHeightDivider;
 
         private float horizontalJumpMovementStep;
-
 
         public int ScoreInCurrentGame;
 
@@ -201,6 +198,7 @@ namespace Game
 
 
         }
+
         public void SetPlatformRadius(float singlePlatformRadius)
         {
             platformRadius = singlePlatformRadius;
@@ -224,10 +222,19 @@ namespace Game
             {
                 if (skeleton.Joints[JointType.HandLeft].Position.Y > spaceRequiredToSideJump)
                 {
-                    isMotionCheckEnabled = false;
-                    jumpDirection = -1;
-                    lastStance = currentStance;
-                    currentStance = GameConstants.PlayerStance.SideJumpReady;
+                    if (skeleton.Joints[JointType.FootLeft].Position.Y > skeleton.Joints[JointType.FootRight].Position.Y)
+                    {
+                        double footDistance = Math.Sqrt((skeleton.Joints[JointType.FootLeft].Position.Y - skeleton.Joints[JointType.FootRight].Position.Y)
+                            * (skeleton.Joints[JointType.FootLeft].Position.Y - skeleton.Joints[JointType.FootRight].Position.Y));
+
+                        if (footDistance > GameConstants.FootToFootDistance)
+                        {
+                            isMotionCheckEnabled = false;
+                            jumpDirection = -1;
+                            lastStance = currentStance;
+                            currentStance = GameConstants.PlayerStance.SideJumpReady;
+                        }
+                    }
                 }
             }
         }
@@ -237,10 +244,19 @@ namespace Game
             {
                 if (skeleton.Joints[JointType.HandRight].Position.Y > spaceRequiredToSideJump)
                 {
-                    isMotionCheckEnabled = false;
-                    jumpDirection = 1;
-                    lastStance = currentStance;
-                    currentStance = GameConstants.PlayerStance.SideJumpReady;
+                    if (skeleton.Joints[JointType.FootRight].Position.Y > skeleton.Joints[JointType.FootLeft].Position.Y)
+                    {
+                        double footDistance = Math.Sqrt((skeleton.Joints[JointType.FootLeft].Position.Y - skeleton.Joints[JointType.FootRight].Position.Y)
+                            * (skeleton.Joints[JointType.FootLeft].Position.Y - skeleton.Joints[JointType.FootRight].Position.Y));
+
+                        if (footDistance > GameConstants.FootToFootDistance)
+                        {
+                            isMotionCheckEnabled = false;
+                            jumpDirection = 1;
+                            lastStance = currentStance;
+                            currentStance = GameConstants.PlayerStance.SideJumpReady;
+                        }
+                    }
                 }
             }
         }

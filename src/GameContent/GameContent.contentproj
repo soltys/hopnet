@@ -120,63 +120,64 @@
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Compile Include="Cyferki\0.png">
+    <Compile Include="Sprites\Numbers\0.png">
       <Name>0</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Cyferki\1.png">
+    <Compile Include="Sprites\Numbers\1.png">
       <Name>1</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Cyferki\2.png">
+    <Compile Include="Sprites\Numbers\2.png">
       <Name>2</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Cyferki\3.png">
+    <Compile Include="Sprites\Numbers\3.png">
       <Name>3</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Cyferki\4.png">
+    <Compile Include="Sprites\Numbers\4.png">
       <Name>4</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Cyferki\5.png">
+    <Compile Include="Sprites\Numbers\5.png">
       <Name>5</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Cyferki\6.png">
+    <Compile Include="Sprites\Numbers\6.png">
       <Name>6</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Cyferki\7.png">
+    <Compile Include="Sprites\Numbers\7.png">
       <Name>7</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Cyferki\8.png">
+    <Compile Include="Sprites\Numbers\8.png">
       <Name>8</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Cyferki\9.png">
+    <Compile Include="Sprites\Numbers\9.png">
       <Name>9</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Cyferki\dwukropek.png">
+    <Compile Include="Sprites\Numbers\dwukropek.png">
       <Name>dwukropek</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Cyferki\kropka.png">
+    <Compile Include="Sprites\Numbers\kropka.png">
       <Name>kropka</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>

@@ -28,7 +28,7 @@ namespace Game
         public const float PlatformRadius = 1.84f;
         public const float EndOfBoardPositionZ = BeginningOfBoardPositionZ + PlatformRadius;
         public const float BeginningOfBoardPositionZ = 8.0f;
-        public const float SpeedOfPlatformsOneUpdate = 0.05f;
+        public const float SpeedOfPlatformsOneUpdate = 0.01f;
         public const float FirstPlatformPosition = -(RowLength / 2) * SpaceBetweenPlatforms;
 
         public static Vector3 CameraPosition = new Vector3(FirstPlatformPosition+(RowLength/2)*SpaceBetweenPlatforms, 5.0f, 14.0f);
@@ -63,6 +63,7 @@ namespace Game
         public const int NewGameCountdownTime = 1;
         public enum PlayerStance { Idle = 1, IdleJump = 2, LeftHandUp = 3, RightHandUp = 4, JumpReady = 7, Jump = 8, SideJump = 9, SideJumpReady = 10, GameEnded = 11, GameStartCountDown = 12 }
         public const float MaxiumumJumpHeight = 2.0f;
+        public const float FootToFootDistance = 0.1f;
 
         //KinectData
         public const float HeightChangeThreshold = 0.005f;

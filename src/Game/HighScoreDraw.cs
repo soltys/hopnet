@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Game
 {
-    class HighScoreDrawing
+    class HighScoreDraw
     {
         private Vector2 CursorPosition { get; set; }
         private Texture2D digitTexture;
@@ -18,7 +18,7 @@ namespace Game
         private HighScores highScores;
         private Score currentScore;
 
-        public HighScoreDrawing(HopnetGame hopnetGame, HighScores highScores, SpriteBatch spriteBatch)
+        public HighScoreDraw(HopnetGame hopnetGame, HighScores highScores, SpriteBatch spriteBatch)
         {
             this.hopnetGame = hopnetGame;
             this.highScores = highScores;
@@ -104,7 +104,7 @@ namespace Game
 
         private void PrepareTexture(int textureNumber)
         {
-            lokalizacja = new StringBuilder("Cyferki/");
+            lokalizacja = new StringBuilder("Sprites/Numbers/");
             if (textureNumber < 10)  // cyfry sa reprezentowane przez [0-9]
             {
                 lokalizacja.Append(textureNumber);
