@@ -534,13 +534,8 @@ namespace Game
                         break;
 
                 case GameConstants.MenuState.AfterGameLoss:
-                        spriteBatch.Begin();
-                        spriteBatch.DrawString(font, "Przegrales!\n Twoj wynik to "+ scoreInCurrentGame.ToString(),
-                                           new Vector2(GameConstants.HorizontalGameResolution/2,
-                                                       GameConstants.VerticalGameResolution/10), Color.Red, 0,
-                                           Vector2.Zero, 2, SpriteEffects.None, 1.0f);
-
-                        spriteBatch.End();
+                        
+                        DrawGameOverAndScore(spriteBatch);
                         tryAgainSprite[tryAgainSpriteTextureType].DrawByRectangle(spriteBatch);
                         goBackSprite[goBackTextureType].DrawByRectangle(spriteBatch);
                         break;
@@ -549,6 +544,20 @@ namespace Game
             timeoutProgressBar.DrawByRectangle(spriteBatch);
             handSprite[(int)GameConstants.Hand.Left, handTextureType[(int)GameConstants.Hand.Left]].DrawByRectangle(spriteBatch);
             handSprite[(int)GameConstants.Hand.Right, handTextureType[(int)GameConstants.Hand.Right]].DrawByRectangle(spriteBatch);
+        }
+
+        void DrawGameOverAndScore(SpriteBatch spriteBatch)
+        {
+            spriteBatch.Begin();
+            Texture2D GameOver = this.hopNetGame.Content.Load<Texture2D>("Sprites/GameOver");
+            Vector2 WhereToBeginDrawing = new Vector2(GameConstants.HorizontalGameResolution / 4, GameConstants.VerticalGameResolution / 15);
+            spriteBatch.Draw(GameOver, WhereToBeginDrawing, null, Color.White, 0f, new Vector2(10, 10), 1f, SpriteEffects.None, 0);
+            spriteBatch.End();
+            
+            WhereToBeginDrawing = new Vector2(GameConstants.HorizontalGameResolution / 4, GameConstants.VerticalGameResolution * 0.6f);
+            HighScoreDraw highScoreDraw = new HighScoreDraw(hopNetGame, spriteBatch, WhereToBeginDrawing);
+            highScoreDraw.DrawPlayerScore(scoreInCurrentGame);
+            
         }
 
         void DrawHighScores(SpriteBatch spriteBatch, SpriteFont font)

@@ -27,6 +27,24 @@ namespace Game
             CursorPosition = new Vector2(GameConstants.HighScoreDrawingLeftMargin, GameConstants.HighScoreDrawingTopMargin);
         }
 
+        public HighScoreDraw(HopnetGame hopnetGame, SpriteBatch spriteBatch, Vector2 WhereToBegin)
+        {
+            this.hopnetGame = hopnetGame;
+            this.spriteBatch = spriteBatch;
+            CursorPosition = WhereToBegin;
+        }
+        public void DrawPlayerScore(int Score)
+        {
+            foreach (var digit in Score.ToString())
+            {
+                MoveCursorRight();
+                int digitToWrite;
+                int.TryParse(digit.ToString(), out digitToWrite);
+                DrawOneChar(digitToWrite);
+            }
+        }
+
+
         private void MoveCursorRight()
         {
             CursorPosition = new Vector2(CursorPosition.X + GameConstants.HighScoreDrawingCharWidth, CursorPosition.Y);
