@@ -54,9 +54,16 @@ namespace Game
 
             if (kinectData.IsKinectConnected)
             {
-                kinectData.KinectSensor.AllFramesReady += KinectAllFramesReady;
-                kinectData.KinectSensor.SkeletonStream.Enable();
-                kinectData.KinectSensor.Start();
+                try
+                {
+                    kinectData.KinectSensor.AllFramesReady += KinectAllFramesReady;
+                    kinectData.KinectSensor.SkeletonStream.Enable();
+                    kinectData.KinectSensor.Start();
+                }
+                catch
+                {
+                    throw new Exception("Error: sensor Kinect jest prawdopodobnie niepodlaczony do zasilania!");
+                }
             }
 
             mainMenu = new MainMenu(this) {IsGameInMenuMode = true};

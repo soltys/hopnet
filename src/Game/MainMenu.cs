@@ -548,21 +548,14 @@ namespace Game
 
         void DrawGameOverAndScore(SpriteBatch spriteBatch)
         {
-            spriteBatch.Begin();
-            Texture2D GameOver = this.hopNetGame.Content.Load<Texture2D>("Sprites/GameOver");
-            Vector2 WhereToBeginDrawing = new Vector2(GameConstants.HorizontalGameResolution / 4, GameConstants.VerticalGameResolution / 15);
-            spriteBatch.Draw(GameOver, WhereToBeginDrawing, null, Color.White, 0f, new Vector2(10, 10), 1f, SpriteEffects.None, 0);
-            spriteBatch.End();
-            
-            WhereToBeginDrawing = new Vector2(GameConstants.HorizontalGameResolution / 4, GameConstants.VerticalGameResolution * 0.6f);
-            HighScoreDraw highScoreDraw = new HighScoreDraw(hopNetGame, spriteBatch, WhereToBeginDrawing);
-            highScoreDraw.DrawPlayerScore(scoreInCurrentGame);
+            DrawGameOver drawGameOver = new DrawGameOver(hopNetGame, spriteBatch, scoreInCurrentGame);
+            drawGameOver.DrawGameOverScene();
             
         }
 
         void DrawHighScores(SpriteBatch spriteBatch, SpriteFont font)
         {
-            HighScoreDraw highScoreDraw = new HighScoreDraw(hopNetGame, highScores, spriteBatch);
+            DrawHighScore highScoreDraw = new DrawHighScore(hopNetGame, highScores, spriteBatch);
             highScoreDraw.DrawHighScores();
         }
     }
