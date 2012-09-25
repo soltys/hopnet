@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Kinect;
@@ -17,7 +18,7 @@ namespace Game
         public GameConstants.PlayerStance lastStance { get; set; }
         private bool isMotionCheckEnabled;
         public Hero modelPosition;
-        private readonly Model model;
+        private Model model;
 
         private float modelGroundLevel;
 
@@ -60,6 +61,9 @@ namespace Game
         private float horizontalJumpMovementStep;
 
         public int ScoreInCurrentGame;
+        private bool isCanAddPoint;
+
+        private string stateString="_";
 
 
         public void LoadContent(ContentManager content)
@@ -69,9 +73,10 @@ namespace Game
             progressBarTextures[1] = content.Load<Texture2D>(@"Sprites\player_progressbar_medium");
             progressBarTextures[2] = content.Load<Texture2D>(@"Sprites\player_progressbar_low");
             progressBarBackground.LoadSprite(content,@"Sprites\player_progressbar_background");
+            model = content.Load<Model>(@"Models\hero");
         }
 
-        public KinectPlayer(ContentManager content, Vector3 platformData)
+        public KinectPlayer(Vector3 platformData)
         {
             progressBarBackground = new Sprite();
             progressBarBackground.Rectangle = new Rectangle(0,0,GameConstants.HorizontalGameResolution,GameConstants.VerticalGameResolution/80);
@@ -88,9 +93,9 @@ namespace Game
                                           Scale = new Vector3(0.5f, 0.5f, 0.5f),
                                           Rotation = new Vector3(0.0f)
                                       });
-            model = content.Load<Model>(@"Models\hero");
-            currentStance = GameConstants.PlayerStance.GameStartCountDown;
-            lastStance = GameConstants.PlayerStance.GameStartCountDown;
+            
+            currentStance = GameConstants.PlayerStance.GameSettingsSetup;
+            lastStance = GameConstants.PlayerStance.GameSettingsSetup;
             isMotionCheckEnabled = true;
             modelGroundLevel = platformData.Y+GameConstants.PlayerModelHeight;
             modelPosition.objectArrangement.Position = new Vector3(platformData.X,modelGroundLevel,platformData.Z);
@@ -101,9 +106,9 @@ namespace Game
 
         public void NewGameDataReset()
         {
-            this.ScoreInCurrentGame = 0;
+            ScoreInCurrentGame = 0;
             lastStance = currentStance;
-            currentStance = GameConstants.PlayerStance.GameStartCountDown;
+            currentStance = GameConstants.PlayerStance.GameSettingsSetup;
             newGameCounter.Reset();
             modelPosition.objectArrangement.Position= new Vector3(GameConstants.FirstPlatformPosition + (GameConstants.RowLength/2)*GameConstants.SpaceBetweenPlatforms
                 ,modelGroundLevel,
@@ -199,10 +204,10 @@ namespace Game
 
         }
 
-        public void SetPlatformRadius(float singlePlatformRadius)
+        public void SetJumpSafeZone()
         {
-            platformRadius = singlePlatformRadius;
-            idleJumpPlatformRadius = 0.9f * singlePlatformRadius;
+            platformRadius = GameConstants.PlatformRadius;
+            idleJumpPlatformRadius = 0.9f * platformRadius;
 
             expectedFunctionCallsOnPlatform = (int)Math.Round((platformRadius + idleJumpPlatformRadius) / GameConstants.SpeedOfPlatformsOneUpdate);
             progressBarStep = (int)Math.Round((double)GameConstants.HorizontalGameResolution / expectedFunctionCallsOnPlatform);
@@ -212,6 +217,7 @@ namespace Game
         {
             if (skeleton.Joints[JointType.ShoulderCenter].Position.Y > spaceRequiredToJump)
             {
+                stateString = "/\\";
                 lastStance = currentStance;
                 currentStance = GameConstants.PlayerStance.JumpReady;
             }
@@ -229,6 +235,7 @@ namespace Game
 
                         if (footDistance > GameConstants.FootToFootDistance)
                         {
+                            stateString = "<-";
                             isMotionCheckEnabled = false;
                             jumpDirection = -1;
                             lastStance = currentStance;
@@ -251,6 +258,7 @@ namespace Game
 
                         if (footDistance > GameConstants.FootToFootDistance)
                         {
+                            stateString = "->";
                             isMotionCheckEnabled = false;
                             jumpDirection = 1;
                             lastStance = currentStance;
@@ -276,6 +284,31 @@ namespace Game
             }
         }
 
+
+
+        private void AfterJumpReset()
+        {
+            stateString = "_";
+            timeCounter = 0;
+            ScoreInCurrentGame+=GameConstants.PointsPerJump*GameConstants.DifficultyModifier;
+            modelPosition.objectArrangement.Position = new Vector3(
+                modelPosition.objectArrangement.Position.X,
+                modelGroundLevel,
+                modelPosition.objectArrangement.Position.Z);
+
+            modelPosition.oldArrangement.Position = new Vector3(
+                modelPosition.objectArrangement.Position.X,
+                modelPosition.objectArrangement.Position.Y,
+                modelPosition.objectArrangement.Position.Z);
+
+            lastStance = currentStance;
+            currentStance = GameConstants.PlayerStance.Idle;
+        }
+
+
+
+
+
         private void PerformIdleJump()
         {
             if (timeCounter<idleJumpExpectedFunctionCalls)
@@ -287,19 +320,7 @@ namespace Game
             }
             else
             {
-                timeCounter = 0;
-                modelPosition.objectArrangement.Position = new Vector3(
-                    modelPosition.objectArrangement.Position.X,
-                    modelGroundLevel,
-                    modelPosition.objectArrangement.Position.Z);
-
-                modelPosition.oldArrangement.Position = new Vector3(
-                    modelPosition.objectArrangement.Position.X,
-                    modelPosition.objectArrangement.Position.Y,
-                    modelPosition.objectArrangement.Position.Z);
-
-                lastStance = currentStance;
-                currentStance = GameConstants.PlayerStance.Idle;
+                AfterJumpReset();
             }
             
         }
@@ -314,19 +335,7 @@ namespace Game
             }
             else
             {
-                timeCounter=0;
-                modelPosition.objectArrangement.Position = new Vector3(
-                    modelPosition.objectArrangement.Position.X,
-                    modelGroundLevel,
-                    modelPosition.objectArrangement.Position.Z);
-
-                modelPosition.oldArrangement.Position = new Vector3(
-                    modelPosition.objectArrangement.Position.X,
-                    modelPosition.objectArrangement.Position.Y,
-                    modelPosition.objectArrangement.Position.Z);
-
-                lastStance = currentStance;
-                currentStance = GameConstants.PlayerStance.Idle;
+                AfterJumpReset();
             }
         }
         private void PerformHorizontalJump()
@@ -454,22 +463,61 @@ namespace Game
 
             modelPosition.Draw(camera, model);
             spriteBatch.Begin();
+            spriteBatch.DrawString(font, "Points : " + ScoreInCurrentGame.ToString(), new Vector2(GameConstants.HorizontalGameResolution/200, GameConstants.VerticalGameResolution/100), Color.Black, 0, Vector2.Zero,3, SpriteEffects.None, 1);
+            spriteBatch.DrawString(font, stateString, new Vector2(GameConstants.HorizontalGameResolution*0.95f, GameConstants.VerticalGameResolution / 100), Color.Black, 0, Vector2.Zero, 3, SpriteEffects.None, 1);
             spriteBatch.Draw(progressBarTextures[progressBarTextureType],progressBarRectangle,Color.White);
             spriteBatch.End();
 
             progressBarFrame.DrawByRectangle(spriteBatch);
 
-
             switch (currentStance)
             {
                 case GameConstants.PlayerStance.GameStartCountDown:
                     spriteBatch.Begin();
-                    spriteBatch.DrawString(font, "Stan swobodnie i opusc rece", new Vector2(100, 50), Color.Red, 0, Vector2.Zero, 2, SpriteEffects.None, 1);
-                    spriteBatch.DrawString(font, (GameConstants.NewGameCountdownTime - newGameCounter.Elapsed.Seconds).ToString(), new Vector2(100, 100), Color.Red, 0, Vector2.Zero, 3, SpriteEffects.None, 1);
+                    spriteBatch.DrawString(font, (GameConstants.NewGameCountdownTime - newGameCounter.Elapsed.Seconds).ToString(), new Vector2(GameConstants.HorizontalGameResolution / 2, GameConstants.VerticalGameResolution / 10), Color.Black, 0, Vector2.Zero, 2, SpriteEffects.None, 1);
                     spriteBatch.End();
                     break;
             }
              
+        }
+
+
+        public void DebugInputUpdate(List <Platform> platformList)
+        {
+            switch (currentStance)
+            {
+                case GameConstants.PlayerStance.Idle:
+                {
+                    if (Keyboard.GetState().IsKeyDown(Keys.W))
+                    {
+                        stateString = "/\\";
+                        isMotionCheckEnabled = false;
+                        lastStance = currentStance;
+                        currentStance = GameConstants.PlayerStance.JumpReady;
+                    }
+
+                    if (Keyboard.GetState().IsKeyDown(Keys.A))
+                    {
+                        stateString = "<-";
+                        isMotionCheckEnabled = false;
+                        jumpDirection = -1;
+                        lastStance = currentStance;
+                        currentStance = GameConstants.PlayerStance.SideJumpReady;
+                    }
+
+                    if (Keyboard.GetState().IsKeyDown(Keys.D))
+                    {
+                        stateString = "->";
+                        isMotionCheckEnabled = false;
+                        jumpDirection = 1;
+                        lastStance = currentStance;
+                        currentStance = GameConstants.PlayerStance.SideJumpReady;
+                    }
+                    WaitForPlatformEnd(platformList);
+                    break;
+                }
+            }
+
         }
     }
 }

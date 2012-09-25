@@ -12,7 +12,7 @@ namespace Game
         protected HopnetGame hopnetGame;
         protected Vector2 cursorPosition { get; set; }
         protected Texture2D digitTexture;
-        protected StringBuilder lokalizacjaTekstur;
+        protected StringBuilder textureStringBuilder;
         protected SpriteBatch spriteBatch;
 
         public void SetCursorPosition(Vector2 NewCursorPosition)
@@ -40,16 +40,16 @@ namespace Game
         }
         protected void PrepareTexture(int textureNumber)
         {
-            lokalizacjaTekstur = new StringBuilder("Sprites/Numbers/");
+            textureStringBuilder = new StringBuilder("Sprites/Numbers/");
             if (textureNumber < 10)  // cyfry sa reprezentowane przez [0-9]
             {
-                lokalizacjaTekstur.Append(textureNumber);
+                textureStringBuilder.Append(textureNumber);
             }
             else  // kropka to 10, a dwukropek to 11
             {
-                lokalizacjaTekstur.Append((textureNumber == 10 ? "kropka" : "dwukropek"));
+                textureStringBuilder.Append((textureNumber == 10 ? "kropka" : "dwukropek"));
             }
-            digitTexture = this.hopnetGame.Content.Load<Texture2D>(lokalizacjaTekstur.ToString());
+            digitTexture = this.hopnetGame.Content.Load<Texture2D>(textureStringBuilder.ToString());
         }
         protected void DrawOneChar(int whatToDraw)
         {
