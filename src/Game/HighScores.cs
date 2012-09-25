@@ -68,7 +68,7 @@ namespace Game
             }
         }
 
-        public void Save()
+        public void SaveToFile()
         {
             var serializer = new XmlSerializer(typeof(List<Score>));
             using (var stream = new IsolatedStorageFileStream(highScoreFileName, FileMode.Create, storage))
