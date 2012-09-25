@@ -80,10 +80,15 @@ namespace Game
         public const int MaxCapacity = 10;
 
 
-        // HighScoreDrawing
-        public const int HighScoreDrawingLeftMargin = 300;
-        public const int HighScoreDrawingTopMargin = 50;
-        public const int HighScoreDrawingCharWidth = 25;
-        public const int HighScoreDrawingNewlineHeight = 50;
+        // DrawHighScore
+        public const int DrawHighScoreLeftMargin = 300;
+        public const int DrawHighScoreTopMargin = 50;
+        public const int DrawHighScoreCharWidth = 25;
+        public const int DrawHighScoreNewlineHeight = 50;
+
+        //DrawGameOver
+        // Vector2 type can't be declared as const, so those two guys are static
+        public static Vector2 DrawGameOverMessagePosition = new Vector2(GameConstants.HorizontalGameResolution / 4f, GameConstants.VerticalGameResolution / 15f);
+        public static Vector2 DrawGameOverScorePosition = new Vector2(GameConstants.HorizontalGameResolution / 3f, GameConstants.VerticalGameResolution *0.75f);
     }
 }
