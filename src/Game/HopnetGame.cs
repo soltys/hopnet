@@ -9,9 +9,6 @@ using Microsoft.Kinect;
 
 namespace Game
 {
-    /// <summary>
-    /// This is the main type for your game
-    /// </summary>
     public class HopnetGame : Microsoft.Xna.Framework.Game
     {
         private Logger logger = LogManager.GetCurrentClassLogger();
@@ -67,19 +64,27 @@ namespace Game
             }
 
             mainMenu = new MainMenu(this) {IsGameInMenuMode = true};
-            kinectPlayer = new KinectPlayer(Content,new Vector3(GameConstants.FirstPlatformPosition + (GameConstants.RowLength/2)*GameConstants.SpaceBetweenPlatforms,GameConstants.PlatformGroundLevel,GameConstants.BeginningOfBoardPositionZ));
-            kinectPlayer.LoadContent(Content);
-            kinectPlayer.SetPlatformRadius(GameConstants.PlatformRadius);
-            kinectPlayer.SetPlatformToPlatformMoveTime(GameConstants.SpeedOfPlatformsOneUpdate, GameConstants.SpaceBetweenRows, (float)(TargetElapsedTime.TotalMilliseconds), GameConstants.SpaceBetweenPlatforms);
+            kinectPlayer = new KinectPlayer(new Vector3(GameConstants.FirstPlatformPosition + (GameConstants.RowLength/2)*GameConstants.SpaceBetweenPlatforms,GameConstants.PlatformGroundLevel,GameConstants.BeginningOfBoardPositionZ));
+            
+          
             platformList = new List<Platform>();
             platformGenerator=new PlatformCollection();
 
 
-            TargetElapsedTime = TimeSpan.FromSeconds(1.0f / GameConstants.GameUpdatesPerSecond); // zmniejszenie Update'u do 10/s
+            TargetElapsedTime = TimeSpan.FromSeconds(1.0f / GameConstants.GameUpdatesPerSecond);
 
             PreparePlatformsForNewGame();
 
             base.Initialize();
+        }
+
+        private void NewGameSettingsReset()
+        {
+            kinectPlayer.SetJumpSafeZone();
+            kinectPlayer.SetPlatformToPlatformMoveTime(GameConstants.SpeedOfPlatformsOneUpdate, GameConstants.SpaceBetweenRows, (float)(TargetElapsedTime.TotalMilliseconds), GameConstants.SpaceBetweenPlatforms);
+
+            kinectPlayer.lastStance = kinectPlayer.currentStance;
+            kinectPlayer.currentStance = GameConstants.PlayerStance.GameStartCountDown;
         }
 
         private void PreparePlatformsForNewGame()
@@ -127,7 +132,7 @@ namespace Game
             switch (mainMenu.IsGameInMenuMode)
             {
                 case true:
-                    mainMenu.KinectUpdate(kinectData, new Vector2(Mouse.GetState().X, Mouse.GetState().Y));
+                    mainMenu.KinectUpdate(kinectData);
                     break;
                 case false:
                     kinectPlayer.KinectUpdate(kinectData);
@@ -175,7 +180,7 @@ namespace Game
 
             platformModel = Content.Load<Model>(@"Models\platforma");
             Content.Load<Texture2D>(@"Sprites\cursor_left_normal");
-
+            kinectPlayer.LoadContent(Content);
             
             mainMenu.LoadContent(Content);
 
@@ -214,19 +219,20 @@ namespace Game
         
         protected override void Update(GameTime gameTime)
         {
-            
-
             if (Keyboard.GetState().IsKeyDown(Keys.P)) { UnloadContent(); Exit(); }
 
             
             switch (mainMenu.IsGameInMenuMode)
             {
                 case false:
-                    
                     kinectPlayer.Update(platformList, camera);
-                    if (kinectPlayer.currentStance != GameConstants.PlayerStance.GameStartCountDown && kinectPlayer.currentStance != GameConstants.PlayerStance.GameEnded)
+                    if (!kinectData.IsKinectConnected)
                     {
-                        ++kinectPlayer.ScoreInCurrentGame;
+                        kinectPlayer.DebugInputUpdate(platformList);
+                    }
+                    kinectPlayer.DebugInputUpdate(platformList);
+                    if (kinectPlayer.currentStance != GameConstants.PlayerStance.GameStartCountDown && kinectPlayer.currentStance != GameConstants.PlayerStance.GameEnded && kinectPlayer.currentStance != GameConstants.PlayerStance.GameSettingsSetup)
+                    {
                         MovePlatforms();
                         RemovePlatformsAtEnd();
                     }
@@ -238,20 +244,25 @@ namespace Game
                                 mainMenu.scoreInCurrentGame = kinectPlayer.ScoreInCurrentGame;
 
                                 mainMenu.highScores.Add(new Score(kinectPlayer.ScoreInCurrentGame));
-                                mainMenu.highScores.Save();
+                                mainMenu.highScores.SaveToFile();
 
                                 kinectPlayer.NewGameDataReset();
-                                camera.Position = new Vector3( GameConstants.FirstPlatformPosition + (GameConstants.RowLength / 2) * GameConstants.SpaceBetweenPlatforms,camera.Position.Y,camera.Position.Z);
-                                camera.LookAtPoint = new Vector3(GameConstants.FirstPlatformPosition + (GameConstants.RowLength / 2) * GameConstants.SpaceBetweenPlatforms,camera.LookAtPoint.Y,camera.LookAtPoint.Z);
+                                camera.NewGameReset();
                                 mainMenu.IsGameInMenuMode = true;
                                 mainMenu.MenuState = GameConstants.MenuState.AfterGameLoss;
                                 PreparePlatformsForNewGame();
+                                break;
+                            case GameConstants.PlayerStance.GameSettingsSetup:
+                                NewGameSettingsReset();
                                 break;
                         }
                     }
                 break;
                 case true:
-                    mainMenu.Update();
+                if (!kinectData.IsKinectConnected)
+                {
+                    mainMenu.DebugInputUpdate();
+                }
                     break;
 
             }
@@ -278,47 +289,13 @@ namespace Game
                         platformList[i].Draw(camera, platformModel);
                     }
                     kinectPlayer.Draw(spriteBatch, debugFont,camera);
-                    DrawDebugInfo(spriteBatch,debugFont);
                     break;
             }
             
             base.Draw(gameTime);
         }
 
-        private void DrawDebugInfo(SpriteBatch spriteBatch, SpriteFont font)
-        {
-            spriteBatch.Begin();
-            spriteBatch.DrawString(font, "Points :" + kinectPlayer.ScoreInCurrentGame.ToString(), new Vector2(100, 10), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            /* 
-            spriteBatch.DrawString(font, "kinectPlayer.isBehind :" + kinectPlayer.isFirstPlatformBehindPlayer.ToString(), new Vector2(100, 10), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, "platformList.First().Z : "+ platformList.First().objectArrangement.Position.Z.ToString(), new Vector2(100, 30), Color.Red);
-            spriteBatch.DrawString(font, "ElapsedMS : " + kinectPlayer.timeLeftToJump.Elapsed.TotalMilliseconds.ToString(), new Vector2(100, 50), Color.Red);
-            
-            spriteBatch.DrawString(font, "kinectPlayer.timeAmount : " + kinectPlayer.timeAmount.ToString(), new Vector2(100, 90), Color.Red);
-            spriteBatch.DrawString(font, "kinectPlayer.distance : " + kinectPlayer.distance.ToString(), new Vector2(100, 110), Color.Red);
-            spriteBatch.DrawString(font, "kinectPlayer.CurrentStance : " + kinectPlayer.currentStance.ToString(), new Vector2(100, 130), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            
-            spriteBatch.DrawString(font, "kinectPlayer.timer : " + kinectPlayer.timer.ToString(), new Vector2(100, 170), Color.Red);
-            spriteBatch.DrawString(font, "kinectPlayer.tdistance : " + kinectPlayer.tdistance.ToString(), new Vector2(100, 190), Color.Red);
-            spriteBatch.DrawString(font, "kinectPlayer.platformTime : " + kinectPlayer.rowToRowIdleMoveTime.ToString(), new Vector2(100, 210), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, "kinectPlayer.gravity :" + kinectPlayer.idleJumpGravity.ToString(), new Vector2(100, 230), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, "kinectPlayer.verticalVelocity :" + kinectPlayer.verticalVelocity.ToString(), new Vector2(100, 250), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, "kinectPlayer.horizontalVelocity :" + kinectPlayer.horizontalVelocity.ToString(), new Vector2(100, 270), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, "kinectPlayer.platformRadius :" + kinectPlayer.platformRadius.ToString(), new Vector2(100, 290), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, "kinectPlayer.radiusToIdleJump :" + kinectPlayer.radiusToIdleJump.ToString(), new Vector2(100, 310), Color.Red, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            */
-            //spriteBatch.DrawString(font, kinectPlayer.idleJumpExpectedFunctionCalls.ToString(), new Vector2(50, 350), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, kinectPlayer.currentStance.ToString(), new Vector2(50, 450), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
-            /*
-            spriteBatch.DrawString(font, kinectPlayer.verticalVelocity.ToString(), new Vector2(50, 150), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, kinectPlayer.timeCounter.ToString(), new Vector2(50, 250), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, kinectPlayer.currentJumpTime.ToString(), new Vector2(50, 320), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, kinectPlayer.idleJumpTime.ToString(), new Vector2(50, 390), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
-             */
-            //spriteBatch.DrawString(font, kinectPlayer.timeAmount.ToString(), new Vector2(50, 550), Color.Red, 0, Vector2.Zero, 5, SpriteEffects.None, 1);
-            
-            spriteBatch.End();
-        }
+        
 
 
     }
