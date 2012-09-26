@@ -82,14 +82,14 @@ namespace Game
         public const int RowLength = 5;
 
         //HighScores
-        public const int MaxCapacity = 10;
+        public const int MaxCapacity = 9;
 
 
         // DrawHighScore
-        public const int DrawHighScoreLeftMargin = 300;
-        public const int DrawHighScoreTopMargin = 50;
-        public const int DrawHighScoreCharWidth = 25;
-        public const int DrawHighScoreNewlineHeight = 50;
+        public static int DrawHighScoreLeftMargin = HorizontalGameResolution/4;
+        public static int DrawHighScoreTopMargin = VerticalGameResolution/20;
+        public static int DrawHighScoreCharWidth = HorizontalGameResolution/50;
+        public static int DrawHighScoreNewlineHeight = VerticalGameResolution/15;
 
         //DrawGameOver
         public static Vector2 DrawGameOverMessagePosition = new Vector2(GameConstants.HorizontalGameResolution / 4f, GameConstants.VerticalGameResolution / 15f);
