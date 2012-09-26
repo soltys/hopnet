@@ -62,12 +62,6 @@ namespace Game
         }
 
 
-        public void NewGameReset()
-        {
-            Position = new Vector3(GameConstants.FirstPlatformPosition + (GameConstants.RowLength / 2) * GameConstants.SpaceBetweenPlatforms, Position.Y, Position.Z);
-            LookAtPoint = new Vector3(GameConstants.FirstPlatformPosition + (GameConstants.RowLength / 2) * GameConstants.SpaceBetweenPlatforms, LookAtPoint.Y, LookAtPoint.Z);
-        }
-
 
     }
 }

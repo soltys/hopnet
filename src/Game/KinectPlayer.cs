@@ -61,7 +61,6 @@ namespace Game
         private float horizontalJumpMovementStep;
 
         public int ScoreInCurrentGame;
-        private bool isCanAddPoint;
 
         private string stateString="_";
 
@@ -89,8 +88,7 @@ namespace Game
             progressBarTextures = new Texture2D[3];
             modelPosition = new Hero(new ObjectData3D
                                       {
-                                          Position = new Vector3(0.0f, 0, 0.0f),
-                                          Scale = new Vector3(0.5f, 0.5f, 0.5f),
+                                          Scale = new Vector3(1f),
                                           Rotation = new Vector3(0.0f)
                                       });
             

@@ -126,26 +126,25 @@ namespace Game
                     Rectangle = new Rectangle(
                                                 (int)(GameConstants.HorizontalGameResolution/2 -GameConstants.DefaultMenuBtnWidth*hScale/2),
                                                 (int)(GameConstants.VerticalGameResolution/2 -GameConstants.DefaultMenuBtnHeight*vScale/2),
-                                                (int) (GameConstants.DefaultMenuBtnWidth*hScale),(int) (GameConstants.DefaultMenuBtnHeight*vScale))
+                                                (int) (GameConstants.DefaultMenuBtnWidth*hScale),
+                                                (int) (GameConstants.DefaultMenuBtnHeight*vScale))
                 };
 
 
 
                 goBackSprite[i] = new Sprite
                 {
-                    Rectangle = new Rectangle((int)(GameConstants.HorizontalSpaceFromLeft * hScale),
-                                              (int)
-                                              ((3 * GameConstants.VerticalSpaceBetweenButtons + 2 * GameConstants.DefaultMenuBtnHeight) *
-                                               (vScale)),
-                                              (int)(GameConstants.DefaultMenuBtnWidth / 2 * hScale),
-                                              (int)(GameConstants.DefaultMenuBtnHeight / 2 * vScale))
+                    Rectangle = new Rectangle((int)(GameConstants.HorizontalGameResolution * 0.15f - GameConstants.DefaultMenuBtnWidth * hScale / 2),
+                                              (int)(7 * GameConstants.VerticalGameResolution / 8 - GameConstants.DefaultMenuBtnHeight * vScale / 2),
+                                              (int)(GameConstants.DefaultMenuBtnWidth  * hScale),
+                                              (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
 
                 easyDifficulty[i] = new Sprite
                 {
                     Rectangle = new Rectangle(
-                        (int)(GameConstants.HorizontalGameResolution / 2 - GameConstants.DefaultMenuBtnWidth * hScale / 2),
-                        (int)(GameConstants.VerticalSpaceBetweenButtons * vScale),
+                        (int)(GameConstants.HorizontalGameResolution * 0.5f - (GameConstants.DefaultMenuBtnWidth * hScale / 2)),
+                        (int)(GameConstants.VerticalGameResolution / 8 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
                         (int)(GameConstants.DefaultMenuBtnWidth * hScale),
                         (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
@@ -153,8 +152,8 @@ namespace Game
                 mediumDifficulty[i] = new Sprite
                 {
                     Rectangle = new Rectangle(
-                        (int)(GameConstants.HorizontalGameResolution / 2 - GameConstants.DefaultMenuBtnWidth * hScale / 2),
-                        (int)((2 * GameConstants.VerticalSpaceBetweenButtons + GameConstants.DefaultMenuBtnHeight) * (vScale)),
+                        (int)(GameConstants.HorizontalGameResolution * 0.5f - (GameConstants.DefaultMenuBtnWidth * hScale / 2)),
+                        (int)(GameConstants.VerticalGameResolution / 2 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
                         (int)(GameConstants.DefaultMenuBtnWidth * hScale),
                         (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
@@ -162,8 +161,8 @@ namespace Game
                 hardDifficulty[i] = new Sprite
                 {
                     Rectangle = new Rectangle(
-                        (int)(GameConstants.HorizontalGameResolution / 2 - GameConstants.DefaultMenuBtnWidth * hScale / 2),
-                        (int)((3 * GameConstants.VerticalSpaceBetweenButtons + 2 * GameConstants.DefaultMenuBtnHeight) * (vScale)),
+                        (int)(GameConstants.HorizontalGameResolution * 0.5f - (GameConstants.DefaultMenuBtnWidth * hScale / 2)),
+                        (int)(7*GameConstants.VerticalGameResolution / 8 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
                         (int)(GameConstants.DefaultMenuBtnWidth * hScale),
                         (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
@@ -183,25 +182,28 @@ namespace Game
                 newGameSprite[i] = new Sprite
                 {
                     Rectangle = new Rectangle(
-                        (int)(GameConstants.HorizontalSpaceFromLeft * hScale),
-                        (int)(GameConstants.VerticalSpaceBetweenButtons * vScale), (int)(GameConstants.DefaultMenuBtnWidth * hScale),
+                        (int)(GameConstants.HorizontalGameResolution * 0.15f - (GameConstants.DefaultMenuBtnWidth * hScale/2)),
+                        (int)(GameConstants.VerticalGameResolution / 8 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
+                        (int)(GameConstants.DefaultMenuBtnWidth * hScale),
                         (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
 
                 scoresSprite[i] = new Sprite
                 {
                     Rectangle = new Rectangle(
-                        (int)(GameConstants.HorizontalSpaceFromLeft * hScale),
-                        (int)((2 * GameConstants.VerticalSpaceBetweenButtons + GameConstants.DefaultMenuBtnHeight) * (vScale)),
-                        (int)(GameConstants.DefaultMenuBtnWidth * hScale), (int)(GameConstants.DefaultMenuBtnHeight * vScale))
+                        (int)(GameConstants.HorizontalGameResolution * 0.15f - (GameConstants.DefaultMenuBtnWidth * hScale / 2)),
+                        (int)(GameConstants.VerticalGameResolution / 2 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
+                        (int)(GameConstants.DefaultMenuBtnWidth * hScale),
+                        (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
 
                 exitSprite[i] = new Sprite
                 {
                     Rectangle = new Rectangle(
-                        (int)(GameConstants.HorizontalSpaceFromLeft * hScale),
-                        (int)((3 * GameConstants.VerticalSpaceBetweenButtons + 2 * GameConstants.DefaultMenuBtnHeight) * (vScale)),
-                        (int)(GameConstants.DefaultMenuBtnWidth * hScale), (int)(GameConstants.DefaultMenuBtnHeight * vScale))
+                        (int)(GameConstants.HorizontalGameResolution * 0.15f- (GameConstants.DefaultMenuBtnWidth * hScale/2)),
+                        (int)(7 * GameConstants.VerticalGameResolution / 8 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
+                        (int)(GameConstants.DefaultMenuBtnWidth * hScale), 
+                        (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
             }
             backgroundSprite.Rectangle = new Rectangle(0, 0, GameConstants.HorizontalGameResolution, GameConstants.VerticalGameResolution);

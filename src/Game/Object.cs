@@ -42,11 +42,12 @@ namespace Game
                 {
                     effect.EnableDefaultLighting();
 
-                    effect.World = transforms[singleMesh.ParentBone.Index] * Matrix.CreateRotationY(objectArrangement.Rotation.Y)
-                        * Matrix.CreateTranslation(objectArrangement.Position) * Matrix.CreateScale(objectArrangement.Scale);
-
                     effect.View = camera.ViewMatrix;
                     effect.Projection = camera.ProjectionMatrix;
+
+                    effect.World = transforms[singleMesh.ParentBone.Index] * Matrix.CreateScale(objectArrangement.Scale) *
+                        Matrix.CreateRotationY(objectArrangement.Rotation.Y)
+                        * Matrix.CreateTranslation(objectArrangement.Position);
                 }
 
                 singleMesh.Draw();

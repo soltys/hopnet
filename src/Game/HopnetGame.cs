@@ -42,7 +42,7 @@ namespace Game
             graphics.PreferredBackBufferHeight = GameConstants.VerticalGameResolution;
 
             graphics.IsFullScreen = GameConstants.IsGameInFullScreen;
-            IsMouseVisible = true;
+            IsMouseVisible = GameConstants.IsMouseVisible;
             graphics.ApplyChanges();
 
             kinectData = new KinectData();
@@ -70,7 +70,6 @@ namespace Game
             platformList = new List<Platform>();
             platformGenerator=new PlatformCollection();
 
-
             TargetElapsedTime = TimeSpan.FromSeconds(1.0f / GameConstants.GameUpdatesPerSecond);
 
             PreparePlatformsForNewGame();
@@ -82,9 +81,6 @@ namespace Game
         {
             kinectPlayer.SetJumpSafeZone();
             kinectPlayer.SetPlatformToPlatformMoveTime(GameConstants.SpeedOfPlatformsOneUpdate, GameConstants.SpaceBetweenRows, (float)(TargetElapsedTime.TotalMilliseconds), GameConstants.SpaceBetweenPlatforms);
-
-            kinectPlayer.lastStance = kinectPlayer.currentStance;
-            kinectPlayer.currentStance = GameConstants.PlayerStance.GameStartCountDown;
         }
 
         private void PreparePlatformsForNewGame()
@@ -94,7 +90,7 @@ namespace Game
 
             newGamePlatforms[GameConstants.RowLength/2] = true;
 
-            CreatePlatforms(GameConstants.RowLength, GameConstants.FirstPlatformPosition, GameConstants.SpaceBetweenPlatforms, GameConstants.BeginningOfBoardPositionZ-GameConstants.PlatformRadius,newGamePlatforms);
+            CreatePlatforms(GameConstants.RowLength, GameConstants.FirstPlatformPosition, GameConstants.SpaceBetweenPlatforms, GameConstants.BeginningOfBoardPositionZ -0.9f*GameConstants.PlatformRadius,newGamePlatforms);
 
             for (int i = 0; i < GameConstants.LanesNumber; i++)
             {
@@ -155,8 +151,8 @@ namespace Game
                                                           new Vector3(
                                                           firstPlatformPosition + i*distanceBetweenPlatforms,
                                                           GameConstants.PlatformGroundLevel, zDistance),
-                                                      Scale = new Vector3(0.5f),
-                                                      Rotation = new Vector3(0.0f)
+                                                      Scale = new Vector3(2f),
+                                                      Rotation = new Vector3(0.0f,0.0f,0.0f)
                                                   };
                     var newPlatform = new Platform(platformArrangement);
                     platformList.Add(newPlatform);
@@ -181,7 +177,6 @@ namespace Game
             platformModel = Content.Load<Model>(@"Models\platforma");
             Content.Load<Texture2D>(@"Sprites\cursor_left_normal");
             kinectPlayer.LoadContent(Content);
-            
             mainMenu.LoadContent(Content);
 
             logger.Trace("Load Content ends");
@@ -221,7 +216,6 @@ namespace Game
         {
             if (Keyboard.GetState().IsKeyDown(Keys.P)) { UnloadContent(); Exit(); }
 
-            
             switch (mainMenu.IsGameInMenuMode)
             {
                 case false:
@@ -231,7 +225,9 @@ namespace Game
                         kinectPlayer.DebugInputUpdate(platformList);
                     }
                     kinectPlayer.DebugInputUpdate(platformList);
-                    if (kinectPlayer.currentStance != GameConstants.PlayerStance.GameStartCountDown && kinectPlayer.currentStance != GameConstants.PlayerStance.GameEnded && kinectPlayer.currentStance != GameConstants.PlayerStance.GameSettingsSetup)
+                    if (kinectPlayer.currentStance != GameConstants.PlayerStance.GameStartCountDown && 
+                        kinectPlayer.currentStance != GameConstants.PlayerStance.GameEnded && 
+                        kinectPlayer.currentStance != GameConstants.PlayerStance.GameSettingsSetup)
                     {
                         MovePlatforms();
                         RemovePlatformsAtEnd();
@@ -247,13 +243,14 @@ namespace Game
                                 mainMenu.highScores.SaveToFile();
 
                                 kinectPlayer.NewGameDataReset();
-                                camera.NewGameReset();
                                 mainMenu.IsGameInMenuMode = true;
                                 mainMenu.MenuState = GameConstants.MenuState.AfterGameLoss;
                                 PreparePlatformsForNewGame();
                                 break;
                             case GameConstants.PlayerStance.GameSettingsSetup:
                                 NewGameSettingsReset();
+                                kinectPlayer.lastStance = kinectPlayer.currentStance;
+                                kinectPlayer.currentStance = GameConstants.PlayerStance.GameStartCountDown;
                                 break;
                         }
                     }
