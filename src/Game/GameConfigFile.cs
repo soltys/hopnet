@@ -31,10 +31,19 @@ namespace Game
         public static GameConfigFile Load()
         {
             XmlSerializer deserializer = new XmlSerializer(typeof(GameConfigFile));
-            TextReader textReader = new StreamReader(@"config.xml");
-            GameConfigFile gameConfigData;
-            gameConfigData = (GameConfigFile)deserializer.Deserialize(textReader);
-            textReader.Close();
+            GameConfigFile gameConfigData = null;
+            try
+            {
+                TextReader textReader = new StreamReader(@"config.xml");
+                gameConfigData = (GameConfigFile)deserializer.Deserialize(textReader);
+                textReader.Close();
+            }
+            catch
+            {
+                return null;
+            }
+            
+
 
             return gameConfigData;
         }
