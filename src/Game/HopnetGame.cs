@@ -37,7 +37,8 @@ namespace Game
         /// and initialize them as well.
         /// </summary>
         protected override void Initialize()
-        {         
+        {
+            LoadConfigFile();
             graphics.PreferredBackBufferWidth = GameConstants.HorizontalGameResolution;
             graphics.PreferredBackBufferHeight = GameConstants.VerticalGameResolution;
 
@@ -165,13 +166,28 @@ namespace Game
         /// all of your content.
         /// </summary>
         /// 
+
+
+        private void LoadConfigFile()
+        {
+            var gameConfigData = GameConfigFile.Load();
+
+            if (gameConfigData != null)
+            {
+                GameConstants.HorizontalGameResolution = gameConfigData.resolutionData.width;
+                GameConstants.VerticalGameResolution = gameConfigData.resolutionData.height;
+                GameConstants.IsGameInFullScreen = gameConfigData.fullscreenEnabled;
+            }
+
+        }
+
         protected override void LoadContent()
         {
             logger.Trace("Load Content starts");
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            debugFont = Content.Load<SpriteFont>("myFont");
+            debugFont = Content.Load<SpriteFont>(@"myFont");
             Content.Load<Model>(@"Models\hero");
 
             platformModel = Content.Load<Model>(@"Models\platforma");
