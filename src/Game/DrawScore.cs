@@ -55,7 +55,7 @@ namespace Game
         {
             PrepareTexture(whatToDraw);
             spriteBatch.Begin();
-            spriteBatch.Draw(digitTexture, cursorPosition, null, Color.White, 0f, new Vector2(10, 10), 0.5f, SpriteEffects.None, 0);
+            spriteBatch.Draw(digitTexture, cursorPosition, null, Color.White, 0f, new Vector2(0,0), 0.5f, SpriteEffects.None, 0);
             spriteBatch.End();
         }
     }

@@ -31,18 +31,37 @@ namespace Game
                 throw new ArgumentException();
             }
 
-            if (scores.Count == GameConstants.MaxCapacity)
+
+            if (scores.Count == 0)
             {
-                if (scores.Min().Points < score.Points)
+                scores.Add(score);
+            }
+            else
+            {
+                bool isScoreWritten=false;
+                for(int i=0; i<scores.Count;i++)
+                {
+                    if (score.CompareTo(scores[i]) == 1)
+                    {
+                        isScoreWritten = true;
+                        scores.Insert(i, score);
+                        break;
+                    }
+                }
+
+                if (!isScoreWritten)
                 {
                     scores.Remove(scores.Min());
+                    scores.Add(score);
                 }
                 else
                 {
-                    return;
+                    if (scores.Count > GameConstants.MaxCapacity)
+                    {
+                        scores.Remove(scores.Min());
+                    }
                 }
             }
-            scores.Add(score);
         }
         public void Clear()
         {

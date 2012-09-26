@@ -24,10 +24,6 @@ namespace Game
             {
                 return 1;
             }
-            if (Points == other.Points)  // ?
-            {
-                //return Name.CompareTo(other.Name);
-            }
             return Points.CompareTo(other.Points);
         }
     }
