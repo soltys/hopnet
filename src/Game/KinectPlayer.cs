@@ -461,8 +461,8 @@ namespace Game
 
             modelPosition.Draw(camera, model);
             spriteBatch.Begin();
-            spriteBatch.DrawString(font, "Points : " + ScoreInCurrentGame.ToString(), new Vector2(GameConstants.HorizontalGameResolution/200, GameConstants.VerticalGameResolution/100), Color.Black, 0, Vector2.Zero,3, SpriteEffects.None, 1);
-            spriteBatch.DrawString(font, stateString, new Vector2(GameConstants.HorizontalGameResolution*0.95f, GameConstants.VerticalGameResolution / 100), Color.Black, 0, Vector2.Zero, 3, SpriteEffects.None, 1);
+            spriteBatch.DrawString(font, "Points : " + ScoreInCurrentGame.ToString(), new Vector2(GameConstants.HorizontalGameResolution/200, GameConstants.VerticalGameResolution/100), Color.Yellow, 0, Vector2.Zero,3, SpriteEffects.None, 1);
+            spriteBatch.DrawString(font, stateString, new Vector2(GameConstants.HorizontalGameResolution*0.95f, GameConstants.VerticalGameResolution / 100), Color.Yellow, 0, Vector2.Zero, 3, SpriteEffects.None, 1);
             spriteBatch.Draw(progressBarTextures[progressBarTextureType],progressBarRectangle,Color.White);
             spriteBatch.End();
 
@@ -472,7 +472,7 @@ namespace Game
             {
                 case GameConstants.PlayerStance.GameStartCountDown:
                     spriteBatch.Begin();
-                    spriteBatch.DrawString(font, (GameConstants.NewGameCountdownTime - newGameCounter.Elapsed.Seconds).ToString(), new Vector2(GameConstants.HorizontalGameResolution / 2, GameConstants.VerticalGameResolution / 10), Color.Black, 0, Vector2.Zero, 2, SpriteEffects.None, 1);
+                    spriteBatch.DrawString(font, (GameConstants.NewGameCountdownTime - newGameCounter.Elapsed.Seconds).ToString(), new Vector2(GameConstants.HorizontalGameResolution / 2, GameConstants.VerticalGameResolution / 10), Color.Yellow, 0, Vector2.Zero, 2, SpriteEffects.None, 1);
                     spriteBatch.End();
                     break;
             }
