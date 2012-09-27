@@ -32,6 +32,9 @@ namespace Game
         private Sprite progressBarFrame;
         private Sprite progressBarBackground;
 
+        private Sprite nyanSprite;
+        private int nyanIncrement;
+
         private float spaceRequiredToSideJump = 100.0f;
         private float spaceRequiredToJump = 100.0f;
 
@@ -73,6 +76,7 @@ namespace Game
             progressBarTextures[2] = content.Load<Texture2D>(@"Sprites\player_progressbar_low");
             progressBarBackground.LoadSprite(content,@"Sprites\player_progressbar_background");
             model = content.Load<Model>(@"Models\hero");
+            nyanSprite.LoadSprite(content, @"Sprites\nyan");
         }
 
         public KinectPlayer(Vector3 platformData)
@@ -83,7 +87,12 @@ namespace Game
             progressBarFrame.Rectangle = new Rectangle(0,0,GameConstants.HorizontalGameResolution,GameConstants.VerticalGameResolution/80);
             newGameCounter = new Stopwatch();
             newGameCounter.Reset();
-            
+
+            nyanSprite = new Sprite();
+            nyanSprite.Rectangle = new Rectangle(-(int)GameConstants.nyanDimensions.X, (int)GameConstants.VerticalGameResolution/25, (int)GameConstants.nyanDimensions.X, (int)GameConstants.nyanDimensions.Y);
+
+
+
             progressBarRectangle=new Rectangle(0,0,GameConstants.HorizontalGameResolution,GameConstants.VerticalGameResolution/80);
             progressBarTextures = new Texture2D[3];
             modelPosition = new Hero(new ObjectData3D
@@ -188,6 +197,9 @@ namespace Game
             var jumpGravityMultiplier = (GameConstants.SpeedOfPlatformsOneUpdate / GameConstants.DefaultSpeedBetweenPlatforms) * 10;
 
             jumpExpectedFunctionCalls = (int)Math.Round((2*GameConstants.SpaceBetweenRows - 2 * idleJumpPlatformRadius) / GameConstants.SpeedOfPlatformsOneUpdate);
+
+            nyanIncrement = (int)((GameConstants.HorizontalGameResolution+2*GameConstants.nyanDimensions.X) / jumpExpectedFunctionCalls);
+
             jumpVelocity = GameConstants.DefaultTimerMultiplier * jumpDistanceRatio;
             jumpGravity = GameConstants.DefaultJumpGravity * jumpGravityMultiplier;
 
@@ -322,6 +334,19 @@ namespace Game
             }
             
         }
+
+
+        private void NyanMoveRight()
+        {
+            nyanSprite.Rectangle = new Rectangle(nyanSprite.Rectangle.X + nyanIncrement, nyanSprite.rectangle.Y, (int)GameConstants.nyanDimensions.X, (int)GameConstants.nyanDimensions.Y);
+        }
+
+
+        private void NyanPositionReset()
+        {
+             nyanSprite.Rectangle = new Rectangle(-(int)GameConstants.nyanDimensions.X, (int)GameConstants.VerticalGameResolution / 30, (int)GameConstants.nyanDimensions.X, (int)GameConstants.nyanDimensions.Y);
+        }
+
         private void PerformJump()
         {
             if (timeCounter < jumpExpectedFunctionCalls)
@@ -330,10 +355,13 @@ namespace Game
                 modelPosition.objectArrangement.Position = new Vector3(modelPosition.oldArrangement.Position.X,
                    modelPosition.oldArrangement.Position.Y + (timeCounter * jumpVelocity - jumpGravity * timeCounter * timeCounter / 2) / jumpHeightDivider,
                    modelPosition.oldArrangement.Position.Z);
+                NyanMoveRight();
             }
             else
             {
+                NyanPositionReset();
                 AfterJumpReset();
+                ScoreInCurrentGame += GameConstants.BonusPoints;
             }
         }
         private void PerformHorizontalJump()
@@ -458,7 +486,7 @@ namespace Game
         public void Draw(SpriteBatch spriteBatch, SpriteFont font,Camera camera)
         {
             progressBarBackground.DrawByRectangle(spriteBatch);
-
+            nyanSprite.DrawByRectangle(spriteBatch);
             modelPosition.Draw(camera, model);
             spriteBatch.Begin();
             spriteBatch.DrawString(font, "Points : " + ScoreInCurrentGame.ToString(), new Vector2(GameConstants.HorizontalGameResolution/200, GameConstants.VerticalGameResolution/100), Color.Yellow, 0, Vector2.Zero,3, SpriteEffects.None, 1);
