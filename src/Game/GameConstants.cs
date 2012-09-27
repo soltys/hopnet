@@ -86,13 +86,13 @@ namespace Game
 
 
         // DrawHighScore
-        public static int DrawHighScoreLeftMargin = HorizontalGameResolution/4;
-        public static int DrawHighScoreTopMargin = VerticalGameResolution/20;
         public static int DrawHighScoreCharWidth = HorizontalGameResolution/50;
         public static int DrawHighScoreNewlineHeight = VerticalGameResolution/15;
+        public static int DrawHighScoreX = HorizontalGameResolution/2 - 15 * DrawHighScoreCharWidth;
+        public static int DrawHighScoreY = VerticalGameResolution / 20;
 
         //DrawGameOver
-        public static Vector2 DrawGameOverMessagePosition = new Vector2(GameConstants.HorizontalGameResolution / 2, GameConstants.VerticalGameResolution*0.2f);
-        public static Vector2 DrawGameOverScorePosition = new Vector2(GameConstants.HorizontalGameResolution *0.01f, GameConstants.VerticalGameResolution*0.2f);
+        public static Vector2 DrawGameOverMessagePosition = new Vector2(GameConstants.HorizontalGameResolution / 2, GameConstants.VerticalGameResolution/5);
+        public static Vector2 DrawGameOverScorePosition = new Vector2(GameConstants.HorizontalGameResolution/2-2*DrawHighScoreCharWidth, GameConstants.VerticalGameResolution/30);
     }
 }
