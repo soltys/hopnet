@@ -186,6 +186,13 @@ namespace Game
                 GameConstants.HorizontalGameResolution = gameConfigData.resolutionData.width;
                 GameConstants.VerticalGameResolution = gameConfigData.resolutionData.height;
                 GameConstants.IsGameInFullScreen = gameConfigData.fullscreenEnabled;
+                GameConstants.DrawHighScoreCharWidth = GameConstants.HorizontalGameResolution / 50;
+                GameConstants.DrawHighScoreNewlineHeight = GameConstants.VerticalGameResolution / 15;
+                GameConstants.DrawHighScoreX = GameConstants.HorizontalGameResolution / 2 - 15 * GameConstants.DrawHighScoreCharWidth;
+                GameConstants.DrawHighScoreY = GameConstants.VerticalGameResolution / 20;
+
+                GameConstants.DrawGameOverMessagePosition = new Vector2(GameConstants.HorizontalGameResolution / 2, GameConstants.VerticalGameResolution / 5);
+                GameConstants.DrawGameOverScorePosition = new Vector2(GameConstants.HorizontalGameResolution / 2-2*GameConstants.DrawHighScoreCharWidth, GameConstants.VerticalGameResolution / 30);
             }
 
         }

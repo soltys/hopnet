@@ -139,7 +139,7 @@ namespace Game
                 goBackSprite[i] = new Sprite
                 {
                     Rectangle = new Rectangle((int)(GameConstants.HorizontalGameResolution * 0.15f - GameConstants.DefaultMenuBtnWidth * hScale / 2),
-                                              (int)(6 * GameConstants.VerticalGameResolution / 8 - GameConstants.DefaultMenuBtnHeight * vScale / 2),
+                                              (int)(7 * GameConstants.VerticalGameResolution / 8 - GameConstants.DefaultMenuBtnHeight * vScale / 2),
                                               (int)(GameConstants.DefaultMenuBtnWidth  * hScale),
                                               (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
@@ -560,7 +560,7 @@ namespace Game
 
                 case GameConstants.MenuState.AfterGameLoss:
                         gameLostSprite.DrawByRectangle(spriteBatch);
-                        //DrawGameOverAndScore(spriteBatch);
+                        DrawGameOverAndScore(spriteBatch);
                         tryAgainSprite[tryAgainSpriteTextureType].DrawByRectangle(spriteBatch);
                         goBackSprite[goBackTextureType].DrawByRectangle(spriteBatch);
                         break;

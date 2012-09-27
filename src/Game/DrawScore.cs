@@ -14,11 +14,8 @@ namespace Game
         protected Texture2D digitTexture;
         protected StringBuilder textureStringBuilder;
         protected SpriteBatch spriteBatch;
+        protected float scale=0.5f;
 
-        public void SetCursorPosition(Vector2 NewCursorPosition)
-        {
-            cursorPosition = NewCursorPosition;
-        }
         public void DrawPlayerScore(int Score)
         {
             foreach (var digit in Score.ToString())
@@ -32,11 +29,11 @@ namespace Game
 
         protected void MoveCursorRight()
         {
-            cursorPosition = new Vector2(cursorPosition.X + GameConstants.DrawHighScoreCharWidth, cursorPosition.Y);
+            cursorPosition = new Vector2(cursorPosition.X + (int)(GameConstants.DrawHighScoreCharWidth*(scale/0.5)), cursorPosition.Y);
         }
         protected void NewLine()
         {
-            cursorPosition = new Vector2(GameConstants.DrawHighScoreLeftMargin, cursorPosition.Y + GameConstants.DrawHighScoreNewlineHeight);
+            cursorPosition = new Vector2(GameConstants.DrawHighScoreX, cursorPosition.Y + GameConstants.DrawHighScoreNewlineHeight);
         }
         protected void PrepareTexture(int textureNumber)
         {
@@ -55,7 +52,7 @@ namespace Game
         {
             PrepareTexture(whatToDraw);
             spriteBatch.Begin();
-            spriteBatch.Draw(digitTexture, cursorPosition, null, Color.White, 0f, new Vector2(0,0), 0.5f, SpriteEffects.None, 0);
+            spriteBatch.Draw(digitTexture, cursorPosition, null, Color.White, 0f, new Vector2(0,0), scale, SpriteEffects.None, 0);
             spriteBatch.End();
         }
     }
