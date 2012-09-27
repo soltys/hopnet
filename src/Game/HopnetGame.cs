@@ -293,6 +293,7 @@ namespace Game
                                 PreparePlatformsForNewGame();
                                 break;
                             case GameConstants.PlayerStance.GameSettingsSetup:
+                                GameConstants.BonusPoints = 3*GameConstants.DifficultyModifier;
                                 NewGameSettingsReset();
                                 kinectPlayer.lastStance = kinectPlayer.currentStance;
                                 kinectPlayer.currentStance = GameConstants.PlayerStance.GameStartCountDown;

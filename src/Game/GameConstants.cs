@@ -69,6 +69,9 @@ namespace Game
         public enum PlayerStance { Idle = 1, IdleJump = 2, LeftHandUp = 3, RightHandUp = 4, JumpReady = 7, Jump = 8, SideJump = 9, SideJumpReady = 10, GameEnded = 11, GameStartCountDown = 12, GameSettingsSetup = 13 }
         public const float MaxiumumJumpHeight = 2.0f;
         public const float FootToFootDistance = 0.1f;
+        public static Vector2 nyanDimensions = new Vector2(340, 170);
+        public static int BonusPoints = 20;
+
 
         //KinectData
         public const float HeightChangeThreshold = 0.005f;
@@ -94,5 +97,6 @@ namespace Game
         //DrawGameOver
         public static Vector2 DrawGameOverMessagePosition = new Vector2(GameConstants.HorizontalGameResolution / 2, GameConstants.VerticalGameResolution/5);
         public static Vector2 DrawGameOverScorePosition = new Vector2(GameConstants.HorizontalGameResolution/2-2*DrawHighScoreCharWidth, GameConstants.VerticalGameResolution/30);
+
     }
 }
