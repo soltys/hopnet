@@ -28,7 +28,7 @@ namespace Game
             oldArrangement = new ObjectData3D(new Vector3(0.0f), new Vector3(0.0f), new Vector3(0.0f));
 
             var random = new Random();
-            rotateAmount = random.Next(1, 11) / 10;
+            rotateAmount =  random.Next(10, 20)/10;
 
             if (random.Next(2, 4) < 3)
             {
@@ -45,6 +45,7 @@ namespace Game
 
         public void Rotate()
         {
+            //rotateAmount
             if (rotateAmount > 360)
             {
                 rotateAmount = 0;

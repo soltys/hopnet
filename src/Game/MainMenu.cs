@@ -65,6 +65,9 @@ namespace Game
         private readonly Sprite []confirmExit;
         private int confirmExitTextureType = (int)GameConstants.TextureType.Normal;
 
+        private readonly Sprite gameLostSprite;
+
+
         private readonly Vector2[] kinectHandPosition;
         private readonly bool[] cursorOnButtonState;
         private readonly Stopwatch buttonTimeoutStopwatch;
@@ -97,6 +100,7 @@ namespace Game
             vScale = (GameConstants.VerticalGameResolution / GameConstants.DefaultVerticalResolutionToScaleInto);
 
             backgroundSprite = new Sprite();
+            gameLostSprite = new Sprite();
             timeoutProgressBar = new Sprite { rectangle = new Rectangle(0, 0, 0, GameConstants.VerticalGameResolution/80) };
             newGameSprite = new Sprite[GameConstants.MenuTextureNumber];
             scoresSprite = new Sprite[GameConstants.MenuTextureNumber];
@@ -135,7 +139,7 @@ namespace Game
                 goBackSprite[i] = new Sprite
                 {
                     Rectangle = new Rectangle((int)(GameConstants.HorizontalGameResolution * 0.15f - GameConstants.DefaultMenuBtnWidth * hScale / 2),
-                                              (int)(7 * GameConstants.VerticalGameResolution / 8 - GameConstants.DefaultMenuBtnHeight * vScale / 2),
+                                              (int)(6 * GameConstants.VerticalGameResolution / 8 - GameConstants.DefaultMenuBtnHeight * vScale / 2),
                                               (int)(GameConstants.DefaultMenuBtnWidth  * hScale),
                                               (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
@@ -183,7 +187,7 @@ namespace Game
                 {
                     Rectangle = new Rectangle(
                         (int)(GameConstants.HorizontalGameResolution * 0.15f - (GameConstants.DefaultMenuBtnWidth * hScale/2)),
-                        (int)(GameConstants.VerticalGameResolution / 8 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
+                        (int)(2*GameConstants.VerticalGameResolution / 8 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
                         (int)(GameConstants.DefaultMenuBtnWidth * hScale),
                         (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
@@ -201,12 +205,14 @@ namespace Game
                 {
                     Rectangle = new Rectangle(
                         (int)(GameConstants.HorizontalGameResolution * 0.15f- (GameConstants.DefaultMenuBtnWidth * hScale/2)),
-                        (int)(7 * GameConstants.VerticalGameResolution / 8 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
+                        (int)(6 * GameConstants.VerticalGameResolution / 8 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
                         (int)(GameConstants.DefaultMenuBtnWidth * hScale), 
                         (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
             }
             backgroundSprite.Rectangle = new Rectangle(0, 0, GameConstants.HorizontalGameResolution, GameConstants.VerticalGameResolution);
+            gameLostSprite.Rectangle = new Rectangle(GameConstants.HorizontalGameResolution/2- (int)(1.5f*hScale* GameConstants.DefaultMenuBtnWidth/2), 2*GameConstants.VerticalGameResolution/8 - (int)(vScale* GameConstants.DefaultMenuBtnHeight/2), (int)(GameConstants.DefaultMenuBtnWidth*hScale*1.5f), (int)(vScale* GameConstants.DefaultMenuBtnHeight));
+
             #endregion
         }
 
@@ -341,6 +347,7 @@ namespace Game
                     buttonState = CheckCurrentButton(tryAgainSprite[tryAgainSpriteTextureType].Rectangle, ref tryAgainSpriteTextureType, GameConstants.MenuButton.PlayAgain, ref buttonState);
                     break;
             }
+
             ChangeCursorTexture(cursorOnButtonState);
             return buttonState;
         }      
@@ -517,6 +524,7 @@ namespace Game
             confirmExit[1].LoadSprite(content, @"Sprites\GameIcons\exitOn");
             tryAgainSprite[0].LoadSprite(content, @"Sprites\GameIcons\playagainOff");
             tryAgainSprite[1].LoadSprite(content, @"Sprites\GameIcons\playagainOn");
+            gameLostSprite.LoadSprite(content, @"Sprites\GameOver");
         }
 
         public void Draw(SpriteBatch spriteBatch, SpriteFont font)
@@ -551,8 +559,8 @@ namespace Game
                         break;
 
                 case GameConstants.MenuState.AfterGameLoss:
-                        
-                        DrawGameOverAndScore(spriteBatch);
+                        gameLostSprite.DrawByRectangle(spriteBatch);
+                        //DrawGameOverAndScore(spriteBatch);
                         tryAgainSprite[tryAgainSpriteTextureType].DrawByRectangle(spriteBatch);
                         goBackSprite[goBackTextureType].DrawByRectangle(spriteBatch);
                         break;
