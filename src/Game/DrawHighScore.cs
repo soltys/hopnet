@@ -20,7 +20,7 @@ namespace Game
             highScores = HighScores;
             spriteBatch = SpriteBatch;
             currentPlace = 1;
-            cursorPosition = new Vector2(GameConstants.DrawHighScoreLeftMargin, GameConstants.DrawHighScoreTopMargin);
+            cursorPosition = new Vector2(GameConstants.DrawHighScoreX, GameConstants.DrawHighScoreY);
         }
 
         public void DrawHighScores()
