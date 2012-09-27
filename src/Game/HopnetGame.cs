@@ -289,6 +289,7 @@ namespace Game
                                 kinectPlayer.NewGameDataReset();
                                 mainMenu.IsGameInMenuMode = true;
                                 mainMenu.MenuState = GameConstants.MenuState.AfterGameLoss;
+                                platformGenerator.NewGameReset();
                                 PreparePlatformsForNewGame();
                                 break;
                             case GameConstants.PlayerStance.GameSettingsSetup:

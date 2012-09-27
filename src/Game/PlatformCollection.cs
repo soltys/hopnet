@@ -36,14 +36,8 @@ namespace Game
             }
             lastRow = platformRows.Last();
             platformsRequiredToChangeDirection = maxPlatformsRequiredToChangeDirection;
-            for (int i = 0; i < GameConstants.RowLength; i++)
-            {
-                if (lastRow.PlatformValues[i]) 
-                { 
-                    lastInsertedPlatformIndex = i;
-                    break; 
-                }
-            }
+
+            lastInsertedPlatformIndex = GameConstants.RowLength / 2;
         }
 
         public bool[] GetLastAddedRowValues
@@ -58,6 +52,21 @@ namespace Game
                 CalculatePlatformsForNewRow();
                 GenerateNextRow();
         }
+
+        public void NewGameReset()
+        {
+            platformRows.Clear();
+            lastRow = new PlatformRow();
+
+            for (int i = 0; i < GameConstants.LanesNumber; i++)
+            {
+                GenerateNextRow();
+            }
+
+                    lastInsertedPlatformIndex = GameConstants.RowLength/2;
+
+        }
+
 
         private void CalculatePlatformsForNewRow()
         {
