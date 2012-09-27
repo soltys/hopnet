@@ -92,7 +92,7 @@ namespace Game
         public static int DrawHighScoreNewlineHeight = VerticalGameResolution/15;
 
         //DrawGameOver
-        public static Vector2 DrawGameOverMessagePosition = new Vector2(GameConstants.HorizontalGameResolution / 4f, GameConstants.VerticalGameResolution / 15f);
-        public static Vector2 DrawGameOverScorePosition = new Vector2(GameConstants.HorizontalGameResolution / 3f, GameConstants.VerticalGameResolution *0.75f);
+        public static Vector2 DrawGameOverMessagePosition = new Vector2(GameConstants.HorizontalGameResolution / 2, GameConstants.VerticalGameResolution*0.2f);
+        public static Vector2 DrawGameOverScorePosition = new Vector2(GameConstants.HorizontalGameResolution *0.01f, GameConstants.VerticalGameResolution*0.2f);
     }
 }

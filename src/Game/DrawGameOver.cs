@@ -9,16 +9,16 @@ namespace Game
 {
     class DrawGameOver : DrawScore
     {
-        private Texture2D GameOver;
+        private Texture2D gameOver;
         private int achievedScore;
 
-        public DrawGameOver(HopnetGame HopnetGame, SpriteBatch SpriteBatch, int Score)
+        public DrawGameOver(HopnetGame hopNetGame, SpriteBatch sBatch, int score)
         {
-            hopnetGame = HopnetGame;
-            spriteBatch = SpriteBatch;
+            hopnetGame = hopNetGame;
+            spriteBatch = sBatch;
             cursorPosition = GameConstants.DrawGameOverMessagePosition;
-            GameOver = hopnetGame.Content.Load<Texture2D>("Sprites/GameOver");
-            achievedScore = Score;
+            gameOver = hopNetGame.Content.Load<Texture2D>("Sprites/GameOver");
+            achievedScore = score;
         }
 
         public void DrawGameOverScene()
@@ -32,12 +32,11 @@ namespace Game
         private void DrawGameOverMessage()
         {
             spriteBatch.Begin();
-            spriteBatch.Draw(GameOver, cursorPosition, null, Color.White, 0f, new Vector2(10, 10), 1f, SpriteEffects.None, 0);
+            spriteBatch.Draw(gameOver, new Vector2(cursorPosition.X-gameOver.Width/2,cursorPosition.Y-gameOver.Height/2), null, Color.White, 0f, new Vector2(10, 10), 1f, SpriteEffects.None, 0);
             spriteBatch.End();
         }
         private void DrawAchievedScore()
         {
-            cursorPosition = GameConstants.DrawGameOverScorePosition;
             DrawPlayerScore(achievedScore);
         }
     }

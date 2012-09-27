@@ -22,6 +22,7 @@ namespace Game
         private KinectPlayer kinectPlayer;
         private KinectData kinectData;
         private Camera camera;
+        private Texture2D backgroundTexture;
 
         public HopnetGame()
         {
@@ -60,7 +61,7 @@ namespace Game
                 }
                 catch
                 {
-                    throw new Exception("Error: sensor Kinect jest prawdopodobnie niepodlaczony do zasilania!");
+                    
                 }
             }
 
@@ -97,6 +98,14 @@ namespace Game
             {
                 CreatePlatforms(GameConstants.RowLength, GameConstants.FirstPlatformPosition, GameConstants.SpaceBetweenPlatforms, platformList.Last().objectArrangement.Position.Z - GameConstants.SpaceBetweenRows,newGamePlatforms);
             }
+        }
+
+
+        private void DrawBackground(SpriteBatch spriteBatch)
+        {
+            spriteBatch.Begin();
+            spriteBatch.Draw(backgroundTexture, Vector2.Zero, null, Color.White, 0, Vector2.Zero, 2, SpriteEffects.None, 0.9f);
+            spriteBatch.End();
         }
 
 
@@ -153,7 +162,7 @@ namespace Game
                                                           firstPlatformPosition + i*distanceBetweenPlatforms,
                                                           GameConstants.PlatformGroundLevel, zDistance),
                                                       Scale = new Vector3(2f),
-                                                      Rotation = new Vector3(0.0f,0.0f,0.0f)
+                                                      Rotation = new Vector3(0.0f,180f,0.0f)
                                                   };
                     var newPlatform = new Platform(platformArrangement);
                     platformList.Add(newPlatform);
@@ -189,7 +198,7 @@ namespace Game
 
             debugFont = Content.Load<SpriteFont>(@"myFont");
             Content.Load<Model>(@"Models\hero");
-
+            backgroundTexture = Content.Load<Texture2D>(@"Sprites\cosmos");
             platformModel = Content.Load<Model>(@"Models\platforma");
             Content.Load<Texture2D>(@"Sprites\cursor_left_normal");
             kinectPlayer.LoadContent(Content);
@@ -227,6 +236,17 @@ namespace Game
             }
         }
 
+
+
+
+        private void RotatePlatforms()
+        {
+            for(int i=0; i<platformList.Count;i++)
+            {
+                platformList[i].Rotate();
+            }
+        }
+
         
         protected override void Update(GameTime gameTime)
         {
@@ -245,6 +265,7 @@ namespace Game
                         kinectPlayer.currentStance != GameConstants.PlayerStance.GameEnded && 
                         kinectPlayer.currentStance != GameConstants.PlayerStance.GameSettingsSetup)
                     {
+                        RotatePlatforms();
                         MovePlatforms();
                         RemovePlatformsAtEnd();
                     }
@@ -290,17 +311,27 @@ namespace Game
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            
+            DrawBackground(spriteBatch);
+
             switch(mainMenu.IsGameInMenuMode)
             {
                 case true:
                     mainMenu.Draw(spriteBatch,debugFont);
                     break;
                 case false:
+                    
+                    /*
                     for (int i = platformList.Count-1; i >= 0; i--)
                     {
                         platformList[i].Draw(camera, platformModel);
                     }
+                     */
+
+                    foreach (var platform in platformList)
+                    {
+                        platform.Draw(camera,platformModel);
+                    }
+
                     kinectPlayer.Draw(spriteBatch, debugFont,camera);
                     break;
             }

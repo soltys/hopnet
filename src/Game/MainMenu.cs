@@ -65,6 +65,9 @@ namespace Game
         private readonly Sprite []confirmExit;
         private int confirmExitTextureType = (int)GameConstants.TextureType.Normal;
 
+        private readonly Sprite gameLostSprite;
+
+
         private readonly Vector2[] kinectHandPosition;
         private readonly bool[] cursorOnButtonState;
         private readonly Stopwatch buttonTimeoutStopwatch;
@@ -97,6 +100,7 @@ namespace Game
             vScale = (GameConstants.VerticalGameResolution / GameConstants.DefaultVerticalResolutionToScaleInto);
 
             backgroundSprite = new Sprite();
+            gameLostSprite = new Sprite();
             timeoutProgressBar = new Sprite { rectangle = new Rectangle(0, 0, 0, GameConstants.VerticalGameResolution/80) };
             newGameSprite = new Sprite[GameConstants.MenuTextureNumber];
             scoresSprite = new Sprite[GameConstants.MenuTextureNumber];
@@ -135,7 +139,7 @@ namespace Game
                 goBackSprite[i] = new Sprite
                 {
                     Rectangle = new Rectangle((int)(GameConstants.HorizontalGameResolution * 0.15f - GameConstants.DefaultMenuBtnWidth * hScale / 2),
-                                              (int)(7 * GameConstants.VerticalGameResolution / 8 - GameConstants.DefaultMenuBtnHeight * vScale / 2),
+                                              (int)(6 * GameConstants.VerticalGameResolution / 8 - GameConstants.DefaultMenuBtnHeight * vScale / 2),
                                               (int)(GameConstants.DefaultMenuBtnWidth  * hScale),
                                               (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
@@ -183,7 +187,7 @@ namespace Game
                 {
                     Rectangle = new Rectangle(
                         (int)(GameConstants.HorizontalGameResolution * 0.15f - (GameConstants.DefaultMenuBtnWidth * hScale/2)),
-                        (int)(GameConstants.VerticalGameResolution / 8 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
+                        (int)(2*GameConstants.VerticalGameResolution / 8 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
                         (int)(GameConstants.DefaultMenuBtnWidth * hScale),
                         (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
@@ -201,12 +205,14 @@ namespace Game
                 {
                     Rectangle = new Rectangle(
                         (int)(GameConstants.HorizontalGameResolution * 0.15f- (GameConstants.DefaultMenuBtnWidth * hScale/2)),
-                        (int)(7 * GameConstants.VerticalGameResolution / 8 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
+                        (int)(6 * GameConstants.VerticalGameResolution / 8 - (GameConstants.DefaultMenuBtnHeight * vScale / 2)),
                         (int)(GameConstants.DefaultMenuBtnWidth * hScale), 
                         (int)(GameConstants.DefaultMenuBtnHeight * vScale))
                 };
             }
             backgroundSprite.Rectangle = new Rectangle(0, 0, GameConstants.HorizontalGameResolution, GameConstants.VerticalGameResolution);
+            gameLostSprite.Rectangle = new Rectangle(GameConstants.HorizontalGameResolution/2- (int)(1.5f*hScale* GameConstants.DefaultMenuBtnWidth/2), 2*GameConstants.VerticalGameResolution/8 - (int)(vScale* GameConstants.DefaultMenuBtnHeight/2), (int)(GameConstants.DefaultMenuBtnWidth*hScale*1.5f), (int)(vScale* GameConstants.DefaultMenuBtnHeight));
+
             #endregion
         }
 
@@ -341,6 +347,7 @@ namespace Game
                     buttonState = CheckCurrentButton(tryAgainSprite[tryAgainSpriteTextureType].Rectangle, ref tryAgainSpriteTextureType, GameConstants.MenuButton.PlayAgain, ref buttonState);
                     break;
             }
+
             ChangeCursorTexture(cursorOnButtonState);
             return buttonState;
         }      
@@ -493,30 +500,31 @@ namespace Game
 
         public void LoadContent(ContentManager content)
         {
-            newGameSprite[0].LoadSprite(content, @"Sprites\testsprite1");
-            newGameSprite[1].LoadSprite(content, @"Sprites\testsprite2");
-            scoresSprite[0].LoadSprite(content, @"Sprites\testsprite1");
-            scoresSprite[1].LoadSprite(content, @"Sprites\testsprite2");
-            goBackSprite[0].LoadSprite(content, @"Sprites\testsprite1");
-            goBackSprite[1].LoadSprite(content, @"Sprites\testsprite2");
-            exitSprite[0].LoadSprite(content, @"Sprites\testsprite1");
-            exitSprite[1].LoadSprite(content, @"Sprites\testsprite2");
-            backgroundSprite.LoadSprite(content, @"Sprites\testsprite1");
+            newGameSprite[0].LoadSprite(content, @"Sprites\GameIcons\newgameOff");
+            newGameSprite[1].LoadSprite(content, @"Sprites\GameIcons\newgameOn");
+            scoresSprite[0].LoadSprite(content, @"Sprites\GameIcons\highscoreOff");
+            scoresSprite[1].LoadSprite(content, @"Sprites\GameIcons\highscoreOn");
+            goBackSprite[0].LoadSprite(content, @"Sprites\GameIcons\backOff");
+            goBackSprite[1].LoadSprite(content, @"Sprites\GameIcons\backOn");
+            exitSprite[0].LoadSprite(content, @"Sprites\GameIcons\endOff");
+            exitSprite[1].LoadSprite(content, @"Sprites\GameIcons\endOn");
+            backgroundSprite.LoadSprite(content, @"Sprites\Cosmos");
             handSprite[0, 0].LoadSprite(content, @"Sprites\cursor_left_normal");
             handSprite[0, 1].LoadSprite(content, @"Sprites\cursor_left_border");
             handSprite[1, 0].LoadSprite(content, @"Sprites\cursor_right_normal");
             handSprite[1, 1].LoadSprite(content, @"Sprites\cursor_right_border");
             timeoutProgressBar.LoadSprite(content, @"Sprites\menu_progressbar");
-            easyDifficulty[0].LoadSprite(content, @"Sprites\testsprite1");
-            easyDifficulty[1].LoadSprite(content, @"Sprites\testsprite2");
-            mediumDifficulty[0].LoadSprite(content, @"Sprites\testsprite1");
-            mediumDifficulty[1].LoadSprite(content, @"Sprites\testsprite2");
-            hardDifficulty[0].LoadSprite(content, @"Sprites\testsprite1");
-            hardDifficulty[1].LoadSprite(content, @"Sprites\testsprite2");
-            confirmExit[0].LoadSprite(content, @"Sprites\testsprite1");
-            confirmExit[1].LoadSprite(content, @"Sprites\testsprite2");
-            tryAgainSprite[0].LoadSprite(content, @"Sprites\testsprite1");
-            tryAgainSprite[1].LoadSprite(content, @"Sprites\testsprite2");
+            easyDifficulty[0].LoadSprite(content, @"Sprites\GameIcons\easyOff");
+            easyDifficulty[1].LoadSprite(content, @"Sprites\GameIcons\easyOn");
+            mediumDifficulty[0].LoadSprite(content, @"Sprites\GameIcons\mediumOff");
+            mediumDifficulty[1].LoadSprite(content, @"Sprites\GameIcons\mediumOn");
+            hardDifficulty[0].LoadSprite(content, @"Sprites\GameIcons\hardOff");
+            hardDifficulty[1].LoadSprite(content, @"Sprites\GameIcons\hardOn");
+            confirmExit[0].LoadSprite(content, @"Sprites\GameIcons\exitOff");
+            confirmExit[1].LoadSprite(content, @"Sprites\GameIcons\exitOn");
+            tryAgainSprite[0].LoadSprite(content, @"Sprites\GameIcons\playagainOff");
+            tryAgainSprite[1].LoadSprite(content, @"Sprites\GameIcons\playagainOn");
+            gameLostSprite.LoadSprite(content, @"Sprites\GameOver");
         }
 
         public void Draw(SpriteBatch spriteBatch, SpriteFont font)
@@ -551,8 +559,8 @@ namespace Game
                         break;
 
                 case GameConstants.MenuState.AfterGameLoss:
-                        
-                        DrawGameOverAndScore(spriteBatch);
+                        gameLostSprite.DrawByRectangle(spriteBatch);
+                        //DrawGameOverAndScore(spriteBatch);
                         tryAgainSprite[tryAgainSpriteTextureType].DrawByRectangle(spriteBatch);
                         goBackSprite[goBackTextureType].DrawByRectangle(spriteBatch);
                         break;
